@@ -4,7 +4,9 @@
 
 ##  Tính Năng Hiện Tại
 
-###  Đã Hoàn Thành (Day 0 - Scaffold)
+###  ✅ Đã Hoàn Thành
+
+**Epic 0 - Scaffold (Day 0)**
 - **Authentication**: Đăng ký, đăng nhập với JWT
 - **Role-Based UI**: Giao diện riêng cho Parent và Child
 - **State Management**: Provider pattern
@@ -12,13 +14,24 @@
 - **API Integration**: HTTP service với backend Node.js
 - **Theme System**: Design System v2.0 với màu sắc chuẩn
 
-###  Đang Phát Triển (Day 1-10)
-- Location tracking & maps
-- Geofencing
-- SOS emergency button
-- Screen time management
-- Push notifications
-- Parent-Child linking
+**Epic 1 - User Management (Day 1-2)**
+- Parent & Child registration & login
+- User profiles & role management
+- FCM token management
+- Parent-Child account linking
+
+**Epic 2 - Real-time Location Tracking (Day 3-4)**
+- Real-time location updates (30-second intervals)
+- Location permissions & privacy controls
+- Geofencing & safe zones (basic)
+- Map display & location history
+- Location sharing settings (frequency control)
+- Battery optimization (adaptive tracking, low-battery mode)
+
+###  🔄 Đang Phát Triển / Chuẩn Bị
+- **Epic 3**: Geofencing & Safe Zones (Enhanced)
+- **Epic 4**: SOS Emergency System
+- **Epic 5**: Screen Time Management & App Controls
 
 ##  Kiến Trúc
 
@@ -167,13 +180,28 @@ Theo **Design System v2.0** từ wireframes:
 - Child: Green theme
 - SOS: Red pulsing button
 
-##  TODO - Day 1
+##  TODO - Next Features (Epic 3+)
 
-- [ ] Implement location service
-- [ ] Add Google Maps
-- [ ] Create location tracking screen
-- [ ] Test real-time location updates
-- [ ] Add permission handlers
+**Epic 3 - Geofencing & Safe Zones (Enhanced)**
+- [ ] Enhanced geofence creation/editing
+- [ ] Multiple safe zones management
+- [ ] Zone notifications & entry-exit alerts
+- [ ] Repeat violations handling
+- [ ] Parent notifications customization
+
+**Epic 4 - SOS Emergency System**
+- [ ] SOS emergency button UI
+- [ ] Automatic location sending on SOS trigger
+- [ ] Emergency contact notifications
+- [ ] Message & media to parents
+- [ ] Auto-record video/audio on SOS
+
+**Epic 5 - Screen Time Management**
+- [ ] App usage monitoring
+- [ ] Screen time limits & schedules
+- [ ] App blocking on time limit
+- [ ] Usage reports
+- [ ] Focus mode integration
 
 ##  Troubleshooting
 
@@ -192,5 +220,6 @@ This is a student thesis project (Đồ án tốt nghiệp).
 
 ---
 
-**Last Updated**: Day 0 - October 9, 2025  
-**Status**: Scaffold Complete  - Ready for Day 1 Development
+**Last Updated**: Day 4 - October 17, 2025  
+**Status**: 🎉 Epic 2 (Real-time Location) COMPLETE ✅  
+**Next**: Epic 3 - Geofencing & Safe Zones Enhancement
