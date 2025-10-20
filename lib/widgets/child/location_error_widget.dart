@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../theme/app_colors.dart';
-
+import 'package:safekids_app/theme/app_typography.dart';
 enum LocationErrorType {
   gpsDisabled,
   permissionDenied,
@@ -36,21 +36,13 @@ class LocationErrorWidget extends StatelessWidget {
           SizedBox(height: 12),
           Text(
             _getTitle(),
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-            ),
+            style: AppTypography.h4.copyWith(fontWeight: FontWeight.w700, color: AppColors.textPrimary),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 8),
           Text(
             _getMessage(),
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-              height: 1.5,
-            ),
+            style: AppTypography.label.copyWith(color: AppColors.textSecondary, height: 1.5),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 16),

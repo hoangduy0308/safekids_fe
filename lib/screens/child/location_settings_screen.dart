@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/api_service.dart';
 import '../../services/location_service.dart';
 import '../../services/battery_service.dart';
+import '../../theme/app_typography.dart';
 
 /// Location Settings Screen (Task 2.5)
 /// Allows child to control location sharing, tracking interval, and pause tracking
@@ -193,7 +194,7 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
                 color: Colors.red[100],
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(_error!, style: const TextStyle(color: Colors.red)),
+              child: Text(_error!, style: AppTypography.bodySmall.copyWith(color: Colors.red)),
             ),
 
           const SizedBox(height: 16),
@@ -228,7 +229,7 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
                   Expanded(
                     child: Text(
                       'Tắt chia sẻ có thể ảnh hưởng đến an toàn của bạn',
-                      style: TextStyle(color: Colors.orange[900]),
+                      style: AppTypography.bodySmall.copyWith(color: Colors.orange[900]),
                     ),
                   ),
                 ],
@@ -238,9 +239,9 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
           const SizedBox(height: 24),
 
           // Tracking interval section
-          const Text(
+          Text(
             'Tần suất cập nhật',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: AppTypography.body.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
 
@@ -271,9 +272,9 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
           const SizedBox(height: 24),
 
           // Pause section
-          const Text(
+          Text(
             'Tạm dừng',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: AppTypography.body.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
 
@@ -287,21 +288,18 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
                   children: [
                     Icon(Icons.pause_circle, size: 48, color: Colors.blue[600]),
                     const SizedBox(height: 12),
-                    const Text(
+                    Text(
                       'Đã tạm dừng cho đến',
-                      style: TextStyle(color: Colors.grey),
+                      style: AppTypography.caption.copyWith(color: Colors.grey),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       _formatTime(_pausedUntil!),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: AppTypography.h3.copyWith(fontWeight: FontWeight.bold),
                     ),
                     Text(
                       _getRemainingTime(),
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                      style: AppTypography.captionSmall.copyWith(color: Colors.grey),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
@@ -351,16 +349,13 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Mức Pin Hiện Tại',
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                      style: AppTypography.captionSmall.copyWith(color: Colors.grey),
                     ),
                     Text(
                       '$_currentBatteryLevel%',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: AppTypography.h2.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -369,23 +364,23 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Ước Tính Tiêu Thụ',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               '~${_getEstimatedDrain()}% mỗi giờ',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              style: AppTypography.body.copyWith(fontWeight: FontWeight.w500),
             ),
             Text(
               'Chế độ: ${_getTrackingModeName()}',
-              style: const TextStyle(color: Colors.grey, fontSize: 12),
+              style: AppTypography.captionSmall.copyWith(color: Colors.grey),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               '💡 Mẹo Tiết Kiệm Pin:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             _buildTip('Giảm tần suất cập nhật xuống "Bình thường"'),
@@ -403,11 +398,11 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('• ', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          Text('• ', style: AppTypography.label.copyWith(fontWeight: FontWeight.bold)),
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(fontSize: 12),
+              style: AppTypography.captionSmall,
             ),
           ),
         ],

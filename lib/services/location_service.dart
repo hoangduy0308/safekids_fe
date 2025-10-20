@@ -114,7 +114,7 @@ class LocationService extends ChangeNotifier {
         playSound: false,
       ),
       foregroundTaskOptions: ForegroundTaskOptions(
-        eventAction: ForegroundTaskEventAction.repeat(30000), // 30 seconds = 30,000ms
+        eventAction: ForegroundTaskEventAction.repeat(300000), // AC 2.1.1: 5 minutes = 300,000ms (can be reduced to 1min for testing)
         autoRunOnBoot: false, // Don't auto-start on boot
         autoRunOnMyPackageReplaced: true,
         allowWakeLock: true,
@@ -125,38 +125,49 @@ class LocationService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Check and request location permissions (including background)
-  Future<bool> checkAndRequestPermissions() async {
-    // Check if location services enabled
+  /// AC 2.1.4: Request location permissions (foreground + background)
+  Future<bool> requestLocationPermission() async {
+    // Check if GPS is enabled
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      debugPrint('[Location] GPS is disabled');
+      debugPrint('[Location] GPS is disabled - user must enable manually');
       return false;
     }
 
-    // Request foreground location permission
-    var status = await Permission.location.request();
-    if (!status.isGranted) {
-      debugPrint('[Location] Location permission denied');
-      return false;
-    }
-
-    // Request background location permission (Android 10+)
-    if (await Permission.locationAlways.isDenied) {
-      status = await Permission.locationAlways.request();
-      if (!status.isGranted) {
-        debugPrint('[Location] Background location permission denied');
-        // Still OK - can track in foreground
+    try {
+      // Request foreground location permission (ACCESS_FINE_LOCATION)
+      var status = await Permission.location.request();
+      
+      if (status.isDenied) {
+        debugPrint('[Location] Fine location permission denied');
+        return false;
+      } else if (status.isPermanentlyDenied) {
+        debugPrint('[Location] Fine location permission permanently denied - need to open app settings');
+        return false;
       }
-    }
 
-    return true;
+      // Request background location permission (ACCESS_BACKGROUND_LOCATION on Android 10+)
+      var bgStatus = await Permission.locationAlways.request();
+      if (bgStatus.isDenied) {
+        debugPrint('[Location] Background location permission denied - foreground tracking only');
+      }
+
+      return true;
+    } catch (e) {
+      debugPrint('[Location] Permission request error: $e');
+      return false;
+    }
+  }
+
+  /// AC 2.1.4: Legacy method - use requestLocationPermission() instead
+  Future<bool> checkAndRequestPermissions() async {
+    return await requestLocationPermission();
   }
 
   Future<void> startTracking() async {
     if (_isTracking) return;
 
-    final hasPermission = await checkAndRequestPermissions();
+    final hasPermission = await requestLocationPermission();
     if (!hasPermission) {
       debugPrint('[Location] Cannot start tracking - no permission');
       return;

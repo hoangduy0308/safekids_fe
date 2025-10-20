@@ -3,6 +3,7 @@ import 'package:safekids_app/models/location.dart';
 import 'package:safekids_app/services/api_service.dart';
 import 'package:safekids_app/utils/distance_calculator.dart';
 import 'package:safekids_app/widgets/parent/child_location_map.dart';
+import 'package:safekids_app/theme/app_typography.dart';
 
 class LocationHistoryScreen extends StatefulWidget {
   final String childId;
@@ -153,9 +154,9 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Địa điểm thường xuyên',
-          style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500),
+          style: AppTypography.captionSmall.copyWith(color: Colors.grey, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
         Row(
@@ -175,9 +176,9 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('${e.key + 1}. ${e.value.count}x',
-                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                style: AppTypography.overline.copyWith(fontWeight: FontWeight.bold)),
                             Text('${e.value.latitude.toStringAsFixed(4)}, ${e.value.longitude.toStringAsFixed(4)}',
-                                style: const TextStyle(fontSize: 9, color: Colors.grey)),
+                                style: AppTypography.overline.copyWith(fontSize: 9, color: Colors.grey)),
                           ],
                         ),
                       ),
@@ -194,8 +195,8 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
       children: [
         Icon(icon, size: 32, color: Colors.blue),
         const SizedBox(height: 8),
-        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(value, style: AppTypography.h4.copyWith(fontWeight: FontWeight.bold)),
+        Text(label, style: AppTypography.captionSmall.copyWith(color: Colors.grey)),
       ],
     );
   }
@@ -317,12 +318,12 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
                 const SizedBox(height: 4),
                 Text(
                   '${loc.latitude.toStringAsFixed(6)}, ${loc.longitude.toStringAsFixed(6)}',
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  style: AppTypography.captionSmall.copyWith(color: Colors.grey),
                 ),
                 if (durationAtLocation > 0)
                   Text(
                     'Đã ở: ${durationAtLocation}m',
-                    style: const TextStyle(fontSize: 11, color: Colors.orange),
+                    style: AppTypography.overline.copyWith(color: Colors.orange),
                   ),
               ],
             ),

@@ -101,8 +101,9 @@ class SocketService extends ChangeNotifier {
       }
     });
 
-    // Other events
+    // Geofence alert events (Story 3.2)
     _socket!.on(SocketConfig.eventGeofenceAlert, (data) {
+      debugPrint('[Socket] Geofence alert received: $data');
       if (onGeofenceAlert != null) {
         onGeofenceAlert!(Map<String, dynamic>.from(data));
       }

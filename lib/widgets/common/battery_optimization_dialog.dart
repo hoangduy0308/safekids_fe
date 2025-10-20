@@ -3,7 +3,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
 import '../../theme/app_colors.dart';
-
+import 'package:safekids_app/theme/app_typography.dart';
 /// Dialog hướng dẫn tắt battery optimization theo từng hãng điện thoại
 class BatteryOptimizationDialog extends StatefulWidget {
   const BatteryOptimizationDialog({Key? key}) : super(key: key);
@@ -147,7 +147,7 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
           Expanded(
             child: Text(
               'Cài đặt Battery Optimization',
-              style: TextStyle(fontSize: 18),
+              style: AppTypography.h4,
             ),
           ),
         ],
@@ -188,11 +188,7 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
                             _isIgnoring
                                 ? 'Battery optimization đã được tắt ✓'
                                 : 'Battery optimization đang BẬT (cần tắt)',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: _isIgnoring ? Colors.green : AppColors.warning,
-                            ),
-                          ),
+                            style: AppTypography.body.copyWith(fontWeight: FontWeight.w600, color: _isIgnoring ? Colors.green : AppColors.warning),                          ),
                         ),
                       ],
                     ),
@@ -203,28 +199,19 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
                   // Manufacturer
                   Text(
                     'Điện thoại: ${_getManufacturerName()}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                  
+                    style: AppTypography.label.copyWith(fontWeight: FontWeight.w600),
+                  ),                  
                   SizedBox(height: 8),
                   
                   // Why
                   Text(
                     'Tại sao cần tắt?',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
-                  ),
-                  SizedBox(height: 4),
+                    style: AppTypography.caption.copyWith(fontWeight: FontWeight.w600),
+                  ),                  SizedBox(height: 4),
                   Text(
                     'Để SafeKids có thể chạy ngầm và theo dõi vị trí liên tục, đảm bảo an toàn cho con bạn.',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                  
+                    style: AppTypography.captionSmall.copyWith(color: Colors.grey[600]),
+                  ),                  
                   SizedBox(height: 12),
                   
                   // Impact
@@ -234,16 +221,14 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
                       SizedBox(width: 4),
                       Text(
                         'Pin: ~5-10% mỗi ngày',
-                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                      ),
-                      SizedBox(width: 12),
+                        style: AppTypography.overline.copyWith(color: Colors.grey[600]),
+                      ),                      SizedBox(width: 12),
                       Icon(Icons.data_usage, size: 16, color: Colors.grey[600]),
                       SizedBox(width: 4),
                       Text(
                         'Data: ~1.7MB/tháng',
-                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                      ),
-                    ],
+                        style: AppTypography.overline.copyWith(color: Colors.grey[600]),
+                      ),                    ],
                   ),
                   
                   if (!_isIgnoring) ...[
@@ -254,12 +239,8 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
                     // Instructions
                     Text(
                       'Hướng dẫn:',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                    SizedBox(height: 8),
+                      style: AppTypography.caption.copyWith(fontWeight: FontWeight.w600),
+                    ),                    SizedBox(height: 8),
                     
                     ..._getInstructions().asMap().entries.map((entry) {
                       return Padding(
@@ -270,16 +251,12 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
                             if (!entry.value.startsWith('⚠️'))
                               Text(
                                 '${entry.key + 1}. ',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                style: AppTypography.captionSmall.copyWith(fontWeight: FontWeight.w500),
                               ),
                             Expanded(
                               child: Text(
                                 entry.value,
-                                style: TextStyle(
-                                  fontSize: 12,
+                                style: AppTypography.captionSmall.copyWith(
                                   color: entry.value.startsWith('⚠️') 
                                       ? AppColors.warning 
                                       : Colors.grey[700],
@@ -287,8 +264,7 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
                                       ? FontWeight.w600
                                       : FontWeight.normal,
                                 ),
-                              ),
-                            ),
+                              ),                            ),
                           ],
                         ),
                       );

@@ -621,7 +621,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text('Đăng xuất', style: TextStyle(color: AppColors.danger)),
+            child: Text('Đăng xuất', style: AppTypography.button.copyWith(color: AppColors.danger)),
           ),
         ],
       ),

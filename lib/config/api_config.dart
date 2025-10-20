@@ -17,6 +17,7 @@ class ApiConfig {
   // Link Request Endpoints
   static String get linkRequest => '$baseUrl/link/request';
   static String get linkRequests => '$baseUrl/link/requests';
+  static String get getMyChildren => '$baseUrl/parent/children';
   static String linkAccept(String requestId) => '$baseUrl/link/accept/$requestId';
   static String linkReject(String requestId) => '$baseUrl/link/reject/$requestId';
   static String linkRemove(String childId) => '$baseUrl/link/remove/$childId';
@@ -27,6 +28,8 @@ class ApiConfig {
   
   // Geofence Endpoints
   static String get geofences => '$baseUrl/geofence';
+  static String get geofenceBulkDelete => '$baseUrl/geofence/bulk-delete';
+  static String get geofenceBulkUpdate => '$baseUrl/geofence/bulk-update';
   
   // SOS Endpoints
   static String get sos => '$baseUrl/sos';

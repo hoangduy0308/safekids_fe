@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../theme/app_colors.dart';
 import '../../services/location_service.dart';
+import '../../theme/app_typography.dart';
 
 /// Widget hiển thị trạng thái offline và số lượng vị trí đang chờ sync
 class OfflineIndicator extends StatelessWidget {
@@ -48,21 +49,16 @@ class OfflineIndicator extends StatelessWidget {
                       locationService.isOffline 
                           ? 'Chế độ offline' 
                           : 'Đang đồng bộ',
-                      style: const TextStyle(
-                        fontSize: 14,
+                      style: AppTypography.label.copyWith(
                         fontWeight: FontWeight.w600,
-                      ).copyWith(
                         color: AppColors.warning,
-                      ),
-                    ),
+                      ),                    ),
                     if (locationService.queuedLocations > 0)
                       Text(
                         '${locationService.queuedLocations} vị trí đang chờ đồng bộ',
-                        style: const TextStyle(
-                          fontSize: 12,
-                        ).copyWith(
-                          color: AppColors.warning,
-                        ),
+                                              style: AppTypography.captionSmall.copyWith(
+                                                color: AppColors.warning,
+                                              ),
                       ),
                   ],
                 ),

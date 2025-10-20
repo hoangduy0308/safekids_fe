@@ -28,13 +28,13 @@ class LocationPermissionDialog extends StatelessWidget {
             SizedBox(height: 20),
             Text(
               'Quyền Vị Trí',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+              style: AppTypography.h2.copyWith(fontSize: 22, fontWeight: FontWeight.w700),
             ),
             SizedBox(height: 12),
             Text(
               'SafeKids cần quyền vị trí để bảo vệ bạn và giúp phụ huynh biết bạn đang ở đâu.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15, color: AppColors.textSecondary, height: 1.5),
+              style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary, height: 1.5),
             ),
             SizedBox(height: 24),
             SizedBox(
@@ -50,13 +50,13 @@ class LocationPermissionDialog extends StatelessWidget {
                   padding: EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Text('Cho Phép', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                child: Text('Cho Phép', style: AppTypography.button),
               ),
             ),
             SizedBox(height: 8),
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Để Sau', style: TextStyle(color: AppColors.textSecondary)),
+              child: Text('Để Sau', style: AppTypography.button.copyWith(color: AppColors.textSecondary)),
             ),
           ],
         ),
@@ -113,13 +113,13 @@ class PermissionDeniedDialog extends StatelessWidget {
             SizedBox(height: 16),
             Text(
               'Quyền Bị Từ Chối',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              style: AppTypography.h3.copyWith(fontWeight: FontWeight.w700),
             ),
             SizedBox(height: 12),
             Text(
               'Vui lòng bật quyền vị trí trong Cài Đặt để SafeKids có thể bảo vệ bạn.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15, color: AppColors.textSecondary, height: 1.5),
+              style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary, height: 1.5),
             ),
             SizedBox(height: 24),
             SizedBox(
@@ -172,13 +172,13 @@ class BackgroundPermissionDialog extends StatelessWidget {
             SizedBox(height: 16),
             Text(
               'Quyền Vị Trí Nền',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              style: AppTypography.h3.copyWith(fontWeight: FontWeight.w700),
             ),
             SizedBox(height: 12),
             Text(
               'Để bảo vệ bạn tốt nhất, SafeKids cần quyền theo dõi vị trí ngay cả khi app đóng.\n\nVui lòng chọn "Cho phép mọi lúc" trong Cài Đặt.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15, color: AppColors.textSecondary, height: 1.5),
+              style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary, height: 1.5),
             ),
             SizedBox(height: 24),
             SizedBox(

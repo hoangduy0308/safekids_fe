@@ -15,8 +15,6 @@ import './location_settings_screen.dart';
 import '../../services/battery_service.dart';
 import '../../widgets/battery_optimization_guide.dart';
 
-/// Child Home Screen - Redesigned with "Misty Morning" Teal Theme
-/// iOS-style liquid glass UI with neumorphic shadows
 class ChildHomeScreen extends StatefulWidget {
   const ChildHomeScreen({Key? key}) : super(key: key);
 
@@ -25,13 +23,20 @@ class ChildHomeScreen extends StatefulWidget {
 }
 
 class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProviderStateMixin {
-  int _currentIndex = 0; // Track selected tab in navbar
+  int _currentIndex = 0;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   final _locationService = LocationService();
   final _socketService = SocketService();
-  final Set<String> _processedRequests = {}; // Track processed link request IDs
+  final Set<String> _processedRequests = {};
+
+  final _navItems = [
+    {'icon': Icons.home_rounded, 'label': 'Trang chủ'},
+    {'icon': Icons.access_time_rounded, 'label': 'Thời gian'},
+    {'icon': Icons.notifications_rounded, 'label': 'Thông báo'},
+    {'icon': Icons.person_rounded, 'label': 'Cá nhân'},
+  ];
 
   @override
   void initState() {
@@ -58,20 +63,13 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
 
   Future<void> _initLocationTracking() async {
     await _locationService.initialize();
-    
-    // Task 2.5.8: Load location settings on startup
     await _loadLocationSettings();
-
-    // Task 2.6.2: Start battery monitoring
     final batteryService = BatteryService();
     await batteryService.startMonitoring();
-
-    // Task 2.6.4: Show battery optimization guide on first launch
     if (mounted) {
       BatteryOptimizationGuide.showGuideIfNeeded(context);
     }
-    
-    final hasPermission = await _locationService.checkAndRequestPermissions();
+    final hasPermission = await _locationService.requestLocationPermission();
     if (!hasPermission && mounted) {
       showDialog(
         context: context,
@@ -79,15 +77,12 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
           onGranted: () => _locationService.startTracking(),
         ),
       );
-    } else {
+    } else if (hasPermission && mounted) {
       _locationService.startTracking();
     }
-    
-    // Listen for GPS status changes
     _locationService.addListener(_onLocationServiceChange);
   }
 
-  /// Load location settings from SharedPreferences (Task 2.5.8)
   Future<void> _loadLocationSettings() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -96,31 +91,16 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
       final pausedStr = prefs.getString('pausedUntil');
       final pausedUntil = pausedStr != null ? DateTime.parse(pausedStr) : null;
 
-      debugPrint('[ChildHome] Loaded settings: sharing=$sharingEnabled, interval=$trackingInterval, paused=$pausedUntil');
+      if (!sharingEnabled) return;
+      if (pausedUntil != null && pausedUntil.isAfter(DateTime.now())) return;
 
-      // If sharing disabled or paused, don't start tracking
-      if (!sharingEnabled) {
-        debugPrint('[ChildHome] Location sharing disabled - tracking not started');
-        return;
-      }
-
-      if (pausedUntil != null && pausedUntil.isAfter(DateTime.now())) {
-        debugPrint('[ChildHome] Location tracking paused until $pausedUntil - tracking not started');
-        return;
-      }
-
-      // Apply tracking interval
       await _locationService.updateInterval(trackingInterval);
-      debugPrint('[ChildHome] Applied tracking interval: $trackingInterval');
     } catch (e) {
       debugPrint('[ChildHome] Error loading location settings: $e');
     }
   }
 
-  void _onLocationServiceChange() {
-    // This will be called when tracking state changes
-    // Could show notifications/dialogs here if needed
-  }
+  void _onLocationServiceChange() {}
 
   void _initSocketConnection() {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -128,21 +108,12 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
     
     if (userId != null) {
       _socketService.connect(userId);
-      
-      // Listen for link requests
       _socketService.onLinkRequest = (data) {
         final requestId = data['requestId'] ?? '';
-        
-        // Ignore if already processed
-        if (_processedRequests.contains(requestId)) {
-          debugPrint('[LinkRequest] Already processed: $requestId');
-          return;
-        }
+        if (_processedRequests.contains(requestId)) return;
         
         if (mounted) {
-          // Mark as processed immediately
           _processedRequests.add(requestId);
-          
           showDialog(
             context: context,
             barrierDismissible: false,
@@ -154,21 +125,15 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
               message: data['message'],
             ),
           ).then((accepted) {
-            if (accepted == true) {
-              authProvider.refreshUser();
-            }
+            if (accepted == true) authProvider.refreshUser();
           });
         }
       };
 
-      // Listen for link removed
       _socketService.onLinkRemoved = (data) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${data['parentName']} đã xóa liên kết với bạn'),
-              backgroundColor: Colors.orange,
-            ),
+            SnackBar(content: Text('${data['parentName']} đã xóa liên kết với bạn'), backgroundColor: Colors.orange),
           );
           authProvider.refreshUser();
         }
@@ -199,181 +164,157 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
     final userName = authProvider.user?.name ?? 'Bạn';
     
     return Scaffold(
-      // Soft UI background - Teal theme
       backgroundColor: Color(0xFFF5F7FA),
-      extendBody: true, // IMPORTANT: Extend body behind navbar for see-through effect
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.childPrimary.withOpacity(0.05),
-              Color(0xFFF5F7FA),
-              Color(0xFFF5F7FA),
-            ],
-            stops: [0.0, 0.2, 1.0],
-          ),
-        ),
-        child: SafeArea(
-          bottom: false, // Don't apply safe area to bottom (navbar handles it)
-          child: CustomScrollView(
-            physics: BouncingScrollPhysics(), // iOS-style bounce
-            slivers: [
-              // Simple header with app name and icons
-              SliverToBoxAdapter(
-                child: _buildMinimalHeader(authProvider),
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [AppColors.childPrimary.withOpacity(0.05), Color(0xFFF5F7FA), Color(0xFFF5F7FA)],
+                stops: [0.0, 0.2, 1.0],
               ),
-              
-              SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
-              
-              // Personalized Greeting
-              SliverToBoxAdapter(
-                child: _buildPersonalizedGreeting(userName),
-              ),
-              
-              // Offline Indicator (appears when no network or queued locations)
-              SliverToBoxAdapter(
-                child: ChangeNotifierProvider<LocationService>.value(
-                  value: _locationService,
-                  child: const OfflineIndicator(),
-                ),
-              ),
-              
-              SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
-              
-              // SOS Card
-              SliverToBoxAdapter(
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SlideTransition(
-                    position: _slideAnimation,
-                    child: _buildSOSCard(context),
-                  ),
-                ),
-              ),
-              
-              SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
-              
-              // Screen Time Widget
-              SliverToBoxAdapter(
-                child: _buildScreenTimeWidget(),
-              ),
-              
-              SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
-              
-              // Activity Cards Section Title
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                  child: Text(
-                    'Hoạt động của bạn',
-                    style: AppTypography.h3.copyWith(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: CustomScrollView(
+                physics: BouncingScrollPhysics(),
+                slivers: [
+                  SliverToBoxAdapter(child: _buildMinimalHeader(authProvider)),
+                  SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
+                  SliverToBoxAdapter(child: _buildPersonalizedGreeting(userName)),
+                  SliverToBoxAdapter(
+                    child: ChangeNotifierProvider<LocationService>.value(
+                      value: _locationService,
+                      child: const OfflineIndicator(),
                     ),
                   ),
-                ),
+                  SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
+                  SliverToBoxAdapter(
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SlideTransition(position: _slideAnimation, child: _buildSOSCard(context)),
+                    ),
+                  ),
+                  SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
+                  SliverToBoxAdapter(child: _buildScreenTimeWidget()),
+                  SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                      child: Text('Hoạt động của bạn', style: AppTypography.h3.copyWith(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                    ),
+                  ),
+                  SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
+                  SliverToBoxAdapter(
+                    child: FadeTransition(opacity: _fadeAnimation, child: _buildActivityGrid(context)),
+                  ),
+                  SliverToBoxAdapter(child: SizedBox(height: 100)),
+                ],
               ),
-              
-              SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
-              
-              SliverToBoxAdapter(
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: _buildActivityGrid(context),
-                ),
-              ),
-              
-              SliverToBoxAdapter(child: SizedBox(height: 100)), // Bottom padding for navbar
-            ],
+            ),
           ),
-        ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: _buildGlassNavBar(),
+          ),
+        ],
       ),
-      
-      // iOS Liquid Glass Bottom Navigation Bar
-      bottomNavigationBar: _buildLiquidGlassNavBar(),
     );
   }
 
-  /// Minimal header with app name and icons (giống Parent)
+  Widget _buildGlassNavBar() {
+    return Container(
+      decoration: BoxDecoration(
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 30, spreadRadius: -5)],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28.0),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: AppColors.surface.withOpacity(0.8),
+                border: Border.all(color: AppColors.surface.withOpacity(0.4)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: _navItems.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final item = entry.value;
+                  final isSelected = _currentIndex == index;
+
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _currentIndex = index),
+                      behavior: HitTestBehavior.opaque,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            item['icon'] as IconData,
+                            color: isSelected ? AppColors.childPrimary : AppColors.textSecondary,
+                            size: 24,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            item['label'] as String,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isSelected ? AppColors.childPrimary : AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildMinimalHeader(AuthProvider authProvider) {
-    final linkedParents = authProvider.user?.linkedUsersData
-        .where((u) => u['role'] == 'parent')
-        .toList() ?? [];
+    final linkedParents = authProvider.user?.linkedUsersData.where((u) => u['role'] == 'parent').toList() ?? [];
     
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // App name with bold typography
-          Text(
-            'SafeKids',
-            style: AppTypography.h3.copyWith(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.5,
-            ),
-          ),
+          Text('SafeKids', style: AppTypography.h3.copyWith(fontSize: 24, fontWeight: FontWeight.w700, letterSpacing: -0.5)),
           Row(
             children: [
-              // Linked parents badge
               if (linkedParents.isNotEmpty)
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.childPrimary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.childPrimary.withOpacity(0.2),
-                      width: 1,
-                    ),
+                    border: Border.all(color: AppColors.childPrimary.withOpacity(0.2), width: 1),
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.family_restroom,
-                        color: AppColors.childPrimary,
-                        size: 14,
-                      ),
+                      Icon(Icons.family_restroom, color: AppColors.childPrimary, size: 14),
                       SizedBox(width: 4),
-                      Text(
-                        '${linkedParents.length}',
-                        style: TextStyle(
-                          color: AppColors.childPrimary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      Text('${linkedParents.length}', style: AppTypography.captionSmall.copyWith(color: AppColors.childPrimary, fontWeight: FontWeight.w600)),
                     ],
                   ),
                 ),
               SizedBox(width: AppSpacing.sm),
-              // Settings button (Task 2.5)
-              _buildSoftIconButton(
-                icon: Icons.settings,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const LocationSettingsScreen(),
-                    ),
-                  );
-                },
-              ),
+              _buildSoftIconButton(icon: Icons.settings, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LocationSettingsScreen()))),
               SizedBox(width: AppSpacing.sm),
-              // Logout button
-              _buildSoftIconButton(
-                icon: Icons.logout_rounded,
-                onTap: () {
-                  _showLogoutDialog(context, authProvider);
-                },
-              ),
+              _buildSoftIconButton(icon: Icons.logout_rounded, onTap: () => _showLogoutDialog(context, authProvider)),
             ],
           ),
         ],
@@ -381,11 +322,7 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
     );
   }
   
-  /// Soft icon button with neumorphic feel
-  Widget _buildSoftIconButton({
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildSoftIconButton({required IconData icon, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -394,217 +331,28 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
         decoration: BoxDecoration(
           color: Color(0xFFF5F7FA),
           shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              offset: Offset(4, 4),
-              blurRadius: 8,
-            ),
-            BoxShadow(
-              color: Colors.white.withOpacity(0.8),
-              offset: Offset(-2, -2),
-              blurRadius: 4,
-            ),
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), offset: Offset(4, 4), blurRadius: 8), BoxShadow(color: Colors.white.withOpacity(0.8), offset: Offset(-2, -2), blurRadius: 4)],
         ),
-        child: Icon(
-          icon,
-          size: 22,
-          color: AppColors.textPrimary,
-        ),
+        child: Icon(icon, size: 22, color: AppColors.textPrimary),
       ),
     );
   }
 
-  /// iOS-style liquid glass bottom navigation bar
-  Widget _buildLiquidGlassNavBar() {
-    return Container(
-      margin: EdgeInsets.fromLTRB(16, 0, 16, 20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 30.0, sigmaY: 30.0),
-          child: Container(
-            height: 56, // Tăng từ 52 → 56 để tránh overflow
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.7),
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1.5,
-              ),
-            ),
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.xs,
-              vertical: 4, // Tăng từ 2 → 4
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(
-                  icon: Icons.home_rounded,
-                  label: 'Trang chủ',
-                  index: 0,
-                ),
-                _buildNavItem(
-                  icon: Icons.access_time_rounded,
-                  label: 'Thời gian',
-                  index: 1,
-                ),
-                _buildNavItem(
-                  icon: Icons.notifications_rounded,
-                  label: 'Thông báo',
-                  index: 2,
-                ),
-                _buildNavItem(
-                  icon: Icons.person_rounded,
-                  label: 'Cá nhân',
-                  index: 3,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-  
-  /// iOS-style liquid glass navigation item
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required int index,
-  }) {
-    final isActive = _currentIndex == index;
-    
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            _currentIndex = index;
-          });
-          // TODO: Navigate to different screens
-        },
-        behavior: HitTestBehavior.opaque,
-        child: AnimatedContainer(
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeInOutCubic,
-          padding: EdgeInsets.symmetric(vertical: 0, horizontal: 2), // Bỏ vertical padding
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Icon with liquid animation
-              AnimatedContainer(
-                duration: Duration(milliseconds: 300),
-                curve: Curves.easeInOutCubic,
-                padding: EdgeInsets.all(isActive ? 4 : 3), // Giảm: 5→4
-                decoration: isActive ? BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.childPrimary.withOpacity(0.15),
-                      AppColors.childPrimary.withOpacity(0.08),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: AppColors.childPrimary.withOpacity(0.2),
-                    width: 0.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.childPrimary.withOpacity(0.15),
-                      blurRadius: 6,
-                      offset: Offset(0, 1),
-                    ),
-                  ],
-                ) : null,
-                child: Icon(
-                  icon,
-                  color: isActive 
-                    ? AppColors.childPrimary
-                    : AppColors.textSecondary.withOpacity(0.5),
-                  size: isActive ? 22 : 20,
-                ),
-              ),
-              SizedBox(height: 1),
-              // Label text
-              AnimatedDefaultTextStyle(
-                duration: Duration(milliseconds: 300),
-                curve: Curves.easeInOutCubic,
-                style: TextStyle(
-                  fontSize: isActive ? 9 : 8.5, // Giảm: 10→9, 9→8.5
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                  color: isActive 
-                    ? AppColors.childPrimary
-                    : AppColors.textSecondary.withOpacity(0.5),
-                  height: 1.1,
-                ),
-                child: Text(label),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  
-  /// Large personalized greeting
   Widget _buildPersonalizedGreeting(String userName) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: RichText(
         text: TextSpan(
           children: [
-            TextSpan(
-              text: _getGreeting(),
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w300,
-                color: AppColors.textSecondary,
-                letterSpacing: -0.5,
-                fontFamily: 'Poppins',
-              ),
-            ),
-            TextSpan(
-              text: ', ',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w300,
-                color: AppColors.textSecondary,
-                fontFamily: 'Poppins',
-              ),
-            ),
-            TextSpan(
-              text: userName,
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-                letterSpacing: -0.5,
-                fontFamily: 'Poppins',
-              ),
-            ),
+            TextSpan(text: _getGreeting(), style: AppTypography.h1.copyWith(fontWeight: FontWeight.w300, color: AppColors.textSecondary, letterSpacing: -0.5)),
+            TextSpan(text: ', ', style: AppTypography.h1.copyWith(fontWeight: FontWeight.w300, color: AppColors.textSecondary)),
+            TextSpan(text: userName, style: AppTypography.h1.copyWith(fontWeight: FontWeight.w700, color: AppColors.textPrimary, letterSpacing: -0.5)),
           ],
         ),
       ),
     );
   }
   
-  /// Screen Time Widget for Child
   Widget _buildScreenTimeWidget() {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -612,129 +360,64 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
       decoration: BoxDecoration(
         color: Color(0xFFF5F7FA),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            offset: Offset(4, 4),
-            blurRadius: 12,
-          ),
-          BoxShadow(
-            color: Colors.white.withOpacity(0.9),
-            offset: Offset(-3, -3),
-            blurRadius: 10,
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), offset: Offset(4, 4), blurRadius: 12), BoxShadow(color: Colors.white.withOpacity(0.9), offset: Offset(-3, -3), blurRadius: 10)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
-                  Icon(
-                    Icons.phone_android,
-                    color: AppColors.childPrimary,
-                    size: 24,
-                  ),
+                  Icon(Icons.phone_android, color: AppColors.childPrimary, size: 24),
                   SizedBox(width: 8),
-                  Text(
-                    'Thời gian hôm nay',
-                    style: AppTypography.h3.copyWith(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
+                  Text('Thời gian hôm nay', style: AppTypography.h3.copyWith(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                 ],
               ),
             ],
           ),
-          
           SizedBox(height: AppSpacing.md),
-          
-          // Time display
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
                 '2.3',
-                style: TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.childPrimary,
-                  height: 1,
-                ),
+                style: AppTypography.display1.copyWith(fontSize: 48, fontWeight: FontWeight.w700, color: AppColors.childPrimary, height: 1),
               ),
               SizedBox(width: 4),
-              Padding(
-                padding: EdgeInsets.only(bottom: 8),
-                child: Text(
-                  'giờ',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ),
+              Padding(                padding: EdgeInsets.only(bottom: 8),                child: Text(                  'giờ',                  style: AppTypography.h3.copyWith(fontSize: 20, fontWeight: FontWeight.w500, color: AppColors.textSecondary),                ),              ),
               Spacer(),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
+                      Text(
                     'Giới hạn: 3.0 giờ',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
+                    style: AppTypography.label.copyWith(color: AppColors.textSecondary),
                   ),
                   SizedBox(height: 4),
                   Text(
                     'Còn lại: 0.7 giờ',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.success,
-                    ),
+                    style: AppTypography.label.copyWith(fontWeight: FontWeight.w600, color: AppColors.success),
                   ),
                 ],
               ),
             ],
           ),
-          
           SizedBox(height: AppSpacing.md),
-          
-          // Progress bar
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Container(
               height: 12,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(8),
-              ),
+              decoration: BoxDecoration(color: AppColors.surfaceVariant, borderRadius: BorderRadius.circular(8)),
               child: FractionallySizedBox(
                 alignment: Alignment.centerLeft,
                 widthFactor: 0.77,
                 child: Container(
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.childPrimary,
-                        AppColors.childPrimary.withOpacity(0.8),
-                      ],
-                    ),
+                    gradient: LinearGradient(colors: [AppColors.childPrimary, AppColors.childPrimary.withOpacity(0.8)]),
                     borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.childPrimary.withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: Offset(0, 1),
-                      ),
-                    ],
+                    boxShadow: [BoxShadow(color: AppColors.childPrimary.withOpacity(0.3), blurRadius: 4, offset: Offset(0, 1))],
                   ),
                 ),
               ),
@@ -748,30 +431,11 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
   Widget _buildSOSCard(BuildContext context) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      height: 140, // Tăng chiều cao để nổi bật hơn
+      height: 140,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFFF5252), // Đỏ sáng hơn
-            Color(0xFFE91E63), // Hồng đỏ
-          ],
-        ),
+        gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFFFF5252), Color(0xFFE91E63)]),
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.danger.withOpacity(0.4),
-            blurRadius: 24,
-            offset: Offset(0, 8),
-            spreadRadius: 2,
-          ),
-          BoxShadow(
-            color: AppColors.danger.withOpacity(0.2),
-            blurRadius: 40,
-            offset: Offset(0, 16),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: AppColors.danger.withOpacity(0.4), blurRadius: 24, offset: Offset(0, 8), spreadRadius: 2), BoxShadow(color: AppColors.danger.withOpacity(0.2), blurRadius: 40, offset: Offset(0, 16))],
       ),
       child: Material(
         color: Colors.transparent,
@@ -779,32 +443,14 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
           onTap: () => _handleSOSPress(context),
           borderRadius: BorderRadius.circular(24),
           child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.md,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
             child: Row(
               children: [
-                // Icon SOS lớn với animation pulse
                 Container(
                   width: 80,
                   height: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.emergency,
-                    color: Color(0xFFFF5252),
-                    size: 44,
-                  ),
+                  decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: Offset(0, 4))]),
+                  child: Icon(Icons.emergency, color: Color(0xFFFF5252), size: 44),
                 ),
                 SizedBox(width: AppSpacing.lg),
                 Expanded(
@@ -814,40 +460,19 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
                     children: [
                       Text(
                         'KHẨN CẤP',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.5,
-                        ),
+                        style: AppTypography.overline.copyWith(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.5),
                       ),
                       SizedBox(height: 4),
-                      Text(
-                        'Nút SOS',
-                        style: AppTypography.h2.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 28,
-                          height: 1.1,
-                        ),
-                      ),
+                      Text('Nút SOS', style: AppTypography.h2.copyWith(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 28, height: 1.1)),
                       SizedBox(height: 4),
                       Text(
                         'Nhấn để gửi cảnh báo ngay',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.95),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: AppTypography.caption.copyWith(color: Colors.white.withOpacity(0.95), fontWeight: FontWeight.w500),
                       ),
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
+                Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 20),
               ],
             ),
           ),
@@ -861,33 +486,13 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: Column(
         children: [
-          _buildActivityCard(
-            Icons.access_time_rounded,
-            'Thời gian sử dụng',
-            'Xem thời gian bạn đã dùng thiết bị',
-            AppColors.childAccent,
-          ),
+          _buildActivityCard(Icons.access_time_rounded, 'Thời gian sử dụng', 'Xem thời gian bạn đã dùng thiết bị', AppColors.childAccent),
           SizedBox(height: AppSpacing.md),
-          _buildActivityCard(
-            Icons.chat_bubble_rounded,
-            'Tin nhắn',
-            'Chat với ba mẹ và gia đình',
-            AppColors.childPrimary,
-          ),
+          _buildActivityCard(Icons.chat_bubble_rounded, 'Tin nhắn', 'Chat với ba mẹ và gia đình', AppColors.childPrimary),
           SizedBox(height: AppSpacing.md),
-          _buildActivityCard(
-            Icons.assignment_rounded,
-            'Nhiệm vụ',
-            'Hoàn thành nhiệm vụ hàng ngày',
-            AppColors.info,
-          ),
+          _buildActivityCard(Icons.assignment_rounded, 'Nhiệm vụ', 'Hoàn thành nhiệm vụ hàng ngày', AppColors.info),
           SizedBox(height: AppSpacing.md),
-          _buildActivityCard(
-            Icons.stars_rounded,
-            'Phần thưởng',
-            'Nhận thưởng khi hoàn thành tốt',
-            AppColors.warning,
-          ),
+          _buildActivityCard(Icons.stars_rounded, 'Phần thưởng', 'Nhận thưởng khi hoàn thành tốt', AppColors.warning),
         ],
       ),
     );
@@ -899,27 +504,13 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
       decoration: BoxDecoration(
         color: Color(0xFFF5F7FA),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            offset: Offset(4, 4),
-            blurRadius: 12,
-          ),
-          BoxShadow(
-            color: Colors.white.withOpacity(0.9),
-            offset: Offset(-3, -3),
-            blurRadius: 10,
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), offset: Offset(4, 4), blurRadius: 12), BoxShadow(color: Colors.white.withOpacity(0.9), offset: Offset(-3, -3), blurRadius: 10)],
       ),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
+            decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
             child: Icon(icon, color: color, size: 28),
           ),
           SizedBox(width: AppSpacing.md),
@@ -929,36 +520,19 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
               children: [
                 Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
+                  style: AppTypography.body.copyWith(fontWeight: FontWeight.w600, color: AppColors.textPrimary),
                 ),
                 SizedBox(height: 4),
-                Text(
-                  description,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
+                Text(description, style: AppTypography.caption.copyWith(color: AppColors.textSecondary)),
               ],
             ),
           ),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.warning.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
+            decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
             child: Text(
               'Sắp có',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: AppColors.warning,
-              ),
+              style: AppTypography.overline.copyWith(fontWeight: FontWeight.w600, color: AppColors.warning),
             ),
           ),
         ],
@@ -967,12 +541,7 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
   }
 
   void _handleSOSPress(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('🆘 Tính năng SOS đang được phát triển'),
-        backgroundColor: AppColors.danger,
-      ),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('🆘 Tính năng SOS đang được phát triển'), backgroundColor: AppColors.danger));
   }
 
   void _showLogoutDialog(BuildContext context, AuthProvider authProvider) async {
@@ -982,14 +551,8 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
         title: Text('Đăng xuất'),
         content: Text('Bạn có chắc chắn muốn đăng xuất?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Hủy'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text('Đăng xuất', style: TextStyle(color: AppColors.danger)),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Hủy')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text('Đăng xuất', style: AppTypography.button.copyWith(color: AppColors.danger))),
         ],
       ),
     );

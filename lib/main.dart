@@ -3,11 +3,17 @@ import 'package:provider/provider.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'providers/auth_provider.dart';
+import 'providers/notification_provider.dart';
+import 'services/notification_service.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/parent/parent_dashboard_screen.dart';
 import 'screens/child/child_home_screen.dart';
 import 'theme/app_theme.dart';
+
+// Global navigator key
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +28,15 @@ void main() async {
   } catch (e, stackTrace) {
     debugPrint('❌ Firebase init error: $e');
     debugPrint('❌ Stack trace: $stackTrace');
+  }
+
+  // Initialize Notification Service for FCM (Story 3.2)
+  debugPrint('🔔 Initializing Notification Service...');
+  try {
+    await NotificationService().initialize();
+    debugPrint('✅ Notification Service initialized');
+  } catch (e) {
+    debugPrint('❌ Notification Service init error: $e');
   }
 
   // Initialize Hive for offline storage
@@ -41,6 +56,7 @@ class SafeKidsApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()..init()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
@@ -52,6 +68,7 @@ class SafeKidsApp extends StatelessWidget {
             title: 'SafeKids',
             debugShowCheckedModeBanner: false,
             theme: themeData,
+            navigatorKey: navigatorKey,
             home: const AuthGate(),
           );
         },

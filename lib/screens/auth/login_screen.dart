@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Expanded(
                 child: Text(
                   errorMsg,
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                  style: AppTypography.subtitle.copyWith(color: Colors.white),
                 ),
               ),
             ],
@@ -89,11 +89,11 @@ class _LoginScreenState extends State<LoginScreen> {
         child: SingleChildScrollView(
           physics: BouncingScrollPhysics(),
           child: Container(
-            height: screenHeight - MediaQuery.of(context).padding.top,
             padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
             child: Form(
               key: _formKey,
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // Top Spacer
                   SizedBox(height: screenHeight * 0.08),
@@ -108,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   _buildLoginForm(),
                   
                   // Bottom Actions
-                  Spacer(),
+                  SizedBox(height: 24),
                   _buildRegisterLink(),
                   SizedBox(height: 32),
                 ],
@@ -281,27 +281,17 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
+          style: AppTypography.label,
         ),
         SizedBox(height: 8),
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
           obscureText: obscureText,
-          style: TextStyle(
-            fontSize: 16,
-            color: AppColors.textPrimary,
-          ),
+          style: AppTypography.body,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(
-              color: AppColors.textLight,
-              fontSize: 15,
-            ),
+            hintStyle: AppTypography.bodySmall.copyWith(color: AppColors.textLight),
             prefixIcon: Icon(prefixIcon, color: AppColors.parentPrimary, size: AppSpacing.iconSm),
             suffixIcon: suffixIcon,
             filled: true,
@@ -362,11 +352,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   )
                 : Text(
                     'Đăng nhập',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.3,
-                    ),
+                    style: AppTypography.buttonLarge.copyWith(color: Colors.white, letterSpacing: 0.3),
                   ),
           ),
         );
@@ -380,10 +366,7 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         Text(
           'Chưa có tài khoản? ',
-          style: TextStyle(
-            fontSize: 15,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
         ),
         TextButton(
           onPressed: () {
@@ -401,13 +384,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           child: Text(
             'Đăng ký ngay',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: AppColors.parentPrimary,
-              decoration: TextDecoration.underline,
-              decorationColor: AppColors.parentPrimary,
-            ),
+            style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w700, color: AppColors.parentPrimary, decoration: TextDecoration.underline, decorationColor: AppColors.parentPrimary),
           ),
         ),
       ],

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -111,7 +112,7 @@ class AuthService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $_token',
         },
-      );
+      ).timeout(Duration(seconds: 10)); // Add timeout
 
       final data = jsonDecode(response.body);
 
@@ -122,6 +123,9 @@ class AuthService {
       } else {
         return {'success': false, 'message': data['message'] ?? data['error'] ?? 'Failed to fetch profile'};
       }
+    } on TimeoutException catch (e) {
+      // Timeout = network issue, not auth error
+      return {'success': false, 'message': 'Network timeout: $e'};
     } catch (e) {
       return {'success': false, 'message': 'Network error: $e'};
     }

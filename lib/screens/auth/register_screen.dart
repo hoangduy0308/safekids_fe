@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import 'login_screen.dart';
+import '../../theme/app_typography.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -300,12 +301,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
+          'Chọn vai trò',
+          style: AppTypography.label,
         ),
         SizedBox(height: AppSpacing.xs),
         TextFormField(
@@ -353,12 +350,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Vai trò',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
+          'Chọn vai trò',
+          style: AppTypography.label,
         ),
         SizedBox(height: 8),
         Row(
@@ -459,12 +452,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   )
                 : Text(
                     'Đăng ký',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
+                    style: AppTypography.buttonLarge.copyWith(color: Colors.white, letterSpacing: 0.3),                  ),
           ),
         );
       },
@@ -477,11 +465,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       children: [
         Text(
           'Đã có tài khoản? ',
-          style: TextStyle(
-            fontSize: 15,
-            color: AppColors.textSecondary,
-          ),
-        ),
+          style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),        ),
         TextButton(
           onPressed: () {
             Navigator.pushReplacement(
@@ -498,14 +482,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           child: Text(
             'Đăng nhập',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: AppColors.parentPrimary,
-              decoration: TextDecoration.underline,
-              decorationColor: AppColors.parentPrimary,
-            ),
-          ),
+            style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w700, color: AppColors.parentPrimary, decoration: TextDecoration.underline, decorationColor: AppColors.parentPrimary),          ),
         ),
       ],
     );

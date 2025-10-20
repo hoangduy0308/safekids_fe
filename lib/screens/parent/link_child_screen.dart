@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../providers/auth_provider.dart';
 
 class LinkChildScreen extends StatefulWidget {
   const LinkChildScreen({Key? key}) : super(key: key);
@@ -83,6 +85,11 @@ class _LinkChildScreenState extends State<LinkChildScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(height: AppSpacing.md),
+                
+                // Linked Children Section
+                _buildLinkedChildrenSection(),
+                
+                SizedBox(height: AppSpacing.xl),
                 
                 // Icon
                 Container(
@@ -302,6 +309,55 @@ class _LinkChildScreenState extends State<LinkChildScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildLinkedChildrenSection() {
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, child) {
+        // Get linked children from AuthProvider
+        final linkedChildren = authProvider.user?.linkedUsersData ?? [];
+        
+        // Filter for children only (role == 'child')
+        final childrenList = linkedChildren
+            .where((user) => user['role'] == 'child')
+            .toList();
+        
+        if (childrenList.isEmpty) {
+          return SizedBox.shrink();
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Các con em đã liên kết',
+              style: AppTypography.h3.copyWith(color: AppColors.textPrimary),
+            ),
+            SizedBox(height: AppSpacing.md),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: childrenList.length,
+              itemBuilder: (context, index) {
+                final child = childrenList[index];
+                final name = child['name'] ?? child['fullName'] ?? 'Unknown';
+                final email = child['email'] ?? '';
+                final initial = name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?';
+                
+                return ListTile(
+                  leading: CircleAvatar(
+                    child: Text(initial),
+                  ),
+                  title: Text(name),
+                  subtitle: Text(email),
+                  trailing: Icon(Icons.check_circle, color: AppColors.success),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

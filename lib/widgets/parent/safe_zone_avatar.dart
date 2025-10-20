@@ -129,12 +129,12 @@ class SafeZoneAvatar extends StatelessWidget {
       child: Center(
         child: Text(
           childName.isNotEmpty ? childName[0].toUpperCase() : '?',
-          style: TextStyle(
+          style: AppTypography.h1.copyWith(
             fontSize: size / 2.5,
             fontWeight: FontWeight.w600,
             color: AppColors.textOnPrimary,
           ),
-        ),
+      ),
       ),
     );
   }
@@ -147,9 +147,8 @@ class SafeZoneAvatar extends StatelessWidget {
         if (locationIcon != null)
           Text(
             locationIcon!,
-            style: TextStyle(fontSize: 11),
-          ),
-        if (locationIcon != null && locationName != null)
+            style: AppTypography.overline,
+          ),        if (locationIcon != null && locationName != null)
           SizedBox(width: 2),
         if (locationName != null)
           Flexible(

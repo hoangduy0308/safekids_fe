@@ -73,12 +73,10 @@ class _LocationTrackingIndicatorState extends State<LocationTrackingIndicator>
           SizedBox(width: 8),
           Text(
             _getStatusText(),
-            style: TextStyle(
-              fontSize: 13,
+            style: AppTypography.caption.copyWith(
               fontWeight: FontWeight.w600,
               color: _getTextColor(),
-            ),
-          ),
+            ),          ),
           if (widget.isOffline && widget.queuedLocations > 0) ...[
             SizedBox(width: 6),
             Container(
@@ -89,12 +87,7 @@ class _LocationTrackingIndicatorState extends State<LocationTrackingIndicator>
               ),
               child: Text(
                 '${widget.queuedLocations}',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.warning,
-                ),
-              ),
+                style: AppTypography.overline.copyWith(fontWeight: FontWeight.w700, color: AppColors.warning),              ),
             ),
           ],
         ],

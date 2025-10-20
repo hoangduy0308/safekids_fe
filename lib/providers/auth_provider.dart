@@ -27,18 +27,48 @@ class AuthProvider extends ChangeNotifier {
 
     await _authService.init(); // Load token and user from local storage
 
-    // If a token is loaded, verify it with the backend
+    // If a token is loaded, try to verify it with the backend
+    // But if offline, trust the cached auth (don't force logout)
     if (_authService.isAuthenticated) {
+      debugPrint('[AuthProvider] 📍 Token found, verifying with backend...');
       final result = await _authService.getMe(); // API call to verify user
+      debugPrint('[AuthProvider] 🔍 getMe() result: ${result['message']}'); // DEBUG
+      
       if (result['success']) {
+        debugPrint('[AuthProvider] ✅ User verified successfully');
         _user = _authService.currentUser;
         if (_user?.id != null) {
           _socketService.connect(_user!.id);
         }
       } else {
-        // Verification failed (e.g., user deleted from DB). Log out.
-        await _authService.logout();
-        _user = null;
+        final errorMsg = result['message'] ?? '';
+        debugPrint('[AuthProvider] ❓ Error message: "$errorMsg"'); // DEBUG: Show full message
+        
+        // Check if error is network-related (offline) or auth-related (invalid token)
+        final isNetworkError = errorMsg.contains('Network error') || 
+                               errorMsg.contains('timeout') ||
+                               errorMsg.contains('TimeoutException') ||
+                               errorMsg.contains('ClientException') ||
+                               errorMsg.contains('SocketException') ||
+                               errorMsg.contains('Connection refused') ||
+                               errorMsg.contains('Failed host lookup');
+        final isConnectionError = errorMsg.contains('Không thể kết nối') ||
+                                   errorMsg.contains('connection') ||
+                                   errorMsg.contains('offline');
+        
+        debugPrint('[AuthProvider] isNetworkError=$isNetworkError, isConnectionError=$isConnectionError'); // DEBUG
+        
+        if (isNetworkError || isConnectionError) {
+          // ✅ FIX: Offline - trust cached token and user data
+          debugPrint('[AuthProvider] ⚠️ Offline mode: Using cached auth data');
+          _user = _authService.currentUser;
+          // Don't connect socket offline - will reconnect when online
+        } else {
+          // ❌ Real auth error (token expired/invalid, user deleted from DB)
+          debugPrint('[AuthProvider] ❌ Auth verification failed: $errorMsg - LOGGING OUT');
+          await _authService.logout();
+          _user = null;
+        }
       }
     }
 

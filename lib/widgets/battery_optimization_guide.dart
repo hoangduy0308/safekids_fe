@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 import 'package:app_settings/app_settings.dart';
-
+import '../../theme/app_typography.dart';
 /// Battery Optimization Guide (Task 2.6.4)
 class BatteryOptimizationGuide {
   static Future<void> showGuideIfNeeded(BuildContext context) async {
@@ -31,24 +31,24 @@ class BatteryOptimizationGuide {
                 color: Colors.orange,
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'SafeKids cần tắt tối ưu hóa pin để theo dõi liên tục khi ứng dụng đóng.',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: AppTypography.body.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Điều này đảm bảo bạn luôn được bảo vệ.',
-                style: TextStyle(color: Colors.grey, fontSize: 12),
+                style: AppTypography.captionSmall.copyWith(color: Colors.grey),
               ),
               const SizedBox(height: 16),
               if (Platform.isAndroid) ...[
-                const Text('📱 Android:', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('📱 Android:', style: AppTypography.body.copyWith(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 _buildTip('Vô hiệu hóa "Pin Saver" cho SafeKids'),
                 _buildTip('Thêm vào "Never Sleeping Apps" (nếu dùng Samsung)'),
               ],
               if (Platform.isIOS) ...[
-                const Text('🍎 iOS:', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('🍎 iOS:', style: AppTypography.body.copyWith(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 _buildTip('Bật "Background App Refresh"'),
                 _buildTip('Cho phép "Always" vị trí'),
@@ -79,8 +79,8 @@ class BatteryOptimizationGuide {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('• ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 13))),
+          Text('• ', style: AppTypography.body.copyWith(fontWeight: FontWeight.bold)),
+          Expanded(child: Text(text, style: AppTypography.caption)),
         ],
       ),
     );

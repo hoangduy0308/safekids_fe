@@ -5,11 +5,18 @@ import '../../services/api_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../widgets/parent/child_location_map.dart';
+import '../../models/child_detail_data.dart';
+import '../../widgets/parent/geofence_suggestions_section.dart';
+import 'geofence_list_screen.dart';
+import 'dart:ui';
+import '../../theme/app_typography.dart';
 
-/// Dedicated map screen with path visualization controls (Task 2.4)
+
+/// Dedicated map screen with sliding detail panel
 class ChildMapScreen extends StatefulWidget {
   final String childId;
   final String childName;
+  final ChildDetailData childDetail; // Pass the whole data object
   final location_model.Location? selectedLocation;
   final location_model.Location? previousLocation;
 
@@ -17,6 +24,7 @@ class ChildMapScreen extends StatefulWidget {
     Key? key,
     required this.childId,
     required this.childName,
+    required this.childDetail,
     this.selectedLocation,
     this.previousLocation,
   }) : super(key: key);
@@ -26,214 +34,271 @@ class ChildMapScreen extends StatefulWidget {
 }
 
 class _ChildMapScreenState extends State<ChildMapScreen> {
-  bool _showPath = false;
-  int _pathHours = 2;
-  List<dynamic>? _pathLocations;
-  bool _pathLoading = false;
-
-  /// Load path data for child
-  Future<void> _loadPathData() async {
-    setState(() => _pathLoading = true);
-    
-    try {
-      final startDate = DateTime.now().subtract(Duration(hours: _pathHours));
-      final endDate = DateTime.now();
-      
-      print('[PATH_LOAD_MAP] Fetching path for ${widget.childName}, hours=$_pathHours');
-      
-      final apiService = ApiService();
-      final locations = await apiService.getLocationHistory(
-        widget.childId,
-        startDate.toIso8601String(),
-        endDate.toIso8601String(),
-        limit: 500,
-      );
-
-      if (locations.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Không có dữ liệu đường đi')),
-          );
-        }
-      }
-
-      // Sort by timestamp ASC for path drawing
-      locations.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-
-      print('[PATH_LOAD_MAP] Loaded ${locations.length} locations');
-
-      if (mounted) {
-        setState(() {
-          _pathLocations = locations;
-          _pathLoading = false;
-        });
-      }
-    } catch (e) {
-      print('[PATH_LOAD_MAP] Error: $e');
-      if (mounted) {
-        setState(() => _pathLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $e')),
-        );
-      }
-    }
-  }
-
-  /// Toggle path visualization
-  void _togglePath(bool value) async {
-    setState(() => _showPath = value);
-    
-    if (value) {
-      await _loadPathData();
-    } else {
-      setState(() {
-        _pathLocations = null;
-      });
-    }
-  }
+  // This state is now managed inside the draggable sheet
+  // bool _showPath = false;
+  // int _pathHours = 2;
+  // List<dynamic>? _pathLocations;
+  // bool _pathLoading = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('${widget.childName} - Bản Đồ'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Column(
+      // Using a Stack to layer the map and the sliding panel
+      body: Stack(
         children: [
-          // Path toggle widget
-          Container(
-            padding: EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: Color(0xFFF5F7FA),
-              border: Border(
-                bottom: BorderSide(
-                  color: AppColors.parentPrimary.withOpacity(0.1),
-                  width: 1,
-                ),
-              ),
-            ),
-            child: Column(
-              children: [
-                // Toggle switch row
-                Row(
-                  children: [
-                    Icon(
-                      Icons.route,
-                      color: _showPath ? AppColors.parentPrimary : AppColors.textSecondary,
-                      size: 20,
-                    ),
-                    SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Text(
-                        'Hiển thị đường đi',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                    Switch(
-                      value: _showPath,
-                      onChanged: _togglePath,
-                      activeColor: AppColors.parentPrimary,
-                    ),
-                  ],
-                ),
-                // Time range dropdown (only show if enabled)
-                if (_showPath) ...[
-                  SizedBox(height: AppSpacing.md),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.access_time,
-                        color: AppColors.textSecondary,
-                        size: 18,
-                      ),
-                      SizedBox(width: AppSpacing.md),
-                      Text(
-                        'Khoảng thời gian:',
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      Spacer(),
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.parentPrimary.withOpacity(0.2),
-                            width: 1,
-                          ),
-                        ),
-                        child: DropdownButton<int>(
-                          value: _pathHours,
-                          underline: SizedBox.shrink(),
-                          items: [1, 2, 6, 12, 24].map((hours) {
-                            return DropdownMenuItem(
-                              value: hours,
-                              child: Text(
-                                '$hours h',
-                                style: GoogleFonts.poppins(fontSize: 13),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() => _pathHours = value);
-                              _loadPathData(); // Reload with new time range
-                            }
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  // Loading/status indicator
-                  if (_pathLoading)
-                    Padding(
-                      padding: EdgeInsets.only(top: AppSpacing.md),
-                      child: SizedBox(
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation(AppColors.parentPrimary),
-                        ),
-                      ),
-                    ),
-                  if (!_pathLoading && _pathLocations != null && _pathLocations!.isNotEmpty)
-                    Padding(
-                      padding: EdgeInsets.only(top: AppSpacing.md),
-                      child: Text(
-                        '${_pathLocations!.length} điểm theo dõi',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                ],
-              ],
-            ),
+          // The map is the background
+          ChildLocationMap(
+            focusedChildId: widget.childId,
+            selectedLocation: widget.selectedLocation,
+            previousLocation: widget.previousLocation,
+            // Path visualization can be controlled from the panel
+            // showPath: _showPath,
+            // pathLocations: _showPath ? _pathLocations : null,
           ),
-          // Map
-          Expanded(
-            child: ChildLocationMap(
-              focusedChildId: widget.childId,
-              selectedLocation: widget.selectedLocation,
-              previousLocation: widget.previousLocation,
-              showPath: _showPath,
-              pathLocations: _showPath ? _pathLocations : null,
+
+          // The sliding panel for details
+          DraggableScrollableSheet(
+            initialChildSize: 0.175, // Fine-tuned "peek" state
+            minChildSize: 0.175,      // Fine-tuned "peek" state
+            maxChildSize: 0.9,       // Can be expanded to 90%
+            builder: (BuildContext context, ScrollController scrollController) {
+              return ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(28),
+                  topRight: Radius.circular(28),
+                ),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surface.withOpacity(0.8),
+                    ),
+                    child: _buildDetailContent(scrollController),
+                  ),
+                ),
+              );
+            },
+          ),
+          
+          // Floating AppBar
+          Positioned(
+            top: MediaQuery.of(context).padding.top,
+            left: 0,
+            right: 0,
+            child: AppBar(
+              title: Text(widget.childName),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: CircleAvatar(
+                  backgroundColor: AppColors.surface.withOpacity(0.8),
+                  child: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+                ),
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  // This method builds the content inside the draggable sheet
+  Widget _buildDetailContent(ScrollController scrollController) {
+    // Re-using the widgets from the original ChildDetailSheet
+    final child = widget.childDetail;
+
+    return ListView(
+      controller: scrollController,
+      padding: EdgeInsets.zero,
+      children: [
+        // Handle bar
+        Center(
+          child: Container(
+            margin: EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.lg),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.divider.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+
+        // Action Buttons are now at the top
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: _buildActionButtons(context),
+        ),
+
+        SizedBox(height: AppSpacing.lg),
+
+        // The rest of the details
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: Column(
+            children: [
+              // Row 1: Battery + Screen Time
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoCard(
+                      icon: Icons.battery_charging_full_rounded,
+                      iconColor: _getBatteryColor(),
+                      title: 'Pin',
+                      value: '${child.batteryLevel ?? 0}%',
+                      subtitle: _getBatteryStatus(),
+                      backgroundColor: _getBatteryColor().withOpacity(0.1),
+                    ),
+                  ),
+                  SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: _buildInfoCard(
+                      icon: Icons.phone_android_rounded,
+                      iconColor: AppColors.info,
+                      title: 'Thời gian sử dụng',
+                      value: '${child.screenTimeMinutes ~/ 60}h ${child.screenTimeMinutes % 60}m',
+                      subtitle: 'Giới hạn: ${child.screenTimeLimit}h',
+                      backgroundColor: AppColors.info.withOpacity(0.1),
+                    ),
+                  ),
+                ],
+              ),
+
+              SizedBox(height: AppSpacing.md),
+
+              // Row 2: Location info card (full width)
+              _buildLocationCard(),
+
+              SizedBox(height: AppSpacing.lg),
+
+              // Geofence Suggestions Section (Story 3.5)
+              GeofenceSuggestionsSection(
+                key: ValueKey(child.childId),
+                childId: child.childId,
+                onCreateGeofence: () {
+                  Navigator.pop(context); // Close map screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const GeofenceListScreen()),
+                  );
+                },
+              ),
+
+              SizedBox(height: AppSpacing.xl), // More space at the bottom
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // --- Helper methods copied from ChildDetailSheet ---
+
+  Widget _buildActionButtons(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _buildActionButton(icon: Icons.call_rounded, label: 'Gọi', color: Colors.green),
+        _buildActionButton(icon: Icons.message_rounded, label: 'Nhắn tin', color: Colors.blue),
+        _buildActionButton(icon: Icons.navigation_rounded, label: 'Chỉ đường', color: Colors.purple),
+        _buildActionButton(icon: Icons.history_rounded, label: 'Lịch sử', color: Colors.orange),
+      ],
+    );
+  }
+
+  Widget _buildActionButton({ required IconData icon, required String label, required Color color, VoidCallback? onTap }) {
+    return GestureDetector(
+      onTap: onTap ?? () {},
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
+              shape: BoxShape.circle,
+              border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+            ),
+            child: Icon(icon, color: color, size: 28),
+          ),
+          SizedBox(height: 8),
+          Text(label, style: AppTypography.captionSmall.copyWith(fontWeight: FontWeight.w600, color: color)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard({ required IconData icon, required Color iconColor, required String title, required String value, required String subtitle, required Color backgroundColor }) {
+    return Container(
+      padding: EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: iconColor.withOpacity(0.2), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(color: iconColor.withOpacity(0.2), borderRadius: BorderRadius.circular(10)),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          SizedBox(height: AppSpacing.sm),
+          Text(value, style: AppTypography.h3.copyWith(fontWeight: FontWeight.w700, color: Colors.black87)),
+          SizedBox(height: 2),
+          Text(title, style: AppTypography.captionSmall.copyWith(fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+          SizedBox(height: 2),
+          Text(subtitle, style: AppTypography.overline.copyWith(color: AppColors.textTertiary)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLocationCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.info.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.info.withOpacity(0.2), width: 1),
+      ),
+      padding: EdgeInsets.all(AppSpacing.md),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(color: AppColors.info.withOpacity(0.2), borderRadius: BorderRadius.circular(10)),
+            child: Icon(Icons.location_on_rounded, color: AppColors.info, size: 20),
+          ),
+          SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: SelectableText(
+              widget.childDetail.locationName,
+              style: AppTypography.label.copyWith(fontWeight: FontWeight.w600, color: AppColors.textPrimary, height: 1.5),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getBatteryColor() {
+    final level = widget.childDetail.batteryLevel;
+    if (level == null) return AppColors.textSecondary;
+    if (level > 50) return AppColors.success;
+    if (level > 20) return AppColors.warning;
+    return AppColors.danger;
+  }
+
+  String _getBatteryStatus() {
+    final level = widget.childDetail.batteryLevel;
+    if (level == null) return 'Chưa cập nhật';
+    if (level > 50) return 'Bình thường';
+    if (level > 20) return 'Tiết kiệm';
+    if (level > 10) return 'Siêu tiết kiệm';
+    return 'Khẩn cấp';
   }
 }

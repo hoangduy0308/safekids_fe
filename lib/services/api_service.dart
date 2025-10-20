@@ -645,6 +645,236 @@ class ApiService {
     }
   }
 
+  /// Get child battery level (Task 2.6.6)
+  Future<int> getChildBatteryLevel(String childId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/child/$childId/battery'),
+        headers: headers,
+      );
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      return (data['data']['batteryLevel'] as int?) ?? 0;
+    } catch (e) {
+      print('Get battery level error: $e');
+      return 0;
+    }
+  }
+
+  /// Get geofence suggestions for a child (Story 3.5)
+  Future<List<Map<String, dynamic>>> getGeofenceSuggestions(String childId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/geofence/suggestions/$childId'),
+        headers: headers,
+      );
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      return List<Map<String, dynamic>>.from(data['data']['suggestions'] ?? []);
+    } catch (e) {
+      print('Get geofence suggestions error: $e');
+      rethrow;
+    }
+  }
+
+  /// Dismiss a geofence suggestion (Story 3.5)
+  Future<void> dismissSuggestion(
+    String childId,
+    double latitude,
+    double longitude,
+  ) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/geofence/suggestions/dismiss'),
+        headers: headers,
+        body: jsonEncode({
+          'childId': childId,
+          'latitude': latitude,
+          'longitude': longitude,
+        }),
+      );
+
+      _handleError(response);
+    } catch (e) {
+      print('Dismiss suggestion error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get my linked children
+  Future<List<Map<String, dynamic>>> getMyChildren() async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse(ApiConfig.getMyChildren),
+        headers: headers,
+      );
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      return List<Map<String, dynamic>>.from(data['data'] ?? []);
+    } catch (e) {
+      print('Get my children error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get all geofences for parent (optionally filtered by child)
+  Future<List<dynamic>> getGeofences({String? childId}) async {
+    try {
+      final headers = await _getHeaders();
+      final uri = childId != null
+          ? Uri.parse('${ApiConfig.baseUrl}/geofence').replace(queryParameters: {'childId': childId})
+          : Uri.parse('${ApiConfig.baseUrl}/geofence');
+      
+      final response = await http.get(uri, headers: headers);
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      return List<dynamic>.from(data['data']?['geofences'] ?? []);
+    } catch (e) {
+      print('Get geofences error: $e');
+      rethrow;
+    }
+  }
+
+  /// Create a new geofence
+  Future<Map<String, dynamic>> createGeofence({
+    required String name,
+    required String type,
+    required double centerLat,
+    required double centerLng,
+    required double radius,
+    required List<String> linkedChildren,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/geofence'),
+        headers: headers,
+        body: jsonEncode({
+          'name': name,
+          'type': type,
+          'center': {
+            'latitude': centerLat,
+            'longitude': centerLng,
+          },
+          'radius': radius,
+          'linkedChildren': linkedChildren,
+        }),
+      );
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      return Map<String, dynamic>.from(data['data'] ?? {});
+    } catch (e) {
+      print('Create geofence error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update existing geofence
+  Future<Map<String, dynamic>> updateGeofence({
+    required String geofenceId,
+    required String name,
+    required String type,
+    required double radius,
+    required List<String> linkedChildren,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.patch(
+        Uri.parse('${ApiConfig.baseUrl}/geofence/$geofenceId'),
+        headers: headers,
+        body: jsonEncode({
+          'name': name,
+          'type': type,
+          'radius': radius,
+          'linkedChildren': linkedChildren,
+        }),
+      );
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      return Map<String, dynamic>.from(data['data'] ?? {});
+    } catch (e) {
+      print('Update geofence error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get geofence alerts with filters
+  Future<Map<String, dynamic>> getGeofenceAlerts({
+    String? startDate,
+    String? endDate,
+    String? childId,
+    String? geofenceId,
+    int limit = 50,
+    int skip = 0,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final queryParams = <String, String>{};
+      
+      if (startDate != null) queryParams['startDate'] = startDate;
+      if (endDate != null) queryParams['endDate'] = endDate;
+      if (childId != null) queryParams['childId'] = childId;
+      if (geofenceId != null) queryParams['geofenceId'] = geofenceId;
+      queryParams['limit'] = limit.toString();
+      queryParams['skip'] = skip.toString();
+
+      final uri = Uri.parse('${ApiConfig.baseUrl}/geofence/alerts')
+          .replace(queryParameters: queryParams);
+      
+      final response = await http.get(uri, headers: headers);
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      return Map<String, dynamic>.from(data['data'] ?? {});
+    } catch (e) {
+      print('Get geofence alerts error: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete geofence by ID
+  Future<void> deleteGeofence(String geofenceId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.delete(
+        Uri.parse('${ApiConfig.baseUrl}/geofence/$geofenceId'),
+        headers: headers,
+      );
+
+      _handleError(response);
+    } catch (e) {
+      print('Delete geofence error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update geofence active status
+  Future<void> updateGeofenceStatus(String geofenceId, bool active) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.patch(
+        Uri.parse('${ApiConfig.baseUrl}/geofence/$geofenceId'),
+        headers: headers,
+        body: jsonEncode({'active': active}),
+      );
+
+      _handleError(response);
+    } catch (e) {
+      print('Update geofence status error: $e');
+      rethrow;
+    }
+  }
+
   /// Private helper to save token
   Future<void> _saveToken(String token) async {
     try {

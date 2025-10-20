@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../services/api_service.dart';
+import '../../theme/app_typography.dart';
 
 class LinkRequestDialog extends StatefulWidget {
   final String requestId;
@@ -131,10 +132,7 @@ class _LinkRequestDialogState extends State<LinkRequestDialog> {
             // Title
             Text(
               'Yêu cầu liên kết',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppTypography.h3.copyWith(fontWeight: FontWeight.w700),
             ),
             SizedBox(height: 12),
             
@@ -154,10 +152,7 @@ class _LinkRequestDialogState extends State<LinkRequestDialog> {
                       Expanded(
                         child: Text(
                           widget.senderName,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
@@ -170,10 +165,7 @@ class _LinkRequestDialogState extends State<LinkRequestDialog> {
                       Expanded(
                         child: Text(
                           widget.senderEmail,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
+                          style: AppTypography.label.copyWith(color: Colors.grey[600]),
                         ),
                       ),
                     ],
@@ -193,10 +185,7 @@ class _LinkRequestDialogState extends State<LinkRequestDialog> {
                 ),
                 child: Text(
                   widget.message!,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
-                  ),
+                  style: AppTypography.label.copyWith(fontStyle: FontStyle.italic),
                 ),
               ),
             ],
@@ -221,13 +210,8 @@ class _LinkRequestDialogState extends State<LinkRequestDialog> {
                       ),
                       child: Text(
                         'Từ chối',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                    ),
+                        style: AppTypography.button.copyWith(color: Colors.grey[700]),
+                      ),                    ),
                   ),
                   SizedBox(width: 12),
                   Expanded(
@@ -243,13 +227,8 @@ class _LinkRequestDialogState extends State<LinkRequestDialog> {
                       ),
                       child: Text(
                         'Chấp nhận',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                        style: AppTypography.button.copyWith(color: Colors.white),
+                      ),                    ),
                   ),
                 ],
               ),

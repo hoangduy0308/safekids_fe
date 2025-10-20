@@ -67,12 +67,7 @@ class EmptyStateWidget extends StatelessWidget {
             // Title
             Text(
               title,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-                letterSpacing: -0.3,
-              ),
+              style: AppTypography.h3.copyWith(fontWeight: FontWeight.w700, color: AppColors.textPrimary, letterSpacing: -0.3),
               textAlign: TextAlign.center,
             ),
             
@@ -81,11 +76,7 @@ class EmptyStateWidget extends StatelessWidget {
             // Message
             Text(
               message,
-              style: TextStyle(
-                fontSize: 15,
-                color: AppColors.textSecondary,
-                height: 1.5,
-              ),
+              style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary, height: 1.5),
               textAlign: TextAlign.center,
             ),
             
@@ -97,12 +88,8 @@ class EmptyStateWidget extends StatelessWidget {
                 icon: Icon(Icons.add, size: 20),
                 label: Text(
                   actionText!,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: TextButton.styleFrom(
+                  style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600),
+                ),                style: TextButton.styleFrom(
                   foregroundColor: emptyColor,
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: RoundedRectangleBorder(

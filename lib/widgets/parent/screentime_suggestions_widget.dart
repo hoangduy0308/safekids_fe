@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/api_service.dart';
-
+import 'package:safekids_app/theme/app_typography.dart';
 class ScreenTimeSuggestionsWidget extends StatelessWidget {
   final String childId;
   final Map<String, dynamic> suggestions;
@@ -20,7 +20,7 @@ class ScreenTimeSuggestionsWidget extends StatelessWidget {
       children: [
         Text(
           '💡 Gợi Ý Thông Minh',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: AppTypography.h3.copyWith(fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 16),
         
@@ -83,20 +83,18 @@ class ScreenTimeSuggestionsWidget extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
+                    style: AppTypography.body.copyWith(fontWeight: FontWeight.bold),
+                  ),                ),
               ],
             ),
             SizedBox(height: 12),
             Text(
               message,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
-            ),
-            SizedBox(height: 8),
+              style: AppTypography.h4.copyWith(fontWeight: FontWeight.bold, color: color),
+            ),            SizedBox(height: 8),
             Text(
               reasoning,
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              style: AppTypography.label.copyWith(color: Colors.grey[600]),
             ),
             SizedBox(height: 12),
             Align(
@@ -151,14 +149,12 @@ class ScreenTimeSuggestionsWidget extends StatelessWidget {
                 children: [
                   Text(
                     'Hướng Dẫn Theo Độ Tuổi',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 4),
+                    style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                  ),                  SizedBox(height: 4),
                   Text(
                     message,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                  ),
-                ],
+                    style: AppTypography.label.copyWith(color: Colors.grey[700]),
+                  ),                ],
               ),
             ),
           ],
@@ -186,22 +182,19 @@ class ScreenTimeSuggestionsWidget extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'Chế Độ Giờ Ngủ',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
+                    style: AppTypography.body.copyWith(fontWeight: FontWeight.bold),
+                  ),                ),
               ],
             ),
             SizedBox(height: 12),
             Text(
               reasoning,
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-            ),
-            SizedBox(height: 8),
+              style: AppTypography.label.copyWith(color: Colors.grey[600]),
+            ),            SizedBox(height: 8),
             Text(
               'Đề xuất: $suggestedStart - $suggestedEnd',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.indigo),
-            ),
-            SizedBox(height: 12),
+              style: AppTypography.body.copyWith(fontWeight: FontWeight.bold, color: Colors.indigo),
+            ),            SizedBox(height: 12),
             Align(
               alignment: Alignment.centerRight,
               child: ElevatedButton(

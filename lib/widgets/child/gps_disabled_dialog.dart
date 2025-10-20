@@ -30,21 +30,13 @@ class GpsDisabledDialog extends StatelessWidget {
             SizedBox(height: 20),
             Text(
               'GPS Đã Tắt',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTypography.h2.copyWith(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
             ),
             SizedBox(height: 12),
             Text(
               'Vui lòng bật GPS để SafeKids có thể theo dõi vị trí và bảo vệ bạn.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 15,
-                color: AppColors.textSecondary,
-                height: 1.5,
-              ),
+              style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary, height: 1.5),
             ),
             SizedBox(height: 24),
             SizedBox(
@@ -57,12 +49,8 @@ class GpsDisabledDialog extends StatelessWidget {
                 icon: Icon(Icons.gps_fixed, size: 20),
                 label: Text(
                   'Bật GPS',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
+                  style: AppTypography.button,
+                ),                style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.danger,
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(vertical: 14),
@@ -77,9 +65,8 @@ class GpsDisabledDialog extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
               child: Text(
                 'Đóng',
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-            ),
+                style: AppTypography.button.copyWith(color: AppColors.textSecondary),
+              ),            ),
           ],
         ),
       ),

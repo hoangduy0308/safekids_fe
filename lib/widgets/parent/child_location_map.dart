@@ -7,6 +7,7 @@ import '../../services/api_service.dart';
 import '../../services/socket_service.dart';
 import '../../utils/path_simplifier.dart';
 import '../../utils/distance_calculator.dart';
+import '../../theme/app_typography.dart';
 
 
 /// Widget hiển thị Google Maps với vị trí realtime của các child
@@ -290,7 +291,7 @@ class _ChildLocationMapState extends State<ChildLocationMap> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(location.childName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            Text(location.childName, style: AppTypography.h2.copyWith(fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () {
@@ -606,9 +607,9 @@ class _ChildLocationMapState extends State<ChildLocationMap> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Chi Tiết Đường Đi',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: AppTypography.h4.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 16),
 
@@ -671,18 +672,12 @@ class _ChildLocationMapState extends State<ChildLocationMap> {
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
+              style: AppTypography.label.copyWith(color: Colors.grey),
             ),
           ),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTypography.label.copyWith(fontWeight: FontWeight.w600),
           ),
         ],
       ),
