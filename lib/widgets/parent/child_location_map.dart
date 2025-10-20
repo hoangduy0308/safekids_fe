@@ -73,11 +73,7 @@ class _ChildLocationMapState extends State<ChildLocationMap> {
       if (mounted) {
         setState(() => _isLoading = false);
       }
-      // Call _drawPathIfNeeded after map is ready
-      Future.delayed(const Duration(milliseconds: 500), () {
-        print('[INIT] Calling _drawPathIfNeeded after delay');
-        _drawPathIfNeeded();
-      });
+      // DON'T call _drawPathIfNeeded here - wait for onMapCreated callback
     } else if (widget.showPath && widget.pathLocations != null && widget.pathLocations!.isNotEmpty) {
       // If path visualization is enabled, skip normal init
       print('[INIT] showPath=true, loading path locations');
@@ -328,8 +324,14 @@ class _ChildLocationMapState extends State<ChildLocationMap> {
           myLocationButtonEnabled: true,
           zoomControlsEnabled: true,
           onMapCreated: (controller) {
+            print('[MAP_CREATED] Google Map initialized');
             _mapController = controller;
-            if (_markers.isNotEmpty) {
+            
+            // If selectedLocation was provided, draw it now
+            if (widget.selectedLocation != null) {
+              print('[MAP_CREATED] Drawing selectedLocation');
+              _drawPathIfNeeded();
+            } else if (_markers.isNotEmpty) {
               _fitMapToMarkers();
             }
           },

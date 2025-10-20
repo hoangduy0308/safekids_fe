@@ -884,4 +884,79 @@ class ApiService {
       print('Error saving token: $e');
     }
   }
+
+  /// Trigger SOS emergency alert
+  Future<Map<String, dynamic>> triggerSOS({
+    required double latitude,
+    required double longitude,
+    double? accuracy,
+    int? batteryLevel,
+    String? networkStatus,
+    String? photoUrl,
+    String? audioUrl,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/sos/trigger'),
+        headers: headers,
+        body: jsonEncode({
+          'location': {
+            'latitude': latitude,
+            'longitude': longitude,
+            'accuracy': accuracy,
+          },
+          'batteryLevel': batteryLevel,
+          'networkStatus': networkStatus ?? 'unknown',
+          'photoUrl': photoUrl,
+          'audioUrl': audioUrl,
+        }),
+      );
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      return Map<String, dynamic>.from(data['data'] ?? {});
+    } catch (e) {
+      print('Trigger SOS error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get active SOS alerts for parent (for child)
+  Future<List<Map<String, dynamic>>> getActiveSOS() async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/sos/active'),
+        headers: headers,
+      );
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      final alerts = (data['data'] as List?) ?? [];
+      return alerts.cast<Map<String, dynamic>>();
+    } catch (e) {
+      print('Get active SOS error: $e');
+      return [];
+    }
+  }
+
+  /// Get SOS history for specific child
+  Future<List<Map<String, dynamic>>> getSOSHistory(String childId, {int limit = 10, int skip = 0}) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/sos/history/$childId?limit=$limit&skip=$skip'),
+        headers: headers,
+      );
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      final history = (data['data'] as List?) ?? [];
+      return history.cast<Map<String, dynamic>>();
+    } catch (e) {
+      print('Get SOS history error: $e');
+      return [];
+    }
+  }
 }

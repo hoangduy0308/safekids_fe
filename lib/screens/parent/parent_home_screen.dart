@@ -13,6 +13,7 @@ import '../../widgets/parent/notification_panel.dart';
 import '../../models/child_detail_data.dart';
 import '../../services/api_service.dart';
 import '../../services/geocode_service.dart';
+import '../../services/socket_service.dart';
 import 'link_child_screen.dart';
 import 'child_map_screen.dart';
 import '../../models/location.dart' as location_model;
@@ -179,10 +180,121 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
     _setupAnimations();
     _confettiController = ConfettiController(duration: const Duration(seconds: 2));
     _loadRecentStatuses();
+    _setupSocketListeners();
     // Load notifications on init
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<NotificationProvider>(context, listen: false).loadNotifications();
     });
+  }
+
+  void _setupSocketListeners() {
+    final socketService = SocketService();
+    
+    // Listen for real-time SOS alerts
+    socketService.onSosAlert = (data) {
+      print('[ParentHome] Received SOS alert: $data');
+      if (mounted) {
+        // Add SOS alert directly to UI
+        String timeStr = '';
+        if (data['timestamp'] != null) {
+          if (data['timestamp'] is DateTime) {
+            timeStr = (data['timestamp'] as DateTime).toIso8601String();
+          } else {
+            timeStr = data['timestamp'].toString();
+          }
+        } else {
+          timeStr = DateTime.now().toIso8601String();
+        }
+        
+        // Create new alert object (don't mutate existing ones)
+        final sosAlert = Map<String, dynamic>.from({
+          'name': data['childName'] ?? 'Trẻ không rõ',
+          'action': 'đã gửi tín hiệu SOS khẩn cấp 🚨',
+          'time': timeStr,
+          'icon': Icons.emergency,
+          'color': AppColors.danger,
+          'type': 'sos',
+          'sosId': data['sosId']?.toString() ?? '',
+          'timestamp': DateTime.parse(timeStr),
+        });
+        
+        setState(() {
+          // Create new list to avoid mutation bugs
+          final newStatuses = <Map<String, dynamic>>[sosAlert];
+          newStatuses.addAll(_recentStatuses);
+          
+          // Keep only top 10
+          _recentStatuses = newStatuses.take(10).toList();
+          
+          print('[ParentHome] Added SOS alert. Total: ${_recentStatuses.length}');
+        });
+      }
+    };
+
+    // Listen for geofence alerts (ra vào địa điểm an toàn/nguy hiểm)
+    socketService.onGeofenceAlert = (data) {
+      print('[ParentHome] Received geofence alert: $data');
+      if (mounted) {
+        // Add geofence alert directly to UI
+        final action = data['action'] as String? ?? '';
+        final isExit = action == 'exit' || action == 'exited';
+        final geofenceName = data['geofenceName'] as String? ?? 'vùng';
+        final zoneType = data['zoneType'] as String? ?? 'safe'; // 'safe' or 'danger'
+        final isSafeZone = zoneType == 'safe';
+        
+        // Convert timestamp to string if needed
+        String timeStr = '';
+        if (data['timestamp'] != null) {
+          if (data['timestamp'] is DateTime) {
+            timeStr = (data['timestamp'] as DateTime).toIso8601String();
+          } else {
+            timeStr = data['timestamp'].toString();
+          }
+        } else {
+          timeStr = DateTime.now().toIso8601String();
+        }
+        
+        // Determine action text based on zone type
+        String actionText = '';
+        Color alertColor;
+        IconData alertIcon;
+        
+        if (isExit) {
+          // Exit zone
+          actionText = 'đã rời khỏi ${isSafeZone ? 'vùng an toàn' : 'vùng nguy hiểm'} "$geofenceName"';
+          alertColor = isSafeZone ? AppColors.danger : AppColors.warning;
+          alertIcon = Icons.location_off;
+        } else {
+          // Enter zone
+          actionText = 'đã vào ${isSafeZone ? 'vùng an toàn' : 'vùng nguy hiểm'} "$geofenceName"';
+          alertColor = isSafeZone ? AppColors.success : AppColors.danger;
+          alertIcon = Icons.location_on;
+        }
+        
+        // Create new alert object (don't mutate existing ones)
+        final geofenceAlert = Map<String, dynamic>.from({
+          'name': data['childName'] ?? 'Trẻ không rõ',
+          'action': actionText,
+          'time': timeStr,
+          'icon': alertIcon,
+          'color': alertColor,
+          'type': 'geofence',
+          'geofenceId': data['geofenceId']?.toString() ?? '',
+          'timestamp': DateTime.parse(timeStr),
+        });
+        
+        setState(() {
+          // Create new list to avoid mutation bugs
+          final newStatuses = <Map<String, dynamic>>[geofenceAlert];
+          newStatuses.addAll(_recentStatuses);
+          
+          // Keep only top 10
+          _recentStatuses = newStatuses.take(10).toList();
+          
+          print('[ParentHome] Updated statuses. Total: ${_recentStatuses.length}');
+        });
+      }
+    };
   }
 
   void _setupAnimations() {
@@ -194,6 +306,11 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
 
   @override
   void dispose() {
+    // Clean up socket listeners
+    final socketService = SocketService();
+    socketService.onSosAlert = null;
+    socketService.onGeofenceAlert = null;
+    
     _fadeController.dispose();
     _slideController.dispose();
     _confettiController.dispose();
@@ -203,27 +320,69 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
   Future<void> _loadRecentStatuses() async {
     try {
       final apiService = ApiService();
-      final alertData = await apiService.getGeofenceAlerts(limit: 5);
-      final alerts = (alertData['alerts'] as List);
+      
+      // Load both geofence alerts and SOS alerts
+      final geofenceData = await apiService.getGeofenceAlerts(limit: 10);
+      final geofenceAlerts = (geofenceData['alerts'] as List?) ?? [];
+      final sosAlerts = await apiService.getActiveSOS();
 
       if (mounted) {
+        final allStatuses = <Map<String, dynamic>>[];
+
+        // Add geofence alerts
+        for (final alert in geofenceAlerts) {
+          final isUnsafe = alert['type'] == 'exit';
+          final childName = alert['childId']?['name'] ?? 
+                           alert['child']?['name'] ?? 
+                           alert['childId']?['fullName'] ?? 
+                           'Trẻ không rõ';
+          print('[ParentHome] Geofence alert - Child: $childName');
+          allStatuses.add({
+            'name': childName,
+            'action': isUnsafe ? 'đã rời khỏi vùng an toàn' : 'đã vào vùng an toàn',
+            'time': alert['timestamp'] ?? '',
+            'icon': isUnsafe ? Icons.location_off : Icons.location_on,
+            'color': isUnsafe ? AppColors.danger : AppColors.success,
+            'type': 'geofence',
+          });
+        }
+
+        // Add SOS alerts
+        for (final sos in sosAlerts) {
+          final childName = sos['childId']?['name'] ?? 
+                           sos['childId']?['fullName'] ?? 
+                           sos['childName'] ?? 
+                           'Trẻ không rõ';
+          print('[ParentHome] SOS alert - Child: $childName');
+          allStatuses.add({
+            'name': childName,
+            'action': 'đã gửi tín hiệu SOS khẩn cấp 🚨',
+            'time': sos['timestamp'] ?? sos['createdAt'] ?? '',
+            'icon': Icons.emergency,
+            'color': AppColors.danger,
+            'type': 'sos',
+          });
+        }
+
+        // Sort by timestamp (mới nhất trước)
+        allStatuses.sort((a, b) {
+          try {
+            final timeA = DateTime.parse(a['time'] as String? ?? '');
+            final timeB = DateTime.parse(b['time'] as String? ?? '');
+            return timeB.compareTo(timeA); // Descending (newest first)
+          } catch (_) {
+            return 0;
+          }
+        });
+
+        // Limit to 10 most recent
         setState(() {
-          _recentStatuses = alerts.map((alert) {
-            final isUnsafe = alert['type'] == 'exit';
-            return {
-              'name': alert['child']?['name'] ?? 'Một trẻ',
-              'action': isUnsafe ? 'đã rời khỏi vùng an toàn' : 'đã vào vùng an toàn',
-              'time': alert['timestamp'] ?? '',
-              'icon': isUnsafe ? Icons.location_off : Icons.location_on,
-              'color': isUnsafe ? AppColors.danger : AppColors.success,
-            };
-          }).toList();
+          _recentStatuses = allStatuses.take(10).toList();
         });
       }
     } catch (e) {
       print('Error loading statuses: $e');
       if (mounted) {
-        // Optionally show an error message to the user
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Không thể tải hoạt động gần đây')),
         );
@@ -564,8 +723,15 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
       try {
         locationData = await apiService.getChildLatestLocation(childId);
         debugPrint('[ChildDetail] Location API Response: $locationData');
+        if (locationData.isEmpty) {
+          debugPrint('[ChildDetail] Location data empty, using fallback');
+          locationData = {'data': null};
+        }
       } catch (locErr) {
         debugPrint('[ChildDetail] Location API error: $locErr - Using fallback');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi tải vị trí: $locErr')),
+        );
         locationData = {'data': null}; // Fallback
       }
 
@@ -587,17 +753,27 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
 
       // Parse location data from API response
       final location = locationData['data']?['location'];
+      debugPrint('[ChildDetail] Parsed location: $location');
+      
+      if (location == null) {
+        debugPrint('[ChildDetail] WARNING: Location is null');
+      }
+      
       final batteryLevel = (location?['batteryLevel'] ?? location?['battery'] ?? 75) as int;
       
       // Get coordinates for reverse geocoding
       final latitude = (location?['latitude'] as num?)?.toDouble();
       final longitude = (location?['longitude'] as num?)?.toDouble();
       
+      debugPrint('[ChildDetail] Coordinates - Lat: $latitude, Lng: $longitude');
+      
       // Reverse geocode: convert lat/long to address using OpenStreetMap Nominatim
       String address = 'Không xác định';
       if (latitude != null && longitude != null) {
         debugPrint('[ChildDetail] Reverse geocoding: $latitude, $longitude');
         address = await GeocodeService.getAddress(latitude, longitude);
+      } else {
+        debugPrint('[ChildDetail] ERROR: Missing coordinates for geocoding');
       }
       
       final updatedAt = (location?['timestamp'] ?? locationData['data']?['timestamp']) as String?;
@@ -631,6 +807,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
         }
       }
 
+      final selectedLocationObj = location != null ? location_model.Location.fromJson(location) : null;
+      debugPrint('[ChildDetail] Creating selectedLocation: $selectedLocationObj');
+      
       final childDetail = ChildDetailData(
         childId: childId,
         name: childName,
@@ -640,11 +819,12 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
         isInSafeZone: inSafeZone,
         screenTimeMinutes: screenTimeMinutes,
         screenTimeLimit: 240,
-        selectedLocation: location != null ? location_model.Location.fromJson(location) : null,
+        selectedLocation: selectedLocationObj,
       );
 
       // Navigate to the new map screen with the detail panel
       if (mounted) {
+        debugPrint('[ChildDetail] Navigating to ChildMapScreen with selectedLocation: ${childDetail.selectedLocation}');
         Navigator.push(
           context,
           MaterialPageRoute(

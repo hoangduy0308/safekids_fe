@@ -9,7 +9,7 @@ import '../../theme/app_spacing.dart';
 
 class GeofenceSuggestionsSection extends StatefulWidget {
   final String childId;
-  final VoidCallback? onCreateGeofence;
+  final Function(GeofenceSuggestion)? onCreateGeofence;
 
   const GeofenceSuggestionsSection({
     Key? key,
@@ -136,7 +136,7 @@ class _GeofenceSuggestionsSectionState extends State<GeofenceSuggestionsSection>
                   ...suggestions.map((suggestion) => GeofenceSuggestionCard(
                     suggestion: suggestion,
                     onCreateTap: () {
-                      widget.onCreateGeofence?.call();
+                      widget.onCreateGeofence?.call(suggestion);
                     },
                     onDismissTap: () => _dismissSuggestion(suggestion),
                   )),

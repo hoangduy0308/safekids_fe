@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../models/location.dart' as location_model;
+import '../../models/user.dart';
 import '../../services/api_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../widgets/parent/child_location_map.dart';
 import '../../models/child_detail_data.dart';
 import '../../widgets/parent/geofence_suggestions_section.dart';
-import 'geofence_list_screen.dart';
+import '../../widgets/geofence_map_view.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:ui';
 import '../../theme/app_typography.dart';
 
@@ -34,11 +35,42 @@ class ChildMapScreen extends StatefulWidget {
 }
 
 class _ChildMapScreenState extends State<ChildMapScreen> {
-  // This state is now managed inside the draggable sheet
-  // bool _showPath = false;
-  // int _pathHours = 2;
-  // List<dynamic>? _pathLocations;
-  // bool _pathLoading = false;
+  final ApiService _apiService = ApiService();
+  List<User> _linkedChildren = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLinkedChildren();
+  }
+
+  Future<void> _loadLinkedChildren() async {
+    try {
+      final children = await _apiService.getMyChildren();
+      setState(() {
+        _linkedChildren = children
+            .map((child) {
+              final id = child['childId'] ?? child['_id'] ?? child['id'] ?? '';
+              final name = child['childName'] ?? child['name'] ?? child['fullName'] ?? 'Unknown';
+              return User(
+                id: id,
+                name: name,
+                fullName: name,
+                email: child['email'] ?? '',
+                phone: child['phone'],
+                role: 'child',
+                age: child['age'],
+                createdAt: child['createdAt'] != null 
+                  ? DateTime.parse(child['createdAt'])
+                  : DateTime.now(),
+              );
+            })
+            .toList();
+      });
+    } catch (e) {
+      print('[ChildMapScreen] Error loading children: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,8 +90,8 @@ class _ChildMapScreenState extends State<ChildMapScreen> {
 
           // The sliding panel for details
           DraggableScrollableSheet(
-            initialChildSize: 0.175, // Fine-tuned "peek" state
-            minChildSize: 0.175,      // Fine-tuned "peek" state
+            initialChildSize: 0.17, // Fine-tuned "peek" state
+            minChildSize: 0.17,      // Fine-tuned "peek" state
             maxChildSize: 0.9,       // Can be expanded to 90%
             builder: (BuildContext context, ScrollController scrollController) {
               return ClipRRect(
@@ -176,11 +208,25 @@ class _ChildMapScreenState extends State<ChildMapScreen> {
               GeofenceSuggestionsSection(
                 key: ValueKey(child.childId),
                 childId: child.childId,
-                onCreateGeofence: () {
+                onCreateGeofence: (suggestion) {
+                  if (_linkedChildren.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Đang tải danh sách trẻ em...')),
+                    );
+                    return;
+                  }
                   Navigator.pop(context); // Close map screen
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const GeofenceListScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => GeofenceMapView(
+                        linkedChildren: _linkedChildren,
+                        focusedChildId: child.childId,
+                        initialCenter: LatLng(suggestion.center.latitude, suggestion.center.longitude),
+                        startInDrawMode: false,
+                        showDrawControls: true,
+                      ),
+                    ),
                   );
                 },
               ),

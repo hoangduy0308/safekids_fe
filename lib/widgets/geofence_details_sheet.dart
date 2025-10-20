@@ -53,7 +53,9 @@ class GeofenceDetailsSheet extends StatelessWidget {
                       width: 50,
                       height: 50,
                       decoration: BoxDecoration(
-                        color: geofence.isDangerZone ? Colors.red : Colors.green,
+                        color: geofence.isDangerZone
+                            ? Colors.red
+                            : Colors.green,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
@@ -73,9 +75,13 @@ class GeofenceDetailsSheet extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            geofence.isDangerZone ? 'Vùng nguy hiểm' : 'Vùng an toàn',
+                            geofence.isDangerZone
+                                ? 'Vùng nguy hiểm'
+                                : 'Vùng an toàn',
                             style: AppTypography.caption.copyWith(
-                              color: geofence.isDangerZone ? Colors.red : Colors.green,
+                              color: geofence.isDangerZone
+                                  ? Colors.red
+                                  : Colors.green,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -95,16 +101,20 @@ class GeofenceDetailsSheet extends StatelessWidget {
                 SizedBox(height: AppSpacing.md),
                 Text(
                   'Áp dụng cho',
-                  style: AppTypography.body.copyWith(fontWeight: FontWeight.bold),
+                  style: AppTypography.body.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 SizedBox(height: AppSpacing.sm),
-                ...linkedChildrenNames.map((child) => Padding(
-                  padding: EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: Text(
-                    '• ${child['name']}',
-                    style: AppTypography.body,
+                ...linkedChildrenNames.map(
+                  (child) => Padding(
+                    padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: Text(
+                      '• ${child['name']}',
+                      style: AppTypography.body,
+                    ),
                   ),
-                )),
+                ),
                 SizedBox(height: AppSpacing.lg),
                 Row(
                   children: [
@@ -113,7 +123,9 @@ class GeofenceDetailsSheet extends StatelessWidget {
                         onPressed: onEdit,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.parentPrimaryLight,
-                          padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+                          padding: EdgeInsets.symmetric(
+                            vertical: AppSpacing.md,
+                          ),
                         ),
                         child: Text('Chỉnh sửa'),
                       ),
@@ -124,9 +136,16 @@ class GeofenceDetailsSheet extends StatelessWidget {
                         onPressed: _showDeleteConfirmation,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
-                          padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+                          padding: EdgeInsets.symmetric(
+                            vertical: AppSpacing.md,
+                          ),
                         ),
-                        child: Text('Xóa', style: AppTypography.button.copyWith(color: Colors.white)),
+                        child: Text(
+                          'Xóa',
+                          style: AppTypography.button.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -147,7 +166,10 @@ class GeofenceDetailsSheet extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: AppTypography.caption),
-          Text(value, style: AppTypography.body.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            value,
+            style: AppTypography.body.copyWith(fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );

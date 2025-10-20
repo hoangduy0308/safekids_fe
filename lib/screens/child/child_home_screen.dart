@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../theme/app_colors.dart';
@@ -8,12 +9,16 @@ import '../../theme/app_spacing.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/location_service.dart';
 import '../../services/socket_service.dart';
+import '../../services/api_service.dart';
+import '../../services/battery_service.dart';
 import '../../widgets/child/location_permission_dialog.dart';
 import '../../widgets/child/link_request_dialog.dart';
 import '../../widgets/common/offline_indicator.dart';
-import './location_settings_screen.dart';
-import '../../services/battery_service.dart';
 import '../../widgets/battery_optimization_guide.dart';
+import './location_settings_screen.dart';
+import './sos_countdown_dialog.dart';
+import './sos_success_screen.dart';
+import '../../utils/offline_sos_queue.dart';
 
 class ChildHomeScreen extends StatefulWidget {
   const ChildHomeScreen({Key? key}) : super(key: key);
@@ -540,8 +545,142 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
     );
   }
 
-  void _handleSOSPress(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('🆘 Tính năng SOS đang được phát triển'), backgroundColor: AppColors.danger));
+  void _handleSOSPress(BuildContext context) async {
+    print('[SOS] Button pressed');
+    
+    // Show countdown dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => SOSCountdownDialog(
+        duration: Duration(seconds: 3),
+        onConfirm: () async {
+          print('[SOS] Countdown confirmed, triggering SOS');
+          await _triggerSOS(context);
+        },
+        onCancel: () {
+          print('[SOS] Countdown cancelled');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Cảnh báo đã bị hủy'),
+              backgroundColor: Colors.grey[600],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _triggerSOS(BuildContext context) async {
+    try {
+      print('[SOS] Collecting SOS data...');
+      
+      // Get location
+      final location = await _locationService.getCurrentLocation();
+      if (location == null) {
+        print('[SOS] ERROR: No location available');
+        _showSOSError(context, 'Không thể lấy vị trí. Vui lòng bật định vị.');
+        return;
+      }
+
+      // Get battery level
+      final batteryService = BatteryService();
+      final batteryLevel = batteryService.batteryLevel;
+
+      // Prepare SOS data
+      final sosData = {
+        'location': {
+          'latitude': location.latitude,
+          'longitude': location.longitude,
+          'accuracy': location.accuracy,
+        },
+        'batteryLevel': batteryLevel,
+        'networkStatus': 'unknown',
+      };
+
+      print('[SOS] SOS data: $sosData');
+
+      // Trigger SOS API
+      final apiService = ApiService();
+      final response = await apiService.triggerSOS(
+        latitude: location.latitude,
+        longitude: location.longitude,
+        accuracy: location.accuracy,
+        batteryLevel: batteryLevel,
+        networkStatus: 'unknown',
+      );
+
+      print('[SOS] API Response: $response');
+
+      // Show success screen
+      if (mounted) {
+        final authProvider = context.read<AuthProvider>();
+        final parentNames = (authProvider.user?.linkedUsersData ?? [])
+            .where((u) => u['role'] == 'parent')
+            .map((u) => u['name']?.toString() ?? 'Phụ huynh')
+            .toList();
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (ctx) => SOSSuccessScreen(
+              parentNames: parentNames.isNotEmpty ? parentNames : ['Ba mẹ'],
+              onDismiss: () {
+                print('[SOS] Success screen dismissed');
+              },
+            ),
+          ),
+        );
+
+        // Haptic feedback
+        HapticFeedback.heavyImpact();
+      }
+    } catch (e) {
+      print('[SOS] ERROR: $e');
+      
+      // Try to queue for offline
+      try {
+        final offlineQueue = OfflineSOSQueue();
+        await offlineQueue.initialize();
+        
+        final location = await _locationService.getCurrentLocation();
+        final batteryService = BatteryService();
+        final batteryLevel = batteryService.batteryLevel;
+
+        await offlineQueue.addToQueue({
+          'location': {
+            'latitude': location?.latitude ?? 0,
+            'longitude': location?.longitude ?? 0,
+            'accuracy': location?.accuracy,
+          },
+          'batteryLevel': batteryLevel,
+          'networkStatus': 'unknown',
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('📡 Mất kết nối. SOS sẽ gửi khi có mạng'),
+              backgroundColor: AppColors.warning,
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+      } catch (queueError) {
+        print('[SOS] Queue error: $queueError');
+        _showSOSError(context, 'Lỗi: ${e.toString()}');
+      }
+    }
+  }
+
+  void _showSOSError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('❌ $message'),
+        backgroundColor: AppColors.danger,
+        duration: Duration(seconds: 5),
+      ),
+    );
   }
 
   void _showLogoutDialog(BuildContext context, AuthProvider authProvider) async {

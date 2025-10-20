@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../models/geofence.dart';
 import '../../models/user.dart';
@@ -116,6 +117,41 @@ class _GeofenceListScreenState extends State<GeofenceListScreen> {
     }
     
     return filtered;
+  }
+
+  void _openCreateGeofence() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GeofenceMapView(
+          linkedChildren: _linkedChildren,
+          startInDrawMode: true,
+        ),
+      ),
+    ).then((_) {
+      if (mounted) _loadGeofences();
+    });
+  }
+
+  Alignment _createButtonAlignment() {
+    if (_filteredGeofences.isEmpty) {
+      return const Alignment(0, 0);
+    }
+    final count = _filteredGeofences.length;
+    final double y = math.min(0.85, -0.05 + 0.18 * count);
+    return Alignment(0, y);
+  }
+
+  Widget _buildCreateGeofenceButton() {
+    return ElevatedButton.icon(
+      onPressed: _openCreateGeofence,
+      icon: const Icon(Icons.add_location_alt_outlined),
+      label: const Text('Thêm vùng an toàn'),
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        textStyle: AppTypography.button,
+      ),
+    );
   }
 
   void _toggleSelection(String geofenceId) {
@@ -243,25 +279,6 @@ class _GeofenceListScreenState extends State<GeofenceListScreen> {
             color: Colors.grey.shade100,
             child: Column(
               children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => GeofenceMapView(
-                            linkedChildren: _linkedChildren,
-                            startInDrawMode: true,
-                          ),
-                        ),
-                      ).then((_) { if (mounted) _loadGeofences(); });
-                    },
-                    icon: const Icon(Icons.add_location_alt_outlined),
-                    label: const Text('Them vung an toan'),
-                  ),
-                ),
-                const SizedBox(height: 12),
                 TextField(
                   decoration: InputDecoration(
                     hintText: 'Tìm kiếm tên vùng...',
@@ -324,80 +341,70 @@ class _GeofenceListScreenState extends State<GeofenceListScreen> {
             ),
           ),
           
-          // Geofence list
+          // Geofence list & create button
           Expanded(
-            child: _isLoading
-                ? Center(child: CircularProgressIndicator())
-                : _geofences.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.location_off, size: 64, color: Colors.grey),
-                            SizedBox(height: 16),
-                            Text(
-                              'Chưa có vùng nào',
-                              style: AppTypography.h4.copyWith(color: Colors.grey),
-                            ),
-                            SizedBox(height: 16),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => GeofenceMapView(
-                                      linkedChildren: _linkedChildren,
-                                      startInDrawMode: true,
-                                    ),
-                                  ),
-                                ).then((_) { if (mounted) _loadGeofences(); });
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _filteredGeofences.isEmpty
+                          ? const SizedBox.shrink()
+                          : ListView.builder(
+                              padding: const EdgeInsets.fromLTRB(0, 140, 0, 24),
+                              itemCount: _filteredGeofences.length,
+                              itemBuilder: (context, index) {
+                                final geofence = _filteredGeofences[index];
+                                return GeofenceListItem(
+                                  key: Key(geofence.id),
+                                  geofence: geofence,
+                                  isSelected: _selectedGeofences.contains(geofence.id),
+                                  onTap: () {
+                                    if (_isSelectMode) {
+                                      _toggleSelection(geofence.id);
+                                    } else {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => GeofenceMapView(
+                                            linkedChildren: _linkedChildren,
+                                            initialFocusedGeofenceId: geofence.id,
+                                            showDrawControls: false,
+                                          ),
+                                        ),
+                                      ).then((_) {
+                                        if (mounted) _loadGeofences();
+                                      });
+                                    }
+                                  },
+                                  onToggle: (isActive) {
+                                    // Toggle handled internally
+                                  },
+                                  onDelete: () {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Đã xóa vùng'),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                    _loadGeofences();
+                                  },
+                                );
                               },
-                              icon: const Icon(Icons.add_location),
-                              label: const Text('Tao vung moi'),
                             ),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: _filteredGeofences.length,
-                        itemBuilder: (context, index) {
-                          final geofence = _filteredGeofences[index];
-                          return GeofenceListItem(
-                            key: Key(geofence.id),
-                            geofence: geofence,
-                            isSelected: _selectedGeofences.contains(geofence.id),
-                            onTap: () {
-                              if (_isSelectMode) {
-                                _toggleSelection(geofence.id);
-                              } else {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => GeofenceMapView(
-                                      linkedChildren: _linkedChildren,
-                                      initialFocusedGeofenceId: geofence.id,
-                                      showDrawControls: false,
-                                    ),
-                                  ),
-                                ).then((_) { if (mounted) _loadGeofences(); });
-                              }
-                            },
-                            onToggle: (isActive) {
-                              // Toggle handled internally
-                            },
-                            onDelete: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Đã xóa vùng'),
-                                  backgroundColor: Colors.green,
-                                ),
-                              );
-                              _loadGeofences();
-                            },
-                          );
-                        },
-                      ),
-                    ),
+                ),
+                AnimatedAlign(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOutCubic,
+                  alignment: _createButtonAlignment(),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: _buildCreateGeofenceButton(),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

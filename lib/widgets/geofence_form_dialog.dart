@@ -42,13 +42,17 @@ class _GeofenceFormDialogState extends State<GeofenceFormDialog> {
       _nameController.text = widget.existingData!['name'] ?? '';
       _type = widget.existingData!['type'] ?? 'safe';
       _radius = widget.existingData!['radius']?.toDouble() ?? 100;
-      _selectedChildren = List<String>.from(widget.existingData!['linkedChildren'] ?? []);
+      _selectedChildren = List<String>.from(
+        widget.existingData!['linkedChildren'] ?? [],
+      );
     }
-    
+
     print('[FormInit] Linked children count: ${widget.linkedChildren.length}');
     print('[FormInit] Selected children: $_selectedChildren');
     for (var child in widget.linkedChildren) {
-      print('[FormInit] Child: id=${child.id}, name=${child.name}, fullName=${child.fullName}');
+      print(
+        '[FormInit] Child: id=${child.id}, name=${child.name}, fullName=${child.fullName}',
+      );
     }
   }
 
@@ -80,7 +84,9 @@ class _GeofenceFormDialogState extends State<GeofenceFormDialog> {
                   Icon(Icons.location_on, color: Colors.white),
                   SizedBox(width: AppSpacing.md),
                   Text(
-                    widget.existingData != null ? 'Chỉnh sửa vùng' : 'Tạo vùng mới',
+                    widget.existingData != null
+                        ? 'Chỉnh sửa vùng'
+                        : 'Tạo vùng mới',
                     style: AppTypography.h2.copyWith(color: Colors.white),
                   ),
                 ],
@@ -100,7 +106,9 @@ class _GeofenceFormDialogState extends State<GeofenceFormDialog> {
                         labelText: 'Tên vùng *',
                         hintText: 'vd: Trường học, Nhà...',
                         prefixIcon: Icon(Icons.label),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       validator: (value) {
                         if (value?.isEmpty == true) {
@@ -117,13 +125,18 @@ class _GeofenceFormDialogState extends State<GeofenceFormDialog> {
 
                     Text(
                       'Loại vùng',
-                      style: AppTypography.body.copyWith(fontWeight: FontWeight.bold),
+                      style: AppTypography.body.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: AppSpacing.md),
 
                     RadioListTile<String>(
                       title: Text('Vùng an toàn', style: AppTypography.body),
-                      subtitle: Text('Cảnh báo khi con rời khỏi vùng', style: AppTypography.caption),
+                      subtitle: Text(
+                        'Cảnh báo khi con rời khỏi vùng',
+                        style: AppTypography.caption,
+                      ),
                       value: 'safe',
                       groupValue: _type,
                       onChanged: (val) => setState(() => _type = val!),
@@ -132,7 +145,10 @@ class _GeofenceFormDialogState extends State<GeofenceFormDialog> {
 
                     RadioListTile<String>(
                       title: Text('Vùng nguy hiểm', style: AppTypography.body),
-                      subtitle: Text('Cảnh báo khi con vào vùng', style: AppTypography.caption),
+                      subtitle: Text(
+                        'Cảnh báo khi con vào vùng',
+                        style: AppTypography.caption,
+                      ),
                       value: 'danger',
                       groupValue: _type,
                       onChanged: (val) => setState(() => _type = val!),
@@ -143,7 +159,9 @@ class _GeofenceFormDialogState extends State<GeofenceFormDialog> {
 
                     Text(
                       'Bán kính vùng: ${_radius.toInt()}m',
-                      style: AppTypography.body.copyWith(fontWeight: FontWeight.bold),
+                      style: AppTypography.body.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: AppSpacing.md),
                     Slider(
@@ -159,7 +177,9 @@ class _GeofenceFormDialogState extends State<GeofenceFormDialog> {
 
                     Text(
                       'Áp dụng cho *',
-                      style: AppTypography.body.copyWith(fontWeight: FontWeight.bold),
+                      style: AppTypography.body.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: AppSpacing.md),
 
@@ -173,13 +193,18 @@ class _GeofenceFormDialogState extends State<GeofenceFormDialog> {
                               padding: EdgeInsets.all(AppSpacing.md),
                               child: Text(
                                 'Không có trẻ em liên kết',
-                                style: AppTypography.caption.copyWith(color: Colors.red),
+                                style: AppTypography.caption.copyWith(
+                                  color: Colors.red,
+                                ),
                               ),
                             )
                           : Column(
                               children: widget.linkedChildren.map((child) {
                                 return CheckboxListTile(
-                                  title: Text(child.name, style: AppTypography.body),
+                                  title: Text(
+                                    child.name,
+                                    style: AppTypography.body,
+                                  ),
                                   value: _selectedChildren.contains(child.id),
                                   onChanged: (checked) {
                                     setState(() {
@@ -211,7 +236,9 @@ class _GeofenceFormDialogState extends State<GeofenceFormDialog> {
                   SizedBox(width: AppSpacing.md),
                   ElevatedButton(
                     onPressed: _handleSave,
-                    child: Text(widget.existingData != null ? 'Cập nhật' : 'Lưu'),
+                    child: Text(
+                      widget.existingData != null ? 'Cập nhật' : 'Lưu',
+                    ),
                   ),
                 ],
               ),
@@ -227,7 +254,7 @@ class _GeofenceFormDialogState extends State<GeofenceFormDialog> {
     if (_formKey.currentState!.validate()) {
       print('[FormSave] Form valid');
       print('[FormSave] Selected children: $_selectedChildren');
-      
+
       if (_selectedChildren.isEmpty) {
         print('[FormSave] Lỗi: Không có trẻ em được chọn');
         ScaffoldMessenger.of(context).showSnackBar(
@@ -246,7 +273,7 @@ class _GeofenceFormDialogState extends State<GeofenceFormDialog> {
         'radius': _radius,
       };
       print('[FormSave] Gửi dữ liệu: $data');
-      
+
       widget.onSave(data);
       Navigator.pop(context);
     } else {
