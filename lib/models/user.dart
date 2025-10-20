@@ -29,45 +29,54 @@ class User {
     // Handle linkedUsers - can be array of IDs or populated objects
     List<String> linkedUserIds = [];
     List<Map<String, dynamic>> linkedUsersDataList = [];
-    
-    // Try to get linkedUsersData first (populated objects from backend)
-    if (json['linkedUsersData'] != null && json['linkedUsersData'] is List) {
-      for (var item in json['linkedUsersData']) {
-        if (item is Map<String, dynamic>) {
-          linkedUsersDataList.add({
-            '_id': item['_id'] ?? item['id'] ?? '',
-            'id': item['_id'] ?? item['id'] ?? '',
-            'name': item['name'] ?? item['fullName'] ?? '',
-            'fullName': item['fullName'] ?? item['name'] ?? '',
-            'email': item['email'] ?? '',
-            'role': item['role'] ?? 'child',
-            'age': item['age'],
-            'avatar': item['avatar'],
-          });
-          linkedUserIds.add(item['_id'] ?? item['id'] ?? '');
+    final Set<String> processedIds = <String>{};
+
+    void addLinkedUser(dynamic item) {
+      if (item is Map<String, dynamic>) {
+        final nested = item['user'] ?? item['child'] ?? item['parent'];
+        if (nested is Map<String, dynamic>) {
+          item = nested;
         }
-      }
-    }
-    // Fallback to linkedUsers if linkedUsersData is empty
-    else if (json['linkedUsers'] != null && json['linkedUsers'] is List) {
-      for (var item in json['linkedUsers']) {
-        if (item is String) {
+
+        final rawId = item['_id'] ?? item['id'];
+        final id = rawId == null ? '' : rawId.toString();
+        if (id.isEmpty || processedIds.contains(id)) {
+          return;
+        }
+
+        linkedUsersDataList.add({
+          '_id': id,
+          'id': id,
+          'name': item['name'] ?? item['fullName'] ?? '',
+          'fullName': item['fullName'] ?? item['name'] ?? '',
+          'email': item['email'] ?? '',
+          'role': item['role'] ?? 'child',
+          'age': item['age'],
+          'avatar': item['avatar'],
+        });
+        processedIds.add(id);
+        linkedUserIds.add(id);
+      } else if (item is String) {
+        if (!processedIds.contains(item)) {
           linkedUserIds.add(item);
-        } else if (item is Map<String, dynamic>) {
-          linkedUsersDataList.add({
-            '_id': item['_id'] ?? item['id'] ?? '',
-            'id': item['_id'] ?? item['id'] ?? '',
-            'name': item['name'] ?? item['fullName'] ?? '',
-            'fullName': item['fullName'] ?? item['name'] ?? '',
-            'email': item['email'] ?? '',
-            'role': item['role'] ?? 'child',
-            'age': item['age'],
-            'avatar': item['avatar'],
-          });
-          linkedUserIds.add(item['_id'] ?? item['id'] ?? '');
+          processedIds.add(item);
         }
       }
     }
+
+    void mergeLinkedList(dynamic source) {
+      if (source is List) {
+        for (final item in source) {
+          addLinkedUser(item);
+        }
+      }
+    }
+
+    mergeLinkedList(json['linkedUsersData']);
+
+    mergeLinkedList(json['linkedUsers']);
+    mergeLinkedList(json['linkedChildren']);
+    mergeLinkedList(json['linkedParents']);
     
     return User(
       id: json['_id'] ?? json['id'] ?? '',

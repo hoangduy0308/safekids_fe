@@ -1,24 +1,25 @@
+import 'dart:ui';
+
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:confetti/confetti.dart';
-import 'dart:ui';
-import '../../theme/app_colors.dart';
-import '../../theme/app_spacing.dart';
-import '../../theme/app_typography.dart';
+
+import '../../models/child_detail_data.dart';
+import '../../models/location.dart' as location_model;
 import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
-import '../../widgets/parent/notification_badge.dart';
-import '../../widgets/parent/notification_panel.dart';
-import '../../models/child_detail_data.dart';
 import '../../services/api_service.dart';
 import '../../services/geocode_service.dart';
 import '../../services/socket_service.dart';
-import 'link_child_screen.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_spacing.dart';
+import '../../theme/app_typography.dart';
+import '../../widgets/parent/notification_badge.dart';
+import '../../widgets/parent/notification_panel.dart';
 import 'child_map_screen.dart';
-import '../../models/location.dart' as location_model;
+import 'link_child_screen.dart';
 
-// Member Card with Micro-Interactions
 class MemberCardWithInteraction extends StatefulWidget {
   final String name;
   final Color color;
@@ -36,17 +37,22 @@ class MemberCardWithInteraction extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<MemberCardWithInteraction> createState() => _MemberCardWithInteractionState();
+  State<MemberCardWithInteraction> createState() =>
+      _MemberCardWithInteractionState();
 }
 
-class _MemberCardWithInteractionState extends State<MemberCardWithInteraction> with SingleTickerProviderStateMixin {
+class _MemberCardWithInteractionState extends State<MemberCardWithInteraction>
+    with SingleTickerProviderStateMixin {
   late AnimationController _scaleController;
   bool _isHovering = false;
 
   @override
   void initState() {
     super.initState();
-    _scaleController = AnimationController(duration: Duration(milliseconds: 300), vsync: this);
+    _scaleController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
   }
 
   @override
@@ -91,13 +97,17 @@ class _MemberCardWithInteractionState extends State<MemberCardWithInteraction> w
                       border: Border.all(color: widget.color, width: 2.5),
                       boxShadow: [
                         BoxShadow(
-                          color: widget.color.withOpacity(_isHovering ? 0.5 : 0.2),
+                          color: widget.color.withOpacity(
+                            _isHovering ? 0.5 : 0.2,
+                          ),
                           blurRadius: _isHovering ? 16 : 8,
                           spreadRadius: _isHovering ? 3 : 1,
                           offset: Offset(0, _isHovering ? 4 : 2),
                         ),
                         BoxShadow(
-                          color: widget.color.withOpacity(_isHovering ? 0.2 : 0.05),
+                          color: widget.color.withOpacity(
+                            _isHovering ? 0.2 : 0.05,
+                          ),
                           blurRadius: _isHovering ? 24 : 12,
                           spreadRadius: _isHovering ? 6 : 2,
                         ),
@@ -105,12 +115,15 @@ class _MemberCardWithInteractionState extends State<MemberCardWithInteraction> w
                     ),
                     child: Center(
                       child: Text(
-                        widget.name.isNotEmpty ? widget.name[0].toUpperCase() : '👧',
-                        style: AppTypography.display2.copyWith(color: widget.color),
+                        widget.name.isNotEmpty
+                            ? widget.name[0].toUpperCase()
+                            : '👧',
+                        style: AppTypography.display2.copyWith(
+                          color: widget.color,
+                        ),
                       ),
                     ),
                   ),
-                  // Status indicator dot
                   Positioned(
                     bottom: 0,
                     right: 0,
@@ -133,15 +146,18 @@ class _MemberCardWithInteractionState extends State<MemberCardWithInteraction> w
                   ),
                 ],
               ),
-              SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.sm),
               Text(widget.name, style: AppTypography.label),
               Container(
-                margin: EdgeInsets.only(top: 4),
-                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                margin: const EdgeInsets.only(top: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: widget.color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: widget.color.withOpacity(0.3), width: 0.5),
+                  border: Border.all(
+                    color: widget.color.withOpacity(0.3),
+                    width: 0.5,
+                  ),
                 ),
                 child: Text(
                   widget.statusText,
@@ -167,150 +183,207 @@ class ParentHomeScreen extends StatefulWidget {
   State<ParentHomeScreen> createState() => _ParentHomeScreenState();
 }
 
-class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProviderStateMixin {
+class _ParentHomeScreenState extends State<ParentHomeScreen>
+    with TickerProviderStateMixin {
   List<Map<String, dynamic>> _recentStatuses = [];
   late AnimationController _fadeController;
   late AnimationController _slideController;
   late ConfettiController _confettiController;
   bool _showNotificationPanel = false;
 
+  DateTime? _normalizeTimestamp(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value.toLocal();
+    if (value is String && value.isNotEmpty) {
+      try {
+        return DateTime.parse(value).toLocal();
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  DateTime _statusTimestamp(Map<String, dynamic> status) {
+    final direct = _normalizeTimestamp(status['timestamp']);
+    if (direct != null) {
+      return direct;
+    }
+    final fallback = _normalizeTimestamp(status['time']);
+    return fallback ?? DateTime.fromMillisecondsSinceEpoch(0);
+  }
+
+  List<Map<String, dynamic>> _sortedStatusesByTime(
+    List<Map<String, dynamic>> statuses,
+  ) {
+    final sorted = statuses
+        .map((status) => Map<String, dynamic>.from(status))
+        .toList();
+    sorted.sort((a, b) => _statusTimestamp(b).compareTo(_statusTimestamp(a)));
+    return sorted;
+  }
+
+  void _setRecentStatuses(List<Map<String, dynamic>> statuses) {
+    setState(() {
+      _recentStatuses = _sortedStatusesByTime(statuses).take(10).toList();
+    });
+  }
+
+  void _addRecentStatus(Map<String, dynamic> status) {
+    final updated = [status, ..._recentStatuses];
+    setState(() {
+      _recentStatuses = _sortedStatusesByTime(updated).take(10).toList();
+    });
+  }
+
+  Map<String, dynamic> _composeGeofenceStatus({
+    required String childName,
+    required String geofenceName,
+    required String zoneType,
+    required String action,
+    required DateTime timestamp,
+  }) {
+    final normalizedZoneType = zoneType.toLowerCase();
+    final isSafeZone = normalizedZoneType == 'safe';
+    final normalizedAction = action.toLowerCase();
+    final isExit = normalizedAction == 'exit' || normalizedAction == 'exited';
+    final displayName = geofenceName.isNotEmpty ? geofenceName : 'vùng';
+
+    final bool isWarning = (isExit && isSafeZone) || (!isExit && !isSafeZone);
+
+    final String actionText;
+    final Color color;
+    final IconData icon;
+
+    if (isExit) {
+      actionText =
+          'đã rời khỏi ${isSafeZone ? 'vùng an toàn' : 'vùng nguy hiểm'} "$displayName"';
+      color = isSafeZone ? AppColors.danger : AppColors.success;
+      icon = Icons.location_off;
+    } else {
+      actionText =
+          'đã vào ${isSafeZone ? 'vùng an toàn' : 'vùng nguy hiểm'} "$displayName"';
+      color = isSafeZone ? AppColors.success : AppColors.danger;
+      icon = isSafeZone ? Icons.location_on : Icons.dangerous;
+    }
+
+    return {
+      'name': childName,
+      'action': actionText,
+      'time': timestamp.toIso8601String(),
+      'icon': icon,
+      'color': color,
+      'type': 'geofence',
+      'timestamp': timestamp,
+      'isWarning': isWarning,
+      'zoneType': normalizedZoneType,
+      'rawAction': normalizedAction,
+    };
+  }
+
+  Map<String, dynamic> _composeSosStatus({
+    required String childName,
+    required DateTime timestamp,
+  }) {
+    return {
+      'name': childName,
+      'action': 'đã gửi tín hiệu SOS khẩn cấp 🚨',
+      'time': timestamp.toIso8601String(),
+      'icon': Icons.emergency,
+      'color': AppColors.danger,
+      'type': 'sos',
+      'timestamp': timestamp,
+      'isWarning': true,
+    };
+  }
+
   @override
   void initState() {
     super.initState();
     _setupAnimations();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 2));
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 2),
+    );
     _loadRecentStatuses();
     _setupSocketListeners();
-    // Load notifications on init
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<NotificationProvider>(context, listen: false).loadNotifications();
+      Provider.of<NotificationProvider>(
+        context,
+        listen: false,
+      ).loadNotifications();
     });
   }
 
   void _setupSocketListeners() {
     final socketService = SocketService();
-    
-    // Listen for real-time SOS alerts
+
     socketService.onSosAlert = (data) {
+      if (!mounted) return;
       print('[ParentHome] Received SOS alert: $data');
-      if (mounted) {
-        // Add SOS alert directly to UI
-        String timeStr = '';
-        if (data['timestamp'] != null) {
-          if (data['timestamp'] is DateTime) {
-            timeStr = (data['timestamp'] as DateTime).toIso8601String();
-          } else {
-            timeStr = data['timestamp'].toString();
-          }
-        } else {
-          timeStr = DateTime.now().toIso8601String();
-        }
-        
-        // Create new alert object (don't mutate existing ones)
-        final sosAlert = Map<String, dynamic>.from({
-          'name': data['childName'] ?? 'Trẻ không rõ',
-          'action': 'đã gửi tín hiệu SOS khẩn cấp 🚨',
-          'time': timeStr,
-          'icon': Icons.emergency,
-          'color': AppColors.danger,
-          'type': 'sos',
-          'sosId': data['sosId']?.toString() ?? '',
-          'timestamp': DateTime.parse(timeStr),
-        });
-        
-        setState(() {
-          // Create new list to avoid mutation bugs
-          final newStatuses = <Map<String, dynamic>>[sosAlert];
-          newStatuses.addAll(_recentStatuses);
-          
-          // Keep only top 10
-          _recentStatuses = newStatuses.take(10).toList();
-          
-          print('[ParentHome] Added SOS alert. Total: ${_recentStatuses.length}');
-        });
-      }
+
+      final timestamp =
+          _normalizeTimestamp(data['timestamp']) ?? DateTime.now();
+      final sosAlert = _composeSosStatus(
+        childName: data['childName'] ?? 'Trẻ không rõ',
+        timestamp: timestamp,
+      );
+      sosAlert['sosId'] = data['sosId']?.toString() ?? '';
+
+      _addRecentStatus(sosAlert);
+      print('[ParentHome] Added SOS alert. Total: ${_recentStatuses.length}');
     };
 
-    // Listen for geofence alerts (ra vào địa điểm an toàn/nguy hiểm)
     socketService.onGeofenceAlert = (data) {
+      if (!mounted) return;
       print('[ParentHome] Received geofence alert: $data');
-      if (mounted) {
-        // Add geofence alert directly to UI
-        final action = data['action'] as String? ?? '';
-        final isExit = action == 'exit' || action == 'exited';
-        final geofenceName = data['geofenceName'] as String? ?? 'vùng';
-        final zoneType = data['zoneType'] as String? ?? 'safe'; // 'safe' or 'danger'
-        final isSafeZone = zoneType == 'safe';
-        
-        // Convert timestamp to string if needed
-        String timeStr = '';
-        if (data['timestamp'] != null) {
-          if (data['timestamp'] is DateTime) {
-            timeStr = (data['timestamp'] as DateTime).toIso8601String();
-          } else {
-            timeStr = data['timestamp'].toString();
-          }
-        } else {
-          timeStr = DateTime.now().toIso8601String();
-        }
-        
-        // Determine action text based on zone type
-        String actionText = '';
-        Color alertColor;
-        IconData alertIcon;
-        
-        if (isExit) {
-          // Exit zone
-          actionText = 'đã rời khỏi ${isSafeZone ? 'vùng an toàn' : 'vùng nguy hiểm'} "$geofenceName"';
-          alertColor = isSafeZone ? AppColors.danger : AppColors.warning;
-          alertIcon = Icons.location_off;
-        } else {
-          // Enter zone
-          actionText = 'đã vào ${isSafeZone ? 'vùng an toàn' : 'vùng nguy hiểm'} "$geofenceName"';
-          alertColor = isSafeZone ? AppColors.success : AppColors.danger;
-          alertIcon = Icons.location_on;
-        }
-        
-        // Create new alert object (don't mutate existing ones)
-        final geofenceAlert = Map<String, dynamic>.from({
-          'name': data['childName'] ?? 'Trẻ không rõ',
-          'action': actionText,
-          'time': timeStr,
-          'icon': alertIcon,
-          'color': alertColor,
-          'type': 'geofence',
-          'geofenceId': data['geofenceId']?.toString() ?? '',
-          'timestamp': DateTime.parse(timeStr),
-        });
-        
-        setState(() {
-          // Create new list to avoid mutation bugs
-          final newStatuses = <Map<String, dynamic>>[geofenceAlert];
-          newStatuses.addAll(_recentStatuses);
-          
-          // Keep only top 10
-          _recentStatuses = newStatuses.take(10).toList();
-          
-          print('[ParentHome] Updated statuses. Total: ${_recentStatuses.length}');
-        });
-      }
+
+      final timestamp =
+          _normalizeTimestamp(data['timestamp']) ?? DateTime.now();
+      final action =
+          (data['action'] as String? ?? data['type'] as String? ?? '')
+              .toLowerCase();
+      final geofenceName = data['geofenceName'] as String? ?? 'vùng';
+      final zoneType =
+          data['zoneType'] as String? ??
+          data['geofenceType'] as String? ??
+          'safe';
+
+      final geofenceAlert = _composeGeofenceStatus(
+        childName: data['childName'] ?? 'Trẻ không rõ',
+        geofenceName: geofenceName,
+        zoneType: zoneType,
+        action: action,
+        timestamp: timestamp,
+      );
+      geofenceAlert['geofenceId'] = data['geofenceId']?.toString() ?? '';
+      geofenceAlert['geofenceName'] = geofenceName;
+      geofenceAlert['location'] = data['location'];
+
+      _addRecentStatus(geofenceAlert);
+      print('[ParentHome] Updated statuses. Total: ${_recentStatuses.length}');
     };
   }
 
   void _setupAnimations() {
-    _fadeController = AnimationController(duration: Duration(milliseconds: 600), vsync: this);
-    _slideController = AnimationController(duration: Duration(milliseconds: 800), vsync: this);
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
     _fadeController.forward();
     _slideController.forward();
   }
 
   @override
   void dispose() {
-    // Clean up socket listeners
     final socketService = SocketService();
     socketService.onSosAlert = null;
     socketService.onGeofenceAlert = null;
-    
+
     _fadeController.dispose();
     _slideController.dispose();
     _confettiController.dispose();
@@ -320,83 +393,111 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
   Future<void> _loadRecentStatuses() async {
     try {
       final apiService = ApiService();
-      
-      // Load both geofence alerts and SOS alerts
+
       final geofenceData = await apiService.getGeofenceAlerts(limit: 10);
       final geofenceAlerts = (geofenceData['alerts'] as List?) ?? [];
       final sosAlerts = await apiService.getActiveSOS();
 
-      if (mounted) {
-        final allStatuses = <Map<String, dynamic>>[];
+      if (!mounted) return;
 
-        // Add geofence alerts
-        for (final alert in geofenceAlerts) {
-          final isUnsafe = alert['type'] == 'exit';
-          final childName = alert['childId']?['name'] ?? 
-                           alert['child']?['name'] ?? 
-                           alert['childId']?['fullName'] ?? 
-                           'Trẻ không rõ';
-          print('[ParentHome] Geofence alert - Child: $childName');
-          allStatuses.add({
-            'name': childName,
-            'action': isUnsafe ? 'đã rời khỏi vùng an toàn' : 'đã vào vùng an toàn',
-            'time': alert['timestamp'] ?? '',
-            'icon': isUnsafe ? Icons.location_off : Icons.location_on,
-            'color': isUnsafe ? AppColors.danger : AppColors.success,
-            'type': 'geofence',
-          });
-        }
+      final allStatuses = <Map<String, dynamic>>[];
 
-        // Add SOS alerts
-        for (final sos in sosAlerts) {
-          final childName = sos['childId']?['name'] ?? 
-                           sos['childId']?['fullName'] ?? 
-                           sos['childName'] ?? 
-                           'Trẻ không rõ';
-          print('[ParentHome] SOS alert - Child: $childName');
-          allStatuses.add({
-            'name': childName,
-            'action': 'đã gửi tín hiệu SOS khẩn cấp 🚨',
-            'time': sos['timestamp'] ?? sos['createdAt'] ?? '',
-            'icon': Icons.emergency,
-            'color': AppColors.danger,
-            'type': 'sos',
-          });
-        }
+      for (final alert in geofenceAlerts) {
+        final childData = alert['childId'] ?? alert['child'];
+        final childName =
+            childData?['name'] ??
+            childData?['fullName'] ??
+            alert['childName'] ??
+            'Trẻ không rõ';
 
-        // Sort by timestamp (mới nhất trước)
-        allStatuses.sort((a, b) {
-          try {
-            final timeA = DateTime.parse(a['time'] as String? ?? '');
-            final timeB = DateTime.parse(b['time'] as String? ?? '');
-            return timeB.compareTo(timeA); // Descending (newest first)
-          } catch (_) {
-            return 0;
-          }
-        });
+        final geofenceInfo = alert['geofenceId'] ?? alert['geofence'];
+        final geofenceMap = geofenceInfo is Map ? geofenceInfo : null;
+        final geofenceName =
+            geofenceMap?['name'] ?? alert['geofenceName'] ?? 'vùng';
+        final zoneType =
+            (geofenceMap?['type'] ??
+                    alert['zoneType'] ??
+                    alert['geofenceType'] ??
+                    'safe')
+                .toString();
 
-        // Limit to 10 most recent
-        setState(() {
-          _recentStatuses = allStatuses.take(10).toList();
-        });
-      }
-    } catch (e) {
-      print('Error loading statuses: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Không thể tải hoạt động gần đây')),
+        final actionRaw =
+            (alert['action'] as String?) ?? (alert['type'] as String?) ?? '';
+        final timestamp =
+            _normalizeTimestamp(alert['timestamp']) ??
+            _normalizeTimestamp(alert['createdAt']) ??
+            DateTime.now();
+
+        final status = _composeGeofenceStatus(
+          childName: childName,
+          geofenceName: geofenceName,
+          zoneType: zoneType,
+          action: actionRaw,
+          timestamp: timestamp,
         );
+
+        if (geofenceInfo != null) {
+          if (geofenceMap != null) {
+            status['geofenceId'] =
+                geofenceMap['_id']?.toString() ??
+                geofenceMap['id']?.toString() ??
+                geofenceMap.toString();
+          } else {
+            status['geofenceId'] = geofenceInfo.toString();
+          }
+        }
+        status['geofenceName'] = geofenceName;
+        if (alert['location'] != null) {
+          status['location'] = alert['location'];
+        }
+
+        allStatuses.add(status);
       }
+
+      for (final sos in sosAlerts) {
+        final childData = sos['childId'];
+        final childName =
+            childData?['name'] ??
+            childData?['fullName'] ??
+            sos['childName'] ??
+            'Trẻ không rõ';
+
+        final timestamp =
+            _normalizeTimestamp(sos['timestamp'] ?? sos['createdAt']) ??
+            DateTime.now();
+
+        final status = _composeSosStatus(
+          childName: childName,
+          timestamp: timestamp,
+        );
+
+        final sosId = sos['_id'] ?? sos['id'] ?? sos['sosId'];
+        if (sosId != null) {
+          status['sosId'] = sosId.toString();
+        }
+
+        allStatuses.add(status);
+      }
+
+      _setRecentStatuses(allStatuses);
+    } catch (error) {
+      print('Error loading statuses: $error');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không thể tải hoạt động gần đây')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
-    final userName = authProvider.user?.name ?? 'Hdi';
-    final linkedChildren = authProvider.user?.linkedUsersData
-        .where((u) => u['role'] == 'child')
-        .toList() ?? [];
+    final userName = authProvider.user?.name ?? 'Phụ huynh';
+    final linkedChildren =
+        authProvider.user?.linkedUsersData
+            .where((user) => user['role'] == 'child')
+            .toList() ??
+        [];
 
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
@@ -407,60 +508,54 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
             color: AppColors.parentPrimary,
             child: SafeArea(
               child: CustomScrollView(
-            slivers: [
-            // Header with Glassmorphism
-            SliverAppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              pinned: true,
-              expandedHeight: 0,
-              flexibleSpace: FlexibleSpaceBar(
-                background: Container(
-                  color: Colors.transparent,
-                ),
-              ),
-              title: _buildHeaderWithGlass(userName),
-              centerTitle: false,
-              toolbarHeight: 70,
-            ),
-            // Content
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(AppSpacing.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Members Section
-                    _buildMembersSection(linkedChildren),
-                    SizedBox(height: AppSpacing.xl),
-                    // Recent Status Section
-                    _buildRecentStatusSection(),
-                  ],
-                ),
-              ),
-            ),
-            ],
+                slivers: [
+                  SliverAppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    pinned: true,
+                    expandedHeight: 0,
+                    flexibleSpace: const FlexibleSpaceBar(
+                      background: SizedBox.shrink(),
+                    ),
+                    title: _buildHeaderWithGlass(userName),
+                    centerTitle: false,
+                    toolbarHeight: 70,
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildMembersSection(linkedChildren),
+                          const SizedBox(height: AppSpacing.xl),
+                          _buildRecentStatusSection(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          // Notification Panel - Positioned below AppBar
           if (_showNotificationPanel)
             Consumer<NotificationProvider>(
               builder: (context, notificationProvider, _) {
                 return Positioned(
-                  top: AppBar().preferredSize.height + MediaQuery.of(context).padding.top + AppSpacing.md,
+                  top:
+                      AppBar().preferredSize.height +
+                      MediaQuery.of(context).padding.top +
+                      AppSpacing.md,
                   left: AppSpacing.sm,
                   right: AppSpacing.sm,
                   child: NotificationPanel(
                     notificationProvider: notificationProvider,
-                    onClose: () {
-                      setState(() => _showNotificationPanel = false);
-                    },
+                    onClose: () =>
+                        setState(() => _showNotificationPanel = false),
                   ),
                 );
               },
             ),
-          // Confetti Effect
           Align(
             alignment: Alignment.topCenter,
             child: ConfettiWidget(
@@ -471,17 +566,16 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
               numberOfParticles: 20,
               gravity: 0.1,
               shouldLoop: false,
-              colors: [
-                AppColors.parentPrimary, // 40% Purple
+              colors: const [
                 AppColors.parentPrimary,
                 AppColors.parentPrimary,
                 AppColors.parentPrimary,
-                AppColors.success,       // 30% Green
+                AppColors.parentPrimary,
                 AppColors.success,
                 AppColors.success,
-                AppColors.info,          // 20% Blue
                 AppColors.info,
-                AppColors.warning,       // 10% Orange
+                AppColors.info,
+                AppColors.warning,
               ],
             ),
           ),
@@ -511,7 +605,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
             child: Container(
-              padding: EdgeInsets.symmetric(
+              padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.lg,
                 vertical: AppSpacing.md,
               ),
@@ -550,11 +644,15 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
                             children: <TextSpan>[
                               TextSpan(
                                 text: _getGreetingPart(),
-                                style: const TextStyle(fontWeight: FontWeight.w300),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w300,
+                                ),
                               ),
                               TextSpan(
                                 text: userName,
-                                style: const TextStyle(fontWeight: FontWeight.w700),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ],
                           ),
@@ -563,28 +661,36 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
                           const SizedBox(height: 4),
                           Text(
                             'Bạn có ${notificationProvider.unreadCount} thông báo mới',
-                            style: AppTypography.caption.copyWith(color: AppColors.info, fontWeight: FontWeight.w600),
+                            style: AppTypography.caption.copyWith(
+                              color: AppColors.info,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ]
+                        ],
                       ],
                     ),
                   ),
-                  SizedBox(width: AppSpacing.lg),
+                  const SizedBox(width: AppSpacing.lg),
                   GestureDetector(
                     onTap: () {
                       HapticFeedback.lightImpact();
-                      setState(() => _showNotificationPanel = !_showNotificationPanel);
-                      if (_showNotificationPanel && notificationProvider.notifications.isEmpty) {
+                      setState(
+                        () => _showNotificationPanel = !_showNotificationPanel,
+                      );
+                      if (_showNotificationPanel &&
+                          notificationProvider.notifications.isEmpty) {
                         notificationProvider.loadNotifications();
                       }
                     },
                     child: Stack(
                       children: [
                         Container(
-                          padding: EdgeInsets.all(AppSpacing.sm),
+                          padding: const EdgeInsets.all(AppSpacing.sm),
                           decoration: BoxDecoration(
                             color: AppColors.parentPrimary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.radiusMd,
+                            ),
                           ),
                           child: Icon(
                             Icons.notifications_outlined,
@@ -617,20 +723,17 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Trẻ em của bạn',
-          style: AppTypography.h3,
-        ),
-        SizedBox(height: AppSpacing.lg),
+        Text('Trẻ em của bạn', style: AppTypography.h3),
+        const SizedBox(height: AppSpacing.lg),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
               ...children.asMap().entries.map((entry) {
                 final child = entry.value;
-                final isSafe = true; // TODO: Get from real data
+                final isSafe = true; // TODO: lấy trạng thái an toàn thực tế
                 return Padding(
-                  padding: EdgeInsets.only(right: AppSpacing.lg),
+                  padding: const EdgeInsets.only(right: AppSpacing.lg),
                   child: _buildMemberCard(
                     childId: child['_id'] ?? child['id'] ?? '',
                     name: child['name'] ?? 'Trẻ',
@@ -638,11 +741,13 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
                   ),
                 );
               }),
-              // Add Member Button
               GestureDetector(
                 onTap: () {
                   HapticFeedback.lightImpact();
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => LinkChildScreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LinkChildScreen()),
+                  );
                 },
                 child: Column(
                   children: [
@@ -664,16 +769,26 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
                           ),
                         ],
                       ),
-                      child: Icon(Icons.add, size: 32, color: AppColors.parentPrimary),
+                      child: const Icon(
+                        Icons.add,
+                        size: 32,
+                        color: AppColors.parentPrimary,
+                      ),
                     ),
-                    SizedBox(height: AppSpacing.sm),
-                    Text('Thêm', style: AppTypography.label.copyWith(
-                      color: AppColors.parentPrimary,
-                      fontWeight: FontWeight.w600,
-                    )),
-                    Text('thành viên', style: AppTypography.captionSmall.copyWith(
-                      color: AppColors.parentPrimary.withOpacity(0.7),
-                    )),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'Thêm',
+                      style: AppTypography.label.copyWith(
+                        color: AppColors.parentPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      'thành viên',
+                      style: AppTypography.captionSmall.copyWith(
+                        color: AppColors.parentPrimary.withOpacity(0.7),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -690,7 +805,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
     required bool isSafe,
   }) {
     final color = isSafe ? AppColors.success : AppColors.danger;
-    final bgColor = isSafe ? AppColors.success.withOpacity(0.1) : AppColors.danger.withOpacity(0.1);
+    final bgColor = isSafe
+        ? AppColors.success.withOpacity(0.1)
+        : AppColors.danger.withOpacity(0.1);
     final statusText = isSafe ? 'An toàn' : 'Không an toàn';
 
     return MemberCardWithInteraction(
@@ -705,10 +822,13 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
     );
   }
 
-  void _showChildMapScreen(String childId, String childName, bool isSafe) async {
+  Future<void> _showChildMapScreen(
+    String childId,
+    String childName,
+    bool isSafe,
+  ) async {
     final apiService = ApiService();
-    
-    // Show a simple loading indicator while fetching data
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -716,23 +836,20 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
     );
 
     try {
-      // Fetch real data from API
       late Map<String, dynamic> locationData;
       late List<Map<String, dynamic>> screenTimeData;
-      
+
       try {
         locationData = await apiService.getChildLatestLocation(childId);
-        debugPrint('[ChildDetail] Location API Response: $locationData');
         if (locationData.isEmpty) {
-          debugPrint('[ChildDetail] Location data empty, using fallback');
           locationData = {'data': null};
         }
-      } catch (locErr) {
-        debugPrint('[ChildDetail] Location API error: $locErr - Using fallback');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi tải vị trí: $locErr')),
-        );
-        locationData = {'data': null}; // Fallback
+      } catch (error) {
+        debugPrint('[ChildDetail] Location API error: $error - Using fallback');
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi tải vị trí: $error')));
+        locationData = {'data': null};
       }
 
       try {
@@ -741,49 +858,35 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
           startDate: DateTime.now().toIso8601String(),
           endDate: DateTime.now().toIso8601String(),
         );
-      } catch (stErr) {
-        debugPrint('[ChildDetail] Screen time API error: $stErr - Using fallback');
-        screenTimeData = []; // Fallback
+      } catch (error) {
+        debugPrint(
+          '[ChildDetail] Screen time API error: $error - Using fallback',
+        );
+        screenTimeData = [];
       }
 
       if (!mounted) return;
-      
-      // Close loading dialog
+
       Navigator.pop(context);
 
-      // Parse location data from API response
-      final location = locationData['data']?['location'];
-      debugPrint('[ChildDetail] Parsed location: $location');
-      
-      if (location == null) {
-        debugPrint('[ChildDetail] WARNING: Location is null');
-      }
-      
-      final batteryLevel = (location?['batteryLevel'] ?? location?['battery'] ?? 75) as int;
-      
-      // Get coordinates for reverse geocoding
+      final location =
+          locationData['data']?['location'] as Map<String, dynamic>?;
+      final batteryLevel =
+          (location?['batteryLevel'] ?? location?['battery'] ?? 75) as int;
       final latitude = (location?['latitude'] as num?)?.toDouble();
       final longitude = (location?['longitude'] as num?)?.toDouble();
-      
-      debugPrint('[ChildDetail] Coordinates - Lat: $latitude, Lng: $longitude');
-      
-      // Reverse geocode: convert lat/long to address using OpenStreetMap Nominatim
+
       String address = 'Không xác định';
       if (latitude != null && longitude != null) {
-        debugPrint('[ChildDetail] Reverse geocoding: $latitude, $longitude');
         address = await GeocodeService.getAddress(latitude, longitude);
-      } else {
-        debugPrint('[ChildDetail] ERROR: Missing coordinates for geocoding');
       }
-      
-      final updatedAt = (location?['timestamp'] ?? locationData['data']?['timestamp']) as String?;
-      
-      // inSafeZone: default from member card status
+
+      final updatedAt =
+          location?['timestamp'] ?? locationData['data']?['timestamp'];
       final inSafeZone = isSafe;
 
-      // Format last seen
       String lastSeen = 'Chưa cập nhật';
-      if (updatedAt != null) {
+      if (updatedAt is String) {
         try {
           final lastTime = DateTime.parse(updatedAt);
           final diff = DateTime.now().difference(lastTime);
@@ -799,17 +902,15 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
         } catch (_) {}
       }
 
-      // Calculate screen time from list
       int screenTimeMinutes = 0;
-      if (screenTimeData.isNotEmpty) {
-        for (var item in screenTimeData) {
-          screenTimeMinutes += (item['totalMinutes'] ?? 0) as int;
-        }
+      for (final item in screenTimeData) {
+        screenTimeMinutes += (item['totalMinutes'] ?? 0) as int;
       }
 
-      final selectedLocationObj = location != null ? location_model.Location.fromJson(location) : null;
-      debugPrint('[ChildDetail] Creating selectedLocation: $selectedLocationObj');
-      
+      final selectedLocation = location != null
+          ? location_model.Location.fromJson(location)
+          : null;
+
       final childDetail = ChildDetailData(
         childId: childId,
         name: childName,
@@ -819,32 +920,28 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
         isInSafeZone: inSafeZone,
         screenTimeMinutes: screenTimeMinutes,
         screenTimeLimit: 240,
-        selectedLocation: selectedLocationObj,
+        selectedLocation: selectedLocation,
       );
 
-      // Navigate to the new map screen with the detail panel
-      if (mounted) {
-        debugPrint('[ChildDetail] Navigating to ChildMapScreen with selectedLocation: ${childDetail.selectedLocation}');
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ChildMapScreen(
-              childId: childId,
-              childName: childName,
-              childDetail: childDetail,
-              selectedLocation: childDetail.selectedLocation,
-            ),
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChildMapScreen(
+            childId: childId,
+            childName: childName,
+            childDetail: childDetail,
+            selectedLocation: childDetail.selectedLocation,
           ),
-        );
-      }
-    } catch (e) {
-      debugPrint('[ChildDetail] Error loading data: $e');
-      if (mounted) {
-        Navigator.pop(context); // Close loading dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi tải dữ liệu: $e')),
-        );
-      }
+        ),
+      );
+    } catch (error) {
+      debugPrint('[ChildDetail] Error loading data: $error');
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Lỗi tải dữ liệu: $error')));
     }
   }
 
@@ -854,7 +951,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
         child: Container(
-          padding: EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
             color: AppColors.surface.withOpacity(0.85),
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
@@ -881,32 +978,30 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
             children: [
               FadeTransition(
                 opacity: _fadeController,
-                child: Text(
-                  'Trạng thái gần đây',
-                  style: AppTypography.h3,
-                ),
+                child: Text('Trạng thái gần đây', style: AppTypography.h3),
               ),
-              SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.md),
               ..._recentStatuses.asMap().entries.map((entry) {
                 final index = entry.key;
                 final status = entry.value;
                 return SlideTransition(
-                  position: Tween<Offset>(begin: Offset(0.3, 0), end: Offset.zero).animate(
-                    CurvedAnimation(
-                      parent: _slideController,
-                      curve: Interval((index * 0.2).clamp(0.0, 1.0), ((index + 1) * 0.2).clamp(0.0, 1.0), curve: Curves.easeOut),
-                    ),
-                  ),
+                  position:
+                      Tween<Offset>(
+                        begin: const Offset(0.3, 0),
+                        end: Offset.zero,
+                      ).animate(
+                        CurvedAnimation(
+                          parent: _slideController,
+                          curve: Interval(
+                            (index * 0.2).clamp(0.0, 1.0),
+                            ((index + 1) * 0.2).clamp(0.0, 1.0),
+                            curve: Curves.easeOut,
+                          ),
+                        ),
+                      ),
                   child: Padding(
-                    padding: EdgeInsets.only(bottom: AppSpacing.md),
-                    child: _buildStatusItem(
-                      name: status['name'],
-                      action: status['action'],
-                      time: status['time'],
-                      icon: status['icon'],
-                      color: status['color'],
-                      delay: index * 0.1,
-                    ),
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: _buildStatusItem(status),
                   ),
                 );
               }).toList(),
@@ -917,59 +1012,54 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
     );
   }
 
-  Widget _buildStatusItem({
-    required String name,
-    required String action,
-    required String time,
-    required IconData icon,
-    required Color color,
-    required double delay,
-  }) {
-    final isUnsafe = action.contains('rời');
+  Widget _buildStatusItem(Map<String, dynamic> status) {
+    final bool isWarning = status['isWarning'] == true;
+    final Color color =
+        status['color'] as Color? ??
+        (isWarning ? AppColors.danger : AppColors.success);
+    final IconData icon =
+        status['icon'] as IconData? ??
+        (isWarning ? Icons.warning_amber_rounded : Icons.check_circle_outline);
 
     String formattedTime = 'Vừa xong';
-    try {
-      final lastTime = DateTime.parse(time).toLocal();
-      final diff = DateTime.now().difference(lastTime);
-      if (diff.inMinutes < 1) {
-        formattedTime = 'Vừa xong';
-      } else if (diff.inMinutes < 60) {
-        formattedTime = '${diff.inMinutes} phút trước';
-      } else if (diff.inHours < 24) {
-        formattedTime = '${diff.inHours} giờ trước';
-      } else {
-        formattedTime = '${diff.inDays} ngày trước';
-      }
-    } catch (_) {
-      formattedTime = time.split('T').first;
+    final timestamp = _statusTimestamp(status);
+    final diff = DateTime.now().difference(timestamp);
+    if (diff.inMinutes < 1) {
+      formattedTime = 'Vừa xong';
+    } else if (diff.inMinutes < 60) {
+      formattedTime = '${diff.inMinutes} phút trước';
+    } else if (diff.inHours < 24) {
+      formattedTime = '${diff.inHours} giờ trước';
+    } else {
+      formattedTime = '${diff.inDays} ngày trước';
     }
 
     return Container(
-      margin: EdgeInsets.only(bottom: AppSpacing.sm),
-      padding: EdgeInsets.all(AppSpacing.md),
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         border: Border.all(
-          color: isUnsafe ? color.withOpacity(0.5) : AppColors.divider,
-          width: isUnsafe ? 1.5 : 1,
+          color: isWarning ? color.withOpacity(0.5) : AppColors.divider,
+          width: isWarning ? 1.5 : 1,
         ),
-        boxShadow: isUnsafe
+        boxShadow: isWarning
             ? [
                 BoxShadow(
                   color: color.withOpacity(0.15),
                   blurRadius: 16,
                   spreadRadius: 1,
-                  offset: Offset(0, 4),
+                  offset: const Offset(0, 4),
                 ),
               ]
             : [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.03),
                   blurRadius: 8,
-                  offset: Offset(0, 2),
+                  offset: const Offset(0, 2),
                 ),
-            ],
+              ],
       ),
       child: Row(
         children: [
@@ -982,7 +1072,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
             ),
             child: Icon(icon, size: 24, color: color),
           ),
-          SizedBox(width: AppSpacing.md),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -990,20 +1080,32 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> with TickerProvider
                 Text.rich(
                   TextSpan(
                     children: [
-                      TextSpan(text: '$name ', style: AppTypography.label.copyWith(fontWeight: FontWeight.bold)),
-                      TextSpan(text: action, style: AppTypography.label.copyWith(color: AppColors.textSecondary)),
-                    ]
+                      TextSpan(
+                        text: '${status['name']} ',
+                        style: AppTypography.label.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextSpan(
+                        text: status['action'] as String? ?? '',
+                        style: AppTypography.label.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   formattedTime,
-                  style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
           ),
-          if (isUnsafe)
+          if (isWarning)
             Icon(Icons.warning_amber_rounded, color: color, size: 24),
         ],
       ),
