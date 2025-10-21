@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 import '../../widgets/parent/screentime_suggestions_widget.dart';
@@ -12,12 +13,43 @@ class ScreenTimeSettingsScreen extends StatefulWidget {
 class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
   bool _loading = true;
   List<Map<String, dynamic>> _children = [];
+  Map<String, Map<String, dynamic>> _childUsage = {};
   String? _error;
+  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
     super.initState();
     _loadChildren();
+    _startAutoRefresh();
+  }
+
+  @override
+  void dispose() {
+    _autoRefreshTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 60), (_) {
+      if (mounted) {
+        _refreshUsageData();
+      }
+    });
+  }
+
+  Future<void> _refreshUsageData() async {
+    for (var child in _children) {
+      final childId = child['_id'] as String;
+      try {
+        final usage = await ApiService().getTodayUsage(childId);
+        setState(() {
+          _childUsage[childId] = usage;
+        });
+      } catch (e) {
+        // Continue on error
+      }
+    }
   }
 
   Future<void> _loadChildren() async {
@@ -38,10 +70,14 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
         _loading = false;
       });
 
-      // Load config and suggestions for each child
+      // Load config, usage, and suggestions for each child
       for (int i = 0; i < _children.length; i++) {
         try {
           final childId = _children[i]['_id'] as String;
+          
+          // Load today's usage
+          final usage = await ApiService().getTodayUsage(childId);
+          _childUsage[childId] = usage;
           
           // Load screen time config
           final config = await ApiService().getScreenTimeConfig(childId);
@@ -56,6 +92,7 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
           });
         } catch (e) {
           print('Failed to load data for ${_children[i]['name']}: $e');
+          _childUsage[_children[i]['_id']] = {'totalMinutes': 0, 'sessions': []};
           // Continue without full data
         }
       }
@@ -73,6 +110,12 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
   }
 
   Widget _buildChildCard(Map<String, dynamic> child) {
+    final childId = child['_id'] as String;
+    final usage = _childUsage[childId];
+    final totalMinutes = usage?['totalMinutes'] as int? ?? 0;
+    final hours = totalMinutes ~/ 60;
+    final minutes = totalMinutes % 60;
+    
     return Card(
       elevation: 2,
       margin: EdgeInsets.only(bottom: AppSpacing.md),
@@ -104,6 +147,14 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
                       Text(
                         '${child['age']} tuổi',
                         style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Hôm nay: ${hours}h ${minutes}p',
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
