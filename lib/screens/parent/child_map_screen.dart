@@ -12,7 +12,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:ui';
 import '../../theme/app_typography.dart';
 
-
 /// Dedicated map screen with sliding detail panel
 class ChildMapScreen extends StatefulWidget {
   final String childId;
@@ -48,24 +47,26 @@ class _ChildMapScreenState extends State<ChildMapScreen> {
     try {
       final children = await _apiService.getMyChildren();
       setState(() {
-        _linkedChildren = children
-            .map((child) {
-              final id = child['childId'] ?? child['_id'] ?? child['id'] ?? '';
-              final name = child['childName'] ?? child['name'] ?? child['fullName'] ?? 'Unknown';
-              return User(
-                id: id,
-                name: name,
-                fullName: name,
-                email: child['email'] ?? '',
-                phone: child['phone'],
-                role: 'child',
-                age: child['age'],
-                createdAt: child['createdAt'] != null 
-                  ? DateTime.parse(child['createdAt'])
-                  : DateTime.now(),
-              );
-            })
-            .toList();
+        _linkedChildren = children.map((child) {
+          final id = child['childId'] ?? child['_id'] ?? child['id'] ?? '';
+          final name =
+              child['childName'] ??
+              child['name'] ??
+              child['fullName'] ??
+              'Unknown';
+          return User(
+            id: id,
+            name: name,
+            fullName: name,
+            email: child['email'] ?? '',
+            phone: child['phone'],
+            role: 'child',
+            age: child['age'],
+            createdAt: child['createdAt'] != null
+                ? DateTime.parse(child['createdAt'])
+                : DateTime.now(),
+          );
+        }).toList();
       });
     } catch (e) {
       print('[ChildMapScreen] Error loading children: $e');
@@ -74,7 +75,9 @@ class _ChildMapScreenState extends State<ChildMapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print('[ChildMapScreen] Building for child: ${widget.childName}, ID: ${widget.childId}, location: ${widget.selectedLocation?.latitude}, ${widget.selectedLocation?.longitude}');
+    print(
+      '[ChildMapScreen] Building for child: ${widget.childName}, ID: ${widget.childId}, location: ${widget.selectedLocation?.latitude}, ${widget.selectedLocation?.longitude}',
+    );
     return Scaffold(
       // Using a Stack to layer the map and the sliding panel
       body: Stack(
@@ -92,8 +95,8 @@ class _ChildMapScreenState extends State<ChildMapScreen> {
           // The sliding panel for details
           DraggableScrollableSheet(
             initialChildSize: 0.17, // Fine-tuned "peek" state
-            minChildSize: 0.17,      // Fine-tuned "peek" state
-            maxChildSize: 0.9,       // Can be expanded to 90%
+            minChildSize: 0.17, // Fine-tuned "peek" state
+            maxChildSize: 0.9, // Can be expanded to 90%
             builder: (BuildContext context, ScrollController scrollController) {
               return ClipRRect(
                 borderRadius: const BorderRadius.only(
@@ -112,7 +115,7 @@ class _ChildMapScreenState extends State<ChildMapScreen> {
               );
             },
           ),
-          
+
           // Floating AppBar
           Positioned(
             top: MediaQuery.of(context).padding.top,
@@ -190,7 +193,8 @@ class _ChildMapScreenState extends State<ChildMapScreen> {
                       icon: Icons.phone_android_rounded,
                       iconColor: AppColors.info,
                       title: 'Thời gian sử dụng',
-                      value: '${child.screenTimeMinutes ~/ 60}h ${child.screenTimeMinutes % 60}m',
+                      value:
+                          '${child.screenTimeMinutes ~/ 60}h ${child.screenTimeMinutes % 60}m',
                       subtitle: 'Giới hạn: ${child.screenTimeLimit}h',
                       backgroundColor: AppColors.info.withOpacity(0.1),
                     ),
@@ -212,7 +216,9 @@ class _ChildMapScreenState extends State<ChildMapScreen> {
                 onCreateGeofence: (suggestion) {
                   if (_linkedChildren.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Đang tải danh sách trẻ em...')),
+                      const SnackBar(
+                        content: Text('Đang tải danh sách trẻ em...'),
+                      ),
                     );
                     return;
                   }
@@ -223,7 +229,10 @@ class _ChildMapScreenState extends State<ChildMapScreen> {
                       builder: (context) => GeofenceMapView(
                         linkedChildren: _linkedChildren,
                         focusedChildId: child.childId,
-                        initialCenter: LatLng(suggestion.center.latitude, suggestion.center.longitude),
+                        initialCenter: LatLng(
+                          suggestion.center.latitude,
+                          suggestion.center.longitude,
+                        ),
                         startInDrawMode: false,
                         showDrawControls: true,
                       ),
@@ -246,15 +255,36 @@ class _ChildMapScreenState extends State<ChildMapScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        _buildActionButton(icon: Icons.call_rounded, label: 'Gọi', color: Colors.green),
-        _buildActionButton(icon: Icons.message_rounded, label: 'Nhắn tin', color: Colors.blue),
-        _buildActionButton(icon: Icons.navigation_rounded, label: 'Chỉ đường', color: Colors.purple),
-        _buildActionButton(icon: Icons.history_rounded, label: 'Lịch sử', color: Colors.orange),
+        _buildActionButton(
+          icon: Icons.call_rounded,
+          label: 'Gọi',
+          color: Colors.green,
+        ),
+        _buildActionButton(
+          icon: Icons.message_rounded,
+          label: 'Nhắn tin',
+          color: Colors.blue,
+        ),
+        _buildActionButton(
+          icon: Icons.navigation_rounded,
+          label: 'Chỉ đường',
+          color: Colors.purple,
+        ),
+        _buildActionButton(
+          icon: Icons.history_rounded,
+          label: 'Lịch sử',
+          color: Colors.orange,
+        ),
       ],
     );
   }
 
-  Widget _buildActionButton({ required IconData icon, required String label, required Color color, VoidCallback? onTap }) {
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    VoidCallback? onTap,
+  }) {
     return GestureDetector(
       onTap: onTap ?? () {},
       child: Column(
@@ -271,13 +301,26 @@ class _ChildMapScreenState extends State<ChildMapScreen> {
             child: Icon(icon, color: color, size: 28),
           ),
           SizedBox(height: 8),
-          Text(label, style: AppTypography.captionSmall.copyWith(fontWeight: FontWeight.w600, color: color)),
+          Text(
+            label,
+            style: AppTypography.captionSmall.copyWith(
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoCard({ required IconData icon, required Color iconColor, required String title, required String value, required String subtitle, required Color backgroundColor }) {
+  Widget _buildInfoCard({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String value,
+    required String subtitle,
+    required Color backgroundColor,
+  }) {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -290,15 +333,35 @@ class _ChildMapScreenState extends State<ChildMapScreen> {
         children: [
           Container(
             padding: EdgeInsets.all(8),
-            decoration: BoxDecoration(color: iconColor.withOpacity(0.2), borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: Icon(icon, color: iconColor, size: 20),
           ),
           SizedBox(height: AppSpacing.sm),
-          Text(value, style: AppTypography.h3.copyWith(fontWeight: FontWeight.w700, color: Colors.black87)),
+          Text(
+            value,
+            style: AppTypography.h3.copyWith(
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+            ),
+          ),
           SizedBox(height: 2),
-          Text(title, style: AppTypography.captionSmall.copyWith(fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+          Text(
+            title,
+            style: AppTypography.captionSmall.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
           SizedBox(height: 2),
-          Text(subtitle, style: AppTypography.overline.copyWith(color: AppColors.textTertiary)),
+          Text(
+            subtitle,
+            style: AppTypography.overline.copyWith(
+              color: AppColors.textTertiary,
+            ),
+          ),
         ],
       ),
     );
@@ -317,14 +380,25 @@ class _ChildMapScreenState extends State<ChildMapScreen> {
         children: [
           Container(
             padding: EdgeInsets.all(8),
-            decoration: BoxDecoration(color: AppColors.info.withOpacity(0.2), borderRadius: BorderRadius.circular(10)),
-            child: Icon(Icons.location_on_rounded, color: AppColors.info, size: 20),
+            decoration: BoxDecoration(
+              color: AppColors.info.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              Icons.location_on_rounded,
+              color: AppColors.info,
+              size: 20,
+            ),
           ),
           SizedBox(width: AppSpacing.md),
           Expanded(
             child: SelectableText(
               widget.childDetail.locationName,
-              style: AppTypography.label.copyWith(fontWeight: FontWeight.w600, color: AppColors.textPrimary, height: 1.5),
+              style: AppTypography.label.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+                height: 1.5,
+              ),
             ),
           ),
         ],

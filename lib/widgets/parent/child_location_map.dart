@@ -314,6 +314,8 @@ class _ChildLocationMapState extends State<ChildLocationMap> {
 
   @override
   Widget build(BuildContext context) {
+    print('[MAP_BUILD] Building GoogleMap - markers: ${_markers.length}, loading: $_isLoading, error: $_errorMessage');
+    
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -325,7 +327,8 @@ class _ChildLocationMapState extends State<ChildLocationMap> {
           myLocationButtonEnabled: true,
           zoomControlsEnabled: true,
           onMapCreated: (controller) {
-            print('[MAP_CREATED] Google Map initialized');
+            print('[MAP_CREATED] Google Map initialized successfully');
+            print('[MAP_CREATED] Markers: ${_markers.length}');
             _mapController = controller;
             
             // If selectedLocation was provided, draw it now
@@ -333,14 +336,43 @@ class _ChildLocationMapState extends State<ChildLocationMap> {
               print('[MAP_CREATED] Drawing selectedLocation');
               _drawPathIfNeeded();
             } else if (_markers.isNotEmpty) {
+              print('[MAP_CREATED] Fitting map to ${_markers.length} markers');
               _fitMapToMarkers();
+            } else {
+              print('[MAP_CREATED] No markers or selected location to display');
             }
           },
         ),
         if (_isLoading)
-          const Center(child: CircularProgressIndicator()),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                Text('Đang tải vị trí...'),
+              ],
+            ),
+          ),
         if (!_isLoading && _errorMessage != null)
-          Center(child: Text(_errorMessage!)),
+          Center(
+            child: Container(
+              padding: EdgeInsets.all(16),
+              color: Colors.red[50],
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.error, color: Colors.red),
+                  SizedBox(height: 8),
+                  Text(
+                    _errorMessage!,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }
