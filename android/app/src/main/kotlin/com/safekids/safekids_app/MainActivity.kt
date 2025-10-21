@@ -36,8 +36,21 @@ class MainActivity : FlutterActivity() {
         val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
         val usageMap = mutableMapOf<String, Any>()
 
-        if (usageStatsManager != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        android.util.Log.d("SafeKids", "Getting device usage from $startTime to $endTime")
+
+        if (usageStatsManager == null) {
+            android.util.Log.e("SafeKids", "UsageStatsManager is null")
+            return usageMap
+        }
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            android.util.Log.e("SafeKids", "Android version < LOLLIPOP (${Build.VERSION.SDK_INT})")
+            return usageMap
+        }
+
+        try {
             val queryUsageStats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, startTime, endTime)
+            android.util.Log.d("SafeKids", "QueryUsageStats returned ${queryUsageStats.size} apps")
             
             var totalAppUsageTime = 0L
             val appUsages = mutableListOf<Map<String, Any?>>()
@@ -45,6 +58,8 @@ class MainActivity : FlutterActivity() {
             for (stat in queryUsageStats) {
                 val packageName = stat.packageName
                 val foregroundTime = stat.totalTimeInForeground
+                
+                android.util.Log.d("SafeKids", "App: $packageName = ${foregroundTime / 60000} minutes")
                 
                 if (foregroundTime > 0) {
                     totalAppUsageTime += foregroundTime
@@ -55,8 +70,13 @@ class MainActivity : FlutterActivity() {
                 }
             }
 
-            usageMap["totalAppUsageMinutes"] = totalAppUsageTime / 60000 // Convert to minutes
+            val totalMinutes = totalAppUsageTime / 60000
+            usageMap["totalAppUsageMinutes"] = totalMinutes
             usageMap["appUsages"] = appUsages
+            
+            android.util.Log.d("SafeKids", "Total device usage: $totalMinutes minutes")
+        } catch (e: Exception) {
+            android.util.Log.e("SafeKids", "Error querying usage stats: ${e.message}")
         }
 
         return usageMap

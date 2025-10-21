@@ -6,7 +6,12 @@ import 'api_service.dart';
 import 'device_usage_service.dart';
 
 /// Screen Time Tracker Service (AC 5.2.1, 5.2.2, 5.2.4) - Story 5.2
-/// Tracks screen on/off time and uploads usage data to backend
+/// Tracks device-wide screen time via Android UsageStatsManager
+/// Falls back to app-level session tracking if UsageStatsManager returns 0
+/// 
+/// NOTE: PACKAGE_USAGE_STATS permission requires manual enable:
+/// Settings → Apps → SafeKids → Permissions → Usage access
+/// Without this, UsageStatsManager returns 0 and falls back to session tracking
 class ScreenTimeTrackerService {
   static final ScreenTimeTrackerService _instance = ScreenTimeTrackerService._internal();
   factory ScreenTimeTrackerService() => _instance;
@@ -62,14 +67,22 @@ class ScreenTimeTrackerService {
   }
 
   /// Query device usage from UsageStatsManager
+  /// Falls back to session tracking if device usage is 0
   /// Updates _todayUsageMinutes with total device app usage
   Future<void> _queryDeviceUsage() async {
     try {
       final deviceUsage = await _deviceUsageService.getTodayDeviceUsage();
-      final totalAppUsageMinutes = deviceUsage['totalAppUsageMinutes'] as int? ?? 0;
+      var totalAppUsageMinutes = deviceUsage['totalAppUsageMinutes'] as int? ?? 0;
 
-      // Update today's usage
-      _todayUsageMinutes = totalAppUsageMinutes;
+      // Fallback to session tracking if device usage is 0
+      if (totalAppUsageMinutes == 0) {
+        await _loadTodayUsage();
+        print('[ScreenTime] Device usage returned 0, using session tracking: $_todayUsageMinutes minutes');
+      } else {
+        // Update today's usage from device
+        _todayUsageMinutes = totalAppUsageMinutes;
+        print('[ScreenTime] Device usage updated: $_todayUsageMinutes minutes');
+      }
 
       // Check if new day
       final today = _getTodayDate();
@@ -77,10 +90,10 @@ class ScreenTimeTrackerService {
         _currentDate = today;
         _clearDailyFlags();
       }
-
-      print('[ScreenTime] Device usage updated: $_todayUsageMinutes minutes');
     } catch (e) {
       print('[ScreenTime] Query device usage error: $e');
+      // Fallback to session tracking on error
+      await _loadTodayUsage();
     }
   }
 
