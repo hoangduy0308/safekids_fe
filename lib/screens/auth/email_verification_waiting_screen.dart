@@ -126,9 +126,36 @@ class _EmailVerificationWaitingScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      body: SafeArea(
+    return WillPopScope(
+      onWillPop: () async {
+        // Show confirmation dialog when user tries to go back
+        final shouldPop = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Thoát xác thực?'),
+            content: Text(
+              'Bạn chưa xác thực email. Nếu thoát bây giờ, bạn sẽ cần xác thực email trước khi đăng nhập.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text('Ở lại'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(
+                  'Thoát',
+                  style: TextStyle(color: AppColors.danger),
+                ),
+              ),
+            ],
+          ),
+        );
+        return shouldPop ?? false;
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundLight,
+        body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.all(AppSpacing.xl),
           child: Column(
@@ -149,6 +176,7 @@ class _EmailVerificationWaitingScreenState
               _buildHelpText(),
             ],
           ),
+        ),
         ),
       ),
     );

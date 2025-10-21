@@ -53,6 +53,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!mounted) return;
 
     if (success) {
+      // Clear token since email not verified yet
+      final authProvider = context.read<AuthProvider>();
+      await authProvider.logout();
+      
       // Navigate to email verification waiting screen
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
