@@ -340,17 +340,29 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ],
         ),
-      ),
-      floatingActionButton: _isInCall
-          ? null
-          : FloatingActionButton(
-              onPressed: _initiateCall,
-              backgroundColor: AppColors.childPrimary,
-              elevation: 8,
-              shape: const CircleBorder(),
-              child: Icon(Icons.call, color: Colors.white, size: 32),
+        actions: [
+          if (!_isInCall)
+            GestureDetector(
+              onTap: _initiateCall,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.childPrimary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.call,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+              ),
             ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+        ],
+      ),
       body: Column(
         children: [
           Expanded(
