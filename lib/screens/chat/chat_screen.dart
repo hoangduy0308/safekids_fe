@@ -9,6 +9,7 @@ import '../../theme/app_spacing.dart';
 import '../../widgets/chat/message_widget.dart';
 import '../../widgets/chat/typing_indicator.dart';
 import '../../widgets/chat/message_input_widget.dart';
+import './audio_call_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   final String conversationId;
@@ -32,6 +33,7 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isSending = false;
   Set<String> _typingUsers = {};
   Map<String, bool> _readReceipts = {};
+  bool _isInCall = false;
 
   @override
   void initState() {
@@ -53,12 +55,16 @@ class _ChatScreenState extends State<ChatScreen> {
 
     _socketService.onUserTyping = (data) {
       final conversationId = data['conversationId'];
-      if (conversationId == widget.conversationId) {
+      final senderId = data['senderId'];
+      final currentUserId = context.read<AuthProvider>().user?.id;
+      
+      // Only show typing indicator for other user, not for self
+      if (conversationId == widget.conversationId && senderId != currentUserId) {
         setState(() {
           if (data['isTyping'] == true) {
-            _typingUsers.add(data['senderId']);
+            _typingUsers.add(senderId);
           } else {
-            _typingUsers.remove(data['senderId']);
+            _typingUsers.remove(senderId);
           }
         });
       }
@@ -77,6 +83,47 @@ class _ChatScreenState extends State<ChatScreen> {
       final conversationId = data['conversationId'];
       if (conversationId == widget.conversationId) {
         _loadMessages();
+      }
+    };
+
+    // Call events
+    _socketService.onIncomingCall = (data) {
+      debugPrint('[Chat] Incoming call: $data');
+      if (mounted) {
+        _showIncomingCallDialog(data);
+      }
+    };
+
+    _socketService.onCallAccepted = (data) {
+      debugPrint('[Chat] Call accepted');
+      if (mounted) {
+        setState(() => _isInCall = true);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => AudioCallScreen(
+              conversationId: widget.conversationId,
+              otherUser: widget.otherUser,
+              callerId: data['callerId'],
+            ),
+          ),
+        );
+      }
+    };
+
+    _socketService.onCallRejected = (data) {
+      debugPrint('[Chat] Call rejected');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Call rejected'), backgroundColor: Colors.red),
+        );
+      }
+    };
+
+    _socketService.onCallEnded = (data) {
+      debugPrint('[Chat] Call ended');
+      if (mounted) {
+        setState(() => _isInCall = false);
       }
     };
   }
@@ -179,6 +226,74 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void _initiateCall() {
+    final userId = context.read<AuthProvider>().user?.id;
+    if (userId == null) return;
+
+    debugPrint('[ChatScreen] Initiating call to ${widget.otherUser['_id']}');
+    _socketService.emitIncomingCall({
+      'callerId': userId.toString(),
+      'receiverId': widget.otherUser['_id'].toString(),
+      'conversationId': widget.conversationId,
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Calling ${widget.otherUser['name']}...')),
+    );
+  }
+
+  void _showIncomingCallDialog(Map<String, dynamic> callData) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text('Incoming Call'),
+        content: Text('${widget.otherUser['name']} is calling...'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              final userId = context.read<AuthProvider>().user?.id;
+              if (userId != null) {
+                _socketService.emitCallRejected({
+                  'callerId': callData['callerId'].toString(),
+                  'receiverId': userId.toString(),
+                  'conversationId': widget.conversationId,
+                });
+              }
+            },
+            child: Text('Reject', style: TextStyle(color: Colors.red)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              final userId = context.read<AuthProvider>().user?.id;
+              if (userId != null) {
+                _socketService.emitCallAccepted({
+                  'callerId': callData['callerId'].toString(),
+                  'receiverId': userId.toString(),
+                  'conversationId': widget.conversationId,
+                });
+                setState(() => _isInCall = true);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => AudioCallScreen(
+                      conversationId: widget.conversationId,
+                      otherUser: widget.otherUser,
+                      callerId: callData['callerId'],
+                    ),
+                  ),
+                );
+              }
+            },
+            child: Text('Accept', style: TextStyle(color: Colors.green)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUserId = context.read<AuthProvider>().user?.id;
@@ -206,6 +321,15 @@ class _ChatScreenState extends State<ChatScreen> {
           ],
         ),
       ),
+      floatingActionButton: _isInCall
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: _initiateCall,
+              backgroundColor: Colors.green,
+              icon: Icon(Icons.call),
+              label: Text('Call'),
+              elevation: 8,
+            ),
       body: Column(
         children: [
           Expanded(
