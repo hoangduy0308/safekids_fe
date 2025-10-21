@@ -22,38 +22,41 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
 
   Future<void> _loadChildren() async {
     try {
-      // This would normally come from a parent state management or API
-      // For now, we'll mock the children data based on current user
+      // Load children from user profile API
+      final profile = await ApiService().getProfile();
+      final linkedUsers = profile['linkedUsers'] as List?;
+      
+      final children = linkedUsers != null 
+          ? linkedUsers
+              .whereType<Map<String, dynamic>>()
+              .where((u) => u['role'] == 'child')
+              .toList()
+          : [];
+
       setState(() {
-        _children = [
-          {
-            '_id': '64f8a9b2e4b3a9c8c8e8c9a1',
-            'name': 'Nguyễn Văn An',
-            'age': 10,
-            'role': 'child',
-            'suggestions': null
-          },
-          {
-            '_id': '64f8a9b2e4b3a9c8c8e8c9a2', 
-            'name': 'Nguyễn Thị Bình',
-            'age': 8,
-            'role': 'child',
-            'suggestions': null
-          }
-        ];
+        _children = List<Map<String, dynamic>>.from(children);
         _loading = false;
       });
 
-      // Load suggestions for each child
+      // Load config and suggestions for each child
       for (int i = 0; i < _children.length; i++) {
         try {
-          final suggestions = await ApiService().getScreenTimeSuggestions(_children[i]['_id']);
+          final childId = _children[i]['_id'] as String;
+          
+          // Load screen time config
+          final config = await ApiService().getScreenTimeConfig(childId);
+          _children[i]['config'] = config;
+          
+          // Load suggestions
+          final suggestions = await ApiService().getScreenTimeSuggestions(childId);
+          _children[i]['suggestions'] = suggestions;
+          
           setState(() {
-            _children[i]['suggestions'] = suggestions;
+            _children = [..._children]; // Trigger rebuild
           });
         } catch (e) {
-          print('Failed to load suggestions for ${_children[i]['name']}: $e');
-          // Continue without suggestions
+          print('Failed to load data for ${_children[i]['name']}: $e');
+          // Continue without full data
         }
       }
     } catch (e) {
