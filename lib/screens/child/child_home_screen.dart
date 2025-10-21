@@ -13,6 +13,7 @@ import '../../services/api_service.dart';
 import '../../services/battery_service.dart';
 import '../../widgets/child/location_permission_dialog.dart';
 import '../../widgets/child/link_request_dialog.dart';
+import '../../widgets/child/pending_link_requests_dialog.dart';
 import '../../widgets/common/offline_indicator.dart';
 import '../../widgets/battery_optimization_guide.dart';
 import './location_settings_screen.dart';
@@ -20,6 +21,7 @@ import './sos_countdown_dialog.dart';
 import './sos_success_screen.dart';
 import '../../utils/offline_sos_queue.dart';
 import '../../widgets/child/screentime_usage_widget.dart';
+import '../chat/chat_list_screen.dart';
 
 class ChildHomeScreen extends StatefulWidget {
   const ChildHomeScreen({Key? key}) : super(key: key);
@@ -36,6 +38,7 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
   final _locationService = LocationService();
   final _socketService = SocketService();
   final Set<String> _processedRequests = {};
+  int _pendingRequestsCount = 0;
 
   final _navItems = [
     {'icon': Icons.home_rounded, 'label': 'Trang chủ'},
@@ -65,6 +68,20 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
     _animationController.forward();
     _initLocationTracking();
     _initSocketConnection();
+    _loadPendingRequestsCount();
+  }
+
+  Future<void> _loadPendingRequestsCount() async {
+    try {
+      final requests = await ApiService().getLinkRequests(status: 'pending');
+      if (mounted) {
+        setState(() {
+          _pendingRequestsCount = requests.length;
+        });
+      }
+    } catch (e) {
+      debugPrint('[ChildHome] Error loading pending requests: $e');
+    }
   }
 
   Future<void> _initLocationTracking() async {
@@ -120,6 +137,7 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
         
         if (mounted) {
           _processedRequests.add(requestId);
+          _loadPendingRequestsCount();
           showDialog(
             context: context,
             barrierDismissible: false,
@@ -131,7 +149,10 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
               message: data['message'],
             ),
           ).then((accepted) {
-            if (accepted == true) authProvider.refreshUser();
+            if (accepted == true) {
+              authProvider.refreshUser();
+              _loadPendingRequestsCount();
+            }
           });
         }
       };
@@ -318,6 +339,8 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
                   ),
                 ),
               SizedBox(width: AppSpacing.sm),
+              _buildNotificationButton(),
+              SizedBox(width: AppSpacing.sm),
               _buildSoftIconButton(icon: Icons.settings, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LocationSettingsScreen()))),
               SizedBox(width: AppSpacing.sm),
               _buildSoftIconButton(icon: Icons.logout_rounded, onTap: () => _showLogoutDialog(context, authProvider)),
@@ -340,6 +363,56 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
           boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), offset: Offset(4, 4), blurRadius: 8), BoxShadow(color: Colors.white.withOpacity(0.8), offset: Offset(-2, -2), blurRadius: 4)],
         ),
         child: Icon(icon, size: 22, color: AppColors.textPrimary),
+      ),
+    );
+  }
+
+  Widget _buildNotificationButton() {
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (_) => PendingLinkRequestsDialog(
+            onRequestsUpdated: _loadPendingRequestsCount,
+          ),
+        ).then((_) => _loadPendingRequestsCount());
+      },
+      child: Stack(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Color(0xFFF5F7FA),
+              shape: BoxShape.circle,
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), offset: Offset(4, 4), blurRadius: 8), BoxShadow(color: Colors.white.withOpacity(0.8), offset: Offset(-2, -2), blurRadius: 4)],
+            ),
+            child: Icon(Icons.notifications_rounded, size: 22, color: AppColors.textPrimary),
+          ),
+          if (_pendingRequestsCount > 0)
+            Positioned(
+              top: -4,
+              right: -4,
+              child: Container(
+                padding: EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: AppColors.danger,
+                  shape: BoxShape.circle,
+                  boxShadow: [BoxShadow(color: AppColors.danger.withOpacity(0.4), blurRadius: 8)],
+                ),
+                child: Text(
+                  _pendingRequestsCount.toString(),
+                  style: AppTypography.overline.copyWith(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    height: 1,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -426,12 +499,60 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
         children: [
           _buildActivityCard(Icons.access_time_rounded, 'Thời gian sử dụng', 'Xem thời gian bạn đã dùng thiết bị', AppColors.childAccent),
           SizedBox(height: AppSpacing.md),
-          _buildActivityCard(Icons.chat_bubble_rounded, 'Tin nhắn', 'Chat với ba mẹ và gia đình', AppColors.childPrimary),
+          _buildChatCard(context),
           SizedBox(height: AppSpacing.md),
           _buildActivityCard(Icons.assignment_rounded, 'Nhiệm vụ', 'Hoàn thành nhiệm vụ hàng ngày', AppColors.info),
           SizedBox(height: AppSpacing.md),
           _buildActivityCard(Icons.stars_rounded, 'Phần thưởng', 'Nhận thưởng khi hoàn thành tốt', AppColors.warning),
         ],
+      ),
+    );
+  }
+
+  Widget _buildChatCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ChatListScreen()),
+      ),
+      child: Container(
+        padding: EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: Color(0xFFF5F7FA),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), offset: Offset(4, 4), blurRadius: 12), BoxShadow(color: Colors.white.withOpacity(0.9), offset: Offset(-3, -3), blurRadius: 10)],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(color: AppColors.childPrimary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+              child: Icon(Icons.chat_bubble_rounded, color: AppColors.childPrimary, size: 28),
+            ),
+            SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Tin nhắn',
+                    style: AppTypography.body.copyWith(fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                  ),
+                  SizedBox(height: 4),
+                  Text('Chat với ba mẹ và gia đình', style: AppTypography.caption.copyWith(color: AppColors.textSecondary)),
+                ],
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(color: AppColors.childPrimary.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+              child: Text(
+                'Mở',
+                style: AppTypography.overline.copyWith(fontWeight: FontWeight.w600, color: AppColors.childPrimary),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

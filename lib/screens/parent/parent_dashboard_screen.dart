@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+import '../chat/chat_list_screen.dart';
 import 'geofence_list_screen.dart';
 import 'parent_home_screen.dart';
 import 'sos_history_screen.dart';
@@ -20,7 +21,7 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
 
   final _navItems = [
     {'icon': Icons.home_outlined, 'activeIcon': Icons.home, 'label': 'Trang chủ'},
-    {'icon': Icons.people_outline, 'activeIcon': Icons.people, 'label': 'Gia đình'},
+    {'icon': Icons.chat_bubble_outline, 'activeIcon': Icons.chat_bubble, 'label': 'Tin nhắn'},
     {'icon': Icons.settings_outlined, 'activeIcon': Icons.settings, 'label': 'Quản lí'},
     {'icon': Icons.person_outline, 'activeIcon': Icons.person, 'label': 'Cá nhân'},
   ];
@@ -110,7 +111,7 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
       case 0:
         return const ParentHomeScreen();
       case 1:
-        return _buildFamilyScreen();
+        return const ChatListScreen();
       case 2:
         return _buildManagementScreen();
       case 3:
@@ -120,18 +121,7 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
     }
   }
 
-  Widget _buildFamilyScreen() {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gia đình'),
-        backgroundColor: AppColors.parentPrimary,
-        elevation: 0,
-      ),
-      body: Center(
-        child: Text('Quản lí trẻ em', style: AppTypography.h3),
-      ),
-    );
-  }
+
 
   Widget _buildManagementScreen() {
     return DefaultTabController(

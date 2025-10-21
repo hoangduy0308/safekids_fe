@@ -21,6 +21,14 @@ class SocketService extends ChangeNotifier {
   Function(Map<String, dynamic>)? onGeofenceAlert;
   Function(Map<String, dynamic>)? onSosAlert;
   Function(Map<String, dynamic>)? onScreentimeWarning;
+  Function(Map<String, dynamic>)? onNewMessage;
+  Function(Map<String, dynamic>)? onUserTyping;
+  Function(Map<String, dynamic>)? onMessageRead;
+  Function(Map<String, dynamic>)? onMessageDeleted;
+  Function(Map<String, dynamic>)? onIncomingCall;
+  Function(Map<String, dynamic>)? onCallAccepted;
+  Function(Map<String, dynamic>)? onCallRejected;
+  Function(Map<String, dynamic>)? onCallEnded;
 
   /// Connect to Socket.IO server
   void connect(String userId) {
@@ -39,6 +47,7 @@ class SocketService extends ChangeNotifier {
           .enableReconnection()
           .setReconnectionDelay(1000)
           .setReconnectionAttempts(5)
+          .setAuth({'userId': userId})
           .build(),
     );
 
@@ -121,6 +130,61 @@ class SocketService extends ChangeNotifier {
       }
     });
 
+    // Chat events
+    _socket!.on(SocketConfig.eventNewMessage, (data) {
+      debugPrint('[Socket] New message received: $data');
+      if (onNewMessage != null) {
+        onNewMessage!(Map<String, dynamic>.from(data));
+      }
+    });
+
+    _socket!.on(SocketConfig.eventUserTyping, (data) {
+      if (onUserTyping != null) {
+        onUserTyping!(Map<String, dynamic>.from(data));
+      }
+    });
+
+    _socket!.on(SocketConfig.eventMessageRead, (data) {
+      if (onMessageRead != null) {
+        onMessageRead!(Map<String, dynamic>.from(data));
+      }
+    });
+
+    _socket!.on(SocketConfig.eventMessageDeleted, (data) {
+      if (onMessageDeleted != null) {
+        onMessageDeleted!(Map<String, dynamic>.from(data));
+      }
+    });
+
+    // Call events
+    _socket!.on('incomingCall', (data) {
+      debugPrint('[Socket] Incoming call: $data');
+      if (onIncomingCall != null) {
+        onIncomingCall!(Map<String, dynamic>.from(data));
+      }
+    });
+
+    _socket!.on('callAccepted', (data) {
+      debugPrint('[Socket] Call accepted');
+      if (onCallAccepted != null) {
+        onCallAccepted!(Map<String, dynamic>.from(data));
+      }
+    });
+
+    _socket!.on('callRejected', (data) {
+      debugPrint('[Socket] Call rejected');
+      if (onCallRejected != null) {
+        onCallRejected!(Map<String, dynamic>.from(data));
+      }
+    });
+
+    _socket!.on('callEnded', (data) {
+      debugPrint('[Socket] Call ended');
+      if (onCallEnded != null) {
+        onCallEnded!(Map<String, dynamic>.from(data));
+      }
+    });
+
     _socket!.connect();
   }
 
@@ -147,6 +211,66 @@ class SocketService extends ChangeNotifier {
   void emitSosAlert(Map<String, dynamic> data) {
     if (_socket != null && _isConnected) {
       _socket!.emit(SocketConfig.eventSosAlert, data);
+    }
+  }
+
+  /// Emit chat message
+  void emitChatMessage(Map<String, dynamic> data) {
+    if (_socket != null && _isConnected) {
+      _socket!.emit(SocketConfig.eventChatMessage, data);
+    }
+  }
+
+  /// Emit typing indicator
+  void emitUserTyping(Map<String, dynamic> data) {
+    if (_socket != null && _isConnected) {
+      _socket!.emit(SocketConfig.eventUserTyping, data);
+    }
+  }
+
+  /// Emit message read receipt
+  void emitMessageRead(Map<String, dynamic> data) {
+    if (_socket != null && _isConnected) {
+      _socket!.emit(SocketConfig.eventMessageRead, data);
+    }
+  }
+
+  /// Emit message deleted
+  void emitMessageDeleted(Map<String, dynamic> data) {
+    if (_socket != null && _isConnected) {
+      _socket!.emit(SocketConfig.eventMessageDeleted, data);
+    }
+  }
+
+  /// Emit incoming call
+  void emitIncomingCall(Map<String, dynamic> data) {
+    debugPrint('[SocketService] emitIncomingCall: $_isConnected, data: $data');
+    if (_socket != null && _isConnected) {
+      _socket!.emit('incomingCall', data);
+      debugPrint('[SocketService] incomingCall emitted');
+    } else {
+      debugPrint('[SocketService] Socket not connected or null');
+    }
+  }
+
+  /// Emit call accepted
+  void emitCallAccepted(Map<String, dynamic> data) {
+    if (_socket != null && _isConnected) {
+      _socket!.emit('callAccepted', data);
+    }
+  }
+
+  /// Emit call rejected
+  void emitCallRejected(Map<String, dynamic> data) {
+    if (_socket != null && _isConnected) {
+      _socket!.emit('callRejected', data);
+    }
+  }
+
+  /// Emit call ended
+  void emitCallEnded(Map<String, dynamic> data) {
+    if (_socket != null && _isConnected) {
+      _socket!.emit('callEnded', data);
     }
   }
 
