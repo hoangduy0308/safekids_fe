@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 import '../config/api_config.dart';
 import '../constants/app_constants.dart';
 import '../models/location.dart';
@@ -1115,11 +1116,27 @@ class ApiService {
       if (endDate != null) queryParams['endDate'] = endDate;
 
       final uri = Uri.parse('${ApiConfig.baseUrl}/sos/history').replace(queryParameters: queryParams);
-      final response = await http.get(uri, headers: headers);
+      print('[SOS API] Request to: $uri');
+      
+      final response = await http.get(uri, headers: headers).timeout(
+        Duration(seconds: 30),
+        onTimeout: () {
+          throw TimeoutException('SOS history request timed out after 30 seconds');
+        },
+      );
 
       _handleError(response);
       final data = jsonDecode(response.body);
-      return Map<String, dynamic>.from(data['data'] ?? {});
+      
+      // Return data object with sosList, total, hasMore
+      final resultData = data['data'] as Map<String, dynamic>? ?? {};
+      print('[SOS API] Got ${resultData['sosList']?.length ?? 0} items');
+      
+      return {
+        'sosList': resultData['sosList'] ?? [],
+        'total': resultData['total'] ?? 0,
+        'hasMore': resultData['hasMore'] ?? false,
+      };
     } catch (e) {
       print('Get SOS history filtered error: $e');
       rethrow;
