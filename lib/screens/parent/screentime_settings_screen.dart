@@ -73,16 +73,18 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
       // Load config, usage, and suggestions for each child
       for (int i = 0; i < _children.length; i++) {
         try {
-          final childId = _children[i]['_id'] as String;
+          final childId = _children[i]['_id'] as String?;
+          if (childId == null) continue;
           
           // Load today's usage
           final usage = await ApiService().getTodayUsage(childId);
-          print('[ScreenTimeSettings] Loaded usage for ${_children[i]['name']}: $usage');
-          _childUsage[childId] = usage;
+          final childName = _children[i]['name'] ?? _children[i]['fullName'] ?? 'Unknown';
+          print('[ScreenTimeSettings] Loaded usage for $childName: totalMinutes=${usage['totalMinutes']}');
+          _childUsage[childId] = Map<String, dynamic>.from(usage);
           
           // Load screen time config
           final config = await ApiService().getScreenTimeConfig(childId);
-          _children[i]['config'] = config;
+          _children[i]['config'] = Map<String, dynamic>.from(config);
           
           // Load suggestions
           final suggestions = await ApiService().getScreenTimeSuggestions(childId);
@@ -92,8 +94,12 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
             _children = [..._children]; // Trigger rebuild
           });
         } catch (e) {
-          print('Failed to load data for ${_children[i]['name']}: $e');
-          _childUsage[_children[i]['_id']] = {'totalMinutes': 0, 'sessions': []};
+          final childId = _children[i]['_id'] as String?;
+          final childName = _children[i]['name'] ?? 'Unknown';
+          print('[ScreenTimeSettings] Failed to load data for $childName: $e');
+          if (childId != null) {
+            _childUsage[childId] = {'totalMinutes': 0, 'sessions': []};
+          }
           // Continue without full data
         }
       }
@@ -114,14 +120,44 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
     final childId = child['_id'] as String? ?? '';
     final childName = child['fullName'] as String? ?? child['name'] as String? ?? 'Unknown';
     final childAge = child['age'] as int?;
+    
+    // Safely convert totalMinutes from any type (int, double, string)
     final usage = _childUsage[childId];
-    final totalMinutes = usage?['totalMinutes'] as int? ?? 0;
+    int totalMinutes = 0;
+    try {
+      final val = usage?['totalMinutes'];
+      if (val is int) {
+        totalMinutes = val;
+      } else if (val is double) {
+        totalMinutes = val.toInt();
+      } else if (val is String) {
+        totalMinutes = int.tryParse(val) ?? 0;
+      }
+    } catch (e) {
+      print('[ScreenTimeCard] Error parsing totalMinutes: $e');
+      totalMinutes = 0;
+    }
+    
     final hours = totalMinutes ~/ 60;
     final minutes = totalMinutes % 60;
     
-    // Get daily limit from config
+    // Get daily limit from config - safely convert
     final config = child['config'] as Map<String, dynamic>?;
-    final dailyLimit = config?['dailyLimitMinutes'] as int? ?? 120;
+    int dailyLimit = 120;
+    try {
+      final val = config?['dailyLimitMinutes'];
+      if (val is int) {
+        dailyLimit = val;
+      } else if (val is double) {
+        dailyLimit = val.toInt();
+      } else if (val is String) {
+        dailyLimit = int.tryParse(val) ?? 120;
+      }
+    } catch (e) {
+      print('[ScreenTimeCard] Error parsing dailyLimit: $e');
+      dailyLimit = 120;
+    }
+    
     final percent = dailyLimit > 0 ? (totalMinutes / dailyLimit).clamp(0.0, 1.3) : 0.0;
     
     // Get status color
@@ -134,7 +170,7 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
       statusColor = Colors.orange[300]!;
     }
     
-    print('[ScreenTimeCard] Building card: childId=$childId, name=$childName, usage=$usage, limit=$dailyLimit, percent=$percent');
+    print('[ScreenTimeCard] Card: $childName, usage=$totalMinutes min, limit=$dailyLimit min, percent=${(percent*100).toInt()}%');
     
     return Card(
       elevation: 2,
