@@ -76,9 +76,20 @@ class _ScreenTimeManagementScreenState extends State<ScreenTimeManagementScreen>
       final childId = child['_id'] as String;
       try {
         final usage = await ApiService().getTodayUsage(childId);
-        _childUsage[childId] = usage;
+        final config = await ApiService().getScreenTimeConfig(childId);
+        
+        _childUsage[childId] = {
+          ...usage,
+          'dailyLimit': config['dailyLimitMinutes'] ?? 120,
+          'bedtime': config['bedtime'],
+          'wakeup': config['wakeup'],
+        };
       } catch (e) {
-        _childUsage[childId] = {'totalMinutes': 0, 'sessions': []};
+        _childUsage[childId] = {
+          'totalMinutes': 0,
+          'sessions': [],
+          'dailyLimit': 120,
+        };
       }
     }
   }
@@ -319,8 +330,8 @@ class _ScreenTimeManagementScreenState extends State<ScreenTimeManagementScreen>
     final hours = totalMinutes ~/ 60;
     final minutes = totalMinutes % 60;
     
-    // Get daily limit (default 120 minutes if not set)
-    final dailyLimit = 120; // TODO: Get from settings API
+    // Get daily limit from config (loaded from database)
+    final dailyLimit = usage['dailyLimit'] as int? ?? 120;
     final percent = dailyLimit > 0 ? (totalMinutes / dailyLimit).clamp(0.0, 1.3) : 0.0;
     
     // Determine status
