@@ -98,6 +98,16 @@ class _ChatScreenState extends State<ChatScreen> {
       debugPrint('[Chat] Call accepted');
       if (mounted) {
         setState(() => _isInCall = true);
+        
+        // Setup callEnded handler BEFORE navigating
+        _socketService.onCallEnded = (endData) {
+          debugPrint('[ChatScreen] Call ended - closing AudioCallScreen');
+          if (mounted) {
+            Navigator.of(context).pop();
+            setState(() => _isInCall = false);
+          }
+        };
+        
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -275,6 +285,16 @@ class _ChatScreenState extends State<ChatScreen> {
                   'conversationId': widget.conversationId,
                 });
                 setState(() => _isInCall = true);
+                
+                // Setup callEnded handler BEFORE navigating
+                _socketService.onCallEnded = (endData) {
+                  debugPrint('[ChatScreen] Call ended by other party');
+                  if (mounted) {
+                    Navigator.of(context).pop();
+                    setState(() => _isInCall = false);
+                  }
+                };
+                
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -323,13 +343,14 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       floatingActionButton: _isInCall
           ? null
-          : FloatingActionButton.extended(
+          : FloatingActionButton(
               onPressed: _initiateCall,
-              backgroundColor: Colors.green,
-              icon: Icon(Icons.call),
-              label: Text('Call'),
+              backgroundColor: AppColors.childPrimary,
               elevation: 8,
+              shape: const CircleBorder(),
+              child: Icon(Icons.call, color: Colors.white, size: 32),
             ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       body: Column(
         children: [
           Expanded(

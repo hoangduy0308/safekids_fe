@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/socket_service.dart';
+import '../../services/agora_audio_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
@@ -24,6 +26,7 @@ class AudioCallScreen extends StatefulWidget {
 
 class _AudioCallScreenState extends State<AudioCallScreen> {
   late SocketService _socketService;
+  late AgoraAudioService _agoraService;
   bool _isMuted = false;
   bool _useSpeaker = true;
   int _callDuration = 0;
@@ -33,21 +36,43 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
   void initState() {
     super.initState();
     _socketService = SocketService();
+    _agoraService = AgoraAudioService();
     _callStartTime = DateTime.now();
     _startCallTimer();
     
-    // Listen for call ended from other party
-    _socketService.onCallEnded = (data) {
-      debugPrint('[AudioCallScreen] Call ended by other party');
+    // Initialize Agora and join call
+    _initializeAgoraAndJoinCall();
+  }
+
+  Future<void> _initializeAgoraAndJoinCall() async {
+    try {
+      // Request microphone permission
+      final micStatus = await Permission.microphone.request();
+      debugPrint('[AudioCallScreen] Microphone permission: $micStatus');
+      
+      if (!micStatus.isGranted) {
+        throw Exception('Microphone permission denied');
+      }
+
+      // Initialize Agora
+      await _agoraService.initialize();
+      debugPrint('[AudioCallScreen] Agora initialized');
+
+      // Join channel using conversationId as channel name
+      final userId = context.read<AuthProvider>().user?.id ?? 'unknown';
+      await _agoraService.joinCall(
+        channelName: widget.conversationId,
+        uid: userId.hashCode.abs() % 2147483647, // Convert string ID to positive int
+      );
+      debugPrint('[AudioCallScreen] Joined Agora channel: ${widget.conversationId}');
+    } catch (e) {
+      debugPrint('[AudioCallScreen] Agora initialization error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Call ended')),
+          SnackBar(content: Text('Failed to initialize audio: $e')),
         );
-        Future.delayed(Duration(milliseconds: 500), () {
-          if (mounted) Navigator.pop(context);
-        });
       }
-    };
+    }
   }
 
   void _startCallTimer() {
@@ -61,7 +86,15 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
     });
   }
 
-  void _endCall() {
+  Future<void> _endCall() async {
+    try {
+      // Leave Agora channel
+      await _agoraService.leaveCall();
+    } catch (e) {
+      debugPrint('[AudioCallScreen] Leave call error: $e');
+    }
+
+    // Notify other party
     final userId = context.read<AuthProvider>().user?.id;
     if (userId != null) {
       _socketService.emitCallEnded({
@@ -70,7 +103,8 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
         'conversationId': widget.conversationId,
       });
     }
-    Navigator.pop(context);
+    
+    if (mounted) Navigator.pop(context);
   }
 
   String _formatCallDuration(int seconds) {
@@ -145,7 +179,14 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
                   children: [
                     // Mute Button
                     GestureDetector(
-                      onTap: () => setState(() => _isMuted = !_isMuted),
+                      onTap: () async {
+                        setState(() => _isMuted = !_isMuted);
+                        if (_isMuted) {
+                          await _agoraService.muteAudio();
+                        } else {
+                          await _agoraService.unmuteAudio();
+                        }
+                      },
                       child: Container(
                         width: 60,
                         height: 60,
@@ -163,7 +204,10 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
 
                     // Speaker Button
                     GestureDetector(
-                      onTap: () => setState(() => _useSpeaker = !_useSpeaker),
+                      onTap: () async {
+                        setState(() => _useSpeaker = !_useSpeaker);
+                        await _agoraService.switchSpeaker(_useSpeaker);
+                      },
                       child: Container(
                         width: 60,
                         height: 60,
@@ -208,7 +252,17 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
 
   @override
   void dispose() {
-    _endCall();
+    // Leave call and cleanup Agora (fire and forget)
+    Future.microtask(() async {
+      try {
+        if (_agoraService.isInCall) {
+          await _agoraService.leaveCall();
+        }
+        await _agoraService.dispose();
+      } catch (e) {
+        debugPrint('[AudioCallScreen] Dispose error: $e');
+      }
+    });
     super.dispose();
   }
 }
