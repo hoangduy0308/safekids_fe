@@ -74,6 +74,7 @@ class _ChildMapScreenState extends State<ChildMapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print('[ChildMapScreen] Building for child: ${widget.childName}, ID: ${widget.childId}, location: ${widget.selectedLocation?.latitude}, ${widget.selectedLocation?.longitude}');
     return Scaffold(
       // Using a Stack to layer the map and the sliding panel
       body: Stack(

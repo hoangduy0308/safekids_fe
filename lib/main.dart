@@ -7,8 +7,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'providers/auth_provider.dart';
 import 'providers/notification_provider.dart';
 import 'services/notification_service.dart';
+import 'services/screentime_tracker_service.dart';
+import 'services/screentime_lock_service.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/parent/parent_dashboard_screen.dart';
+import 'screens/parent/sos_alert_screen.dart';
 import 'screens/child/child_home_screen.dart';
 import 'theme/app_theme.dart';
 
@@ -42,14 +45,63 @@ void main() async {
   // Initialize Hive for offline storage
   await Hive.initFlutter();
   
+  // Initialize Screen Time Tracker (AC 5.2.1) - Story 5.2
+  debugPrint('⏰ Initializing Screen Time Tracker...');
+  try {
+    await ScreenTimeTrackerService().init();
+    debugPrint('✅ Screen Time Tracker initialized');
+  } catch (e) {
+    debugPrint('❌ Screen Time Tracker init error: $e');
+  }
+  
   // Initialize FlutterForegroundTask for background location tracking
   FlutterForegroundTask.initCommunicationPort();
   
   runApp(const SafeKidsApp());
 }
 
-class SafeKidsApp extends StatelessWidget {
+class SafeKidsApp extends StatefulWidget {
   const SafeKidsApp({Key? key}) : super(key: key);
+
+  @override
+  State<SafeKidsApp> createState() => _SafeKidsAppState();
+}
+
+class _SafeKidsAppState extends State<SafeKidsApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    
+    // Start session on app launch (AC 5.2.1)
+    ScreenTimeTrackerService().startSession();
+    
+    // Initialize lock service (AC 5.3.1, 5.3.8) - Story 5.3
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ScreenTimeLockService().init(context);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    ScreenTimeTrackerService().dispose();
+    ScreenTimeLockService().dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // App came to foreground
+      ScreenTimeTrackerService().startSession();
+    } else if (state == AppLifecycleState.paused) {
+      // App went to background
+      ScreenTimeTrackerService().endSession();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +122,24 @@ class SafeKidsApp extends StatelessWidget {
             theme: themeData,
             navigatorKey: navigatorKey,
             home: const AuthGate(),
+            routes: {
+              '/parent-dashboard': (context) => const ParentDashboardScreen(),
+              '/child-home': (context) => const ChildHomeScreen(),
+            },
+            onGenerateRoute: (settings) {
+              // Handle routes with arguments (AC 4.2.2) - Story 4.2
+              if (settings.name == '/sos-alert') {
+                final args = settings.arguments as Map<String, dynamic>?;
+                final sosId = args?['sosId'] as String?;
+                if (sosId != null) {
+                  return MaterialPageRoute(
+                    builder: (context) => SOSAlertScreen(sosId: sosId),
+                    fullscreenDialog: true,
+                  );
+                }
+              }
+              return null;
+            },
           );
         },
       ),

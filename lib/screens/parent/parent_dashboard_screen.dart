@@ -5,6 +5,8 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import 'geofence_list_screen.dart';
 import 'parent_home_screen.dart';
+import 'sos_history_screen.dart';
+import 'screentime_management_screen.dart';
 
 class ParentDashboardScreen extends StatefulWidget {
   const ParentDashboardScreen({Key? key}) : super(key: key);
@@ -133,7 +135,7 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
 
   Widget _buildManagementScreen() {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Quản lí'),
@@ -144,26 +146,18 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
             labelColor: AppColors.parentPrimary,
             unselectedLabelColor: AppColors.textSecondary,
             indicatorColor: AppColors.parentPrimary,
-            tabs: [
+            tabs: const [
               Tab(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.location_on, size: 20),
-                    SizedBox(width: AppSpacing.sm),
-                    Text('Vùng an toàn'),
-                  ],
-                ),
+                icon: Icon(Icons.location_on, size: 20),
+                text: 'Vùng',
               ),
               Tab(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.schedule, size: 20),
-                    SizedBox(width: AppSpacing.sm),
-                    Text('Thời gian sử dụng'),
-                  ],
-                ),
+                icon: Icon(Icons.schedule, size: 20),
+                text: 'Thời gian',
+              ),
+              Tab(
+                icon: Icon(Icons.emergency, size: 20),
+                text: 'SOS',
               ),
             ],
           ),
@@ -171,9 +165,8 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
         body: TabBarView(
           children: [
             GeofenceListScreen(),
-            Center(
-              child: Text('Quản lí thời gian sử dụng', style: AppTypography.h3),
-            ),
+            ScreenTimeManagementScreen(),
+            SOSHistoryScreen(),
           ],
         ),
       ),

@@ -19,6 +19,7 @@ import './location_settings_screen.dart';
 import './sos_countdown_dialog.dart';
 import './sos_success_screen.dart';
 import '../../utils/offline_sos_queue.dart';
+import '../../widgets/child/screentime_usage_widget.dart';
 
 class ChildHomeScreen extends StatefulWidget {
   const ChildHomeScreen({Key? key}) : super(key: key);
@@ -359,77 +360,9 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
   }
   
   Widget _buildScreenTimeWidget() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      padding: EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: Color(0xFFF5F7FA),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), offset: Offset(4, 4), blurRadius: 12), BoxShadow(color: Colors.white.withOpacity(0.9), offset: Offset(-3, -3), blurRadius: 10)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.phone_android, color: AppColors.childPrimary, size: 24),
-                  SizedBox(width: 8),
-                  Text('Thời gian hôm nay', style: AppTypography.h3.copyWith(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: AppSpacing.md),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '2.3',
-                style: AppTypography.display1.copyWith(fontSize: 48, fontWeight: FontWeight.w700, color: AppColors.childPrimary, height: 1),
-              ),
-              SizedBox(width: 4),
-              Padding(                padding: EdgeInsets.only(bottom: 8),                child: Text(                  'giờ',                  style: AppTypography.h3.copyWith(fontSize: 20, fontWeight: FontWeight.w500, color: AppColors.textSecondary),                ),              ),
-              Spacer(),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                      Text(
-                    'Giới hạn: 3.0 giờ',
-                    style: AppTypography.label.copyWith(color: AppColors.textSecondary),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Còn lại: 0.7 giờ',
-                    style: AppTypography.label.copyWith(fontWeight: FontWeight.w600, color: AppColors.success),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: AppSpacing.md),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              height: 12,
-              decoration: BoxDecoration(color: AppColors.surfaceVariant, borderRadius: BorderRadius.circular(8)),
-              child: FractionallySizedBox(
-                alignment: Alignment.centerLeft,
-                widthFactor: 0.77,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: [AppColors.childPrimary, AppColors.childPrimary.withOpacity(0.8)]),
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [BoxShadow(color: AppColors.childPrimary.withOpacity(0.3), blurRadius: 4, offset: Offset(0, 1))],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      child: ScreenTimeUsageWidget(),
     );
   }
 

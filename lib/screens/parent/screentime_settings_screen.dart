@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 import '../../widgets/parent/screentime_suggestions_widget.dart';
+import 'edit_screentime_limit_screen.dart';
 
 class ScreenTimeSettingsScreen extends StatefulWidget {
   @override
@@ -176,37 +177,33 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
   }
 
   Future<void> _showLimitDialog(Map<String, dynamic> child) async {
-    // Implementation for setting daily limit
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Thiết lập giới hạn'),
-        content: Text('Tính năng đang được phát triển'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Đóng'),
-          ),
-        ],
+    // Navigate to edit screen
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditScreenTimeLimitScreen(child: child),
       ),
     );
+
+    // Reload if config was saved
+    if (result == true) {
+      _loadChildren();
+    }
   }
 
   Future<void> _showBedtimeDialog(Map<String, dynamic> child) async {
-    // Implementation for setting bedtime
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Thiết lập giờ ngủ'),
-        content: Text('Tính năng đang được phát triển'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Đóng'),
-          ),
-        ],
+    // Navigate to edit screen (same as limit, just opens with bedtime section visible)
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditScreenTimeLimitScreen(child: child),
       ),
     );
+
+    // Reload if config was saved
+    if (result == true) {
+      _loadChildren();
+    }
   }
 
   Future<void> _showReportsDialog(Map<String, dynamic> child) async {

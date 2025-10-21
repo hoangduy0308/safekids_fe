@@ -4,6 +4,7 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'sos_alert_screen.dart';
 
 import '../../models/child_detail_data.dart';
 import '../../models/location.dart' as location_model;
@@ -328,10 +329,16 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
         childName: data['childName'] ?? 'Trẻ không rõ',
         timestamp: timestamp,
       );
-      sosAlert['sosId'] = data['sosId']?.toString() ?? '';
+      final sosId = data['sosId']?.toString() ?? '';
+      sosAlert['sosId'] = sosId;
 
       _addRecentStatus(sosAlert);
       print('[ParentHome] Added SOS alert. Total: ${_recentStatuses.length}');
+
+      // AC 4.2.5: Show in-app alert modal immediately (Story 4.2 Task 7)
+      if (sosId.isNotEmpty) {
+        _showSOSAlertModal(sosId);
+      }
     };
 
     socketService.onGeofenceAlert = (data) {
@@ -376,6 +383,21 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
     );
     _fadeController.forward();
     _slideController.forward();
+  }
+
+  /// Show SOS Alert Modal (AC 4.2.5, Task 7) - Story 4.2
+  Future<void> _showSOSAlertModal(String sosId) async {
+    // Vibrate device
+    HapticFeedback.heavyImpact();
+
+    // Navigate to full-screen SOS alert screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SOSAlertScreen(sosId: sosId),
+        fullscreenDialog: true,
+      ),
+    );
   }
 
   @override
@@ -720,6 +742,10 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
   }
 
   Widget _buildMembersSection(List<Map<String, dynamic>> children) {
+    print('[MEMBERS] Total children: ${children.length}');
+    for (var i = 0; i < children.length; i++) {
+      print('[CHILD_$i] ID: ${children[i]['_id'] ?? children[i]['id']}, Name: ${children[i]['name']}');
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -731,12 +757,15 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
             children: [
               ...children.asMap().entries.map((entry) {
                 final child = entry.value;
+                final childId = child['_id'] ?? child['id'] ?? '';
+                final childName = child['name'] ?? 'Trẻ';
                 final isSafe = true; // TODO: lấy trạng thái an toàn thực tế
+                print('[BUILD_CARD] Building card for: $childName, ID: $childId');
                 return Padding(
                   padding: const EdgeInsets.only(right: AppSpacing.lg),
                   child: _buildMemberCard(
-                    childId: child['_id'] ?? child['id'] ?? '',
-                    name: child['name'] ?? 'Trẻ',
+                    childId: childId,
+                    name: childName,
                     isSafe: isSafe,
                   ),
                 );
@@ -817,6 +846,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
       statusText: statusText,
       onTap: () {
         HapticFeedback.mediumImpact();
+        print('[CARD_TAP] Tapped child: $name, ID: $childId');
         _showChildMapScreen(childId, name, isSafe);
       },
     );
@@ -827,6 +857,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
     String childName,
     bool isSafe,
   ) async {
+    print('[SHOW_MAP] START - Child: $childName, ID: $childId');
     final apiService = ApiService();
 
     showDialog(
@@ -840,7 +871,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
       late List<Map<String, dynamic>> screenTimeData;
 
       try {
+        print('[API_CALL] Calling getChildLatestLocation for: $childId');
         locationData = await apiService.getChildLatestLocation(childId);
+        print('[API_RESPONSE] Got location data: childId=${locationData['data']?['childId']}, lat=${locationData['data']?['location']?['latitude']}, lon=${locationData['data']?['location']?['longitude']}');
         if (locationData.isEmpty) {
           locationData = {'data': null};
         }
@@ -871,6 +904,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
 
       final location =
           locationData['data']?['location'] as Map<String, dynamic>?;
+      print('[LOCATION_DATA] Extracted location for $childName: lat=${location?['latitude']}, lon=${location?['longitude']}');
       final batteryLevel =
           (location?['batteryLevel'] ?? location?['battery'] ?? 75) as int;
       final latitude = (location?['latitude'] as num?)?.toDouble();
@@ -880,6 +914,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
       if (latitude != null && longitude != null) {
         address = await GeocodeService.getAddress(latitude, longitude);
       }
+      print('[ADDRESS] For $childName: $address');
 
       final updatedAt =
           location?['timestamp'] ?? locationData['data']?['timestamp'];
@@ -924,6 +959,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
       );
 
       if (!mounted) return;
+      print('[NAVIGATE] Opening map for $childName (ID: $childId) with location: ${childDetail.selectedLocation?.latitude}, ${childDetail.selectedLocation?.longitude}');
       Navigator.push(
         context,
         MaterialPageRoute(

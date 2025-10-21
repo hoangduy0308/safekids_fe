@@ -65,6 +65,7 @@ class _ChildLocationMapState extends State<ChildLocationMap> {
   void initState() {
     super.initState();
     debugPrint('=== ChildLocationMap initState CALLED ===');
+    print('[MAP_INIT] focusedChildId: ${widget.focusedChildId}, selectedLocation: ${widget.selectedLocation?.latitude}, ${widget.selectedLocation?.longitude}');
     
     // If selectedLocation is passed directly, skip loading all children
     if (widget.selectedLocation != null) {

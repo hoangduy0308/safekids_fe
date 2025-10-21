@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import '../../services/api_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 
 class SOSSuccessScreen extends StatefulWidget {
   final List<String> parentNames;
   final VoidCallback onDismiss;
+  final String? sosId;
+  final DateTime? sosTimestamp;
 
   const SOSSuccessScreen({
     Key? key,
     required this.parentNames,
     required this.onDismiss,
+    this.sosId,
+    this.sosTimestamp,
   }) : super(key: key);
 
   @override
@@ -18,6 +23,8 @@ class SOSSuccessScreen extends StatefulWidget {
 
 class _SOSSuccessScreenState extends State<SOSSuccessScreen> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
+  final ApiService _apiService = ApiService();
+  bool _cancelling = false;
 
   @override
   void initState() {
@@ -31,6 +38,65 @@ class _SOSSuccessScreenState extends State<SOSSuccessScreen> with SingleTickerPr
     Future.delayed(Duration(seconds: 5), () {
       if (mounted) Navigator.pop(context);
     });
+  }
+
+  bool _canCancel() {
+    if (widget.sosId == null || widget.sosTimestamp == null) return false;
+    final timeSince = DateTime.now().difference(widget.sosTimestamp!);
+    return timeSince.inMinutes <= 5;
+  }
+
+  Future<void> _cancelSOS() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Hủy Cảnh Báo SOS'),
+        content: Text('Bạn có chắc muốn hủy cảnh báo SOS này? Ba mẹ sẽ được thông báo.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Không'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+            child: Text('Hủy SOS'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _cancelling = true);
+
+    try {
+      await _apiService.updateSOSStatus(
+        widget.sosId!,
+        'false_alarm',
+        reason: 'accidental',
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ Đã hủy cảnh báo. Ba mẹ đã được thông báo.'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _cancelling = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('⚠️ Không thể hủy: ${e.toString()}'),
+            backgroundColor: AppColors.danger,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -119,6 +185,38 @@ class _SOSSuccessScreenState extends State<SOSSuccessScreen> with SingleTickerPr
                   ),
                   
                   SizedBox(height: 32),
+                  
+                  // Cancel button (AC 4.4.2)
+                  if (_canCancel())
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 16),
+                      child: ElevatedButton.icon(
+                        onPressed: _cancelling ? null : _cancelSOS,
+                        icon: _cancelling 
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Icon(Icons.cancel),
+                        label: Text(
+                          _cancelling ? 'Đang hủy...' : 'HỦY CẢNH BÁO',
+                          style: AppTypography.button.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
                   
                   // Close button
                   ElevatedButton(

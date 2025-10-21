@@ -128,6 +128,68 @@ class ApiService {
     }
   }
 
+  /// Get today's screen time usage (AC 5.2.6) - Story 5.2
+  Future<Map<String, dynamic>> getTodayUsage(String childId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('${ApiConfig.screentimeUsage}/$childId/today'),
+        headers: headers,
+      );
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      return Map<String, dynamic>.from(data['data'] ?? {});
+    } catch (e) {
+      print('Get today usage error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get usage history (AC 5.4.5) - Story 5.4
+  Future<List<Map<String, dynamic>>> getUsageHistory({
+    required String childId,
+    required String startDate,
+    required String endDate,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('${ApiConfig.screentimeUsage}/$childId/history?startDate=$startDate&endDate=$endDate'),
+        headers: headers,
+      );
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      return List<Map<String, dynamic>>.from(data['data'] ?? []);
+    } catch (e) {
+      print('Get usage history error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get usage stats (AC 5.4.6) - Story 5.4
+  Future<Map<String, dynamic>> getUsageStats({
+    required String childId,
+    required String startDate,
+    required String endDate,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('${ApiConfig.screentimeUsage}/$childId/stats?startDate=$startDate&endDate=$endDate'),
+        headers: headers,
+      );
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      return Map<String, dynamic>.from(data['data'] ?? {});
+    } catch (e) {
+      print('Get usage stats error: $e');
+      rethrow;
+    }
+  }
+
   /// Get screen time usage history
   Future<List<Map<String, dynamic>>> getScreenTimeUsageHistory({
     required String childId,
@@ -941,7 +1003,39 @@ class ApiService {
     }
   }
 
-  /// Get SOS history for specific child
+  /// Get SOS history with filters (AC 4.3.6) - Story 4.3
+  Future<Map<String, dynamic>> getSOSHistoryFiltered({
+    String? childId,
+    String? status,
+    String? startDate,
+    String? endDate,
+    int limit = 50,
+    int skip = 0,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final queryParams = <String, String>{
+        'limit': limit.toString(),
+        'skip': skip.toString(),
+      };
+      if (childId != null) queryParams['childId'] = childId;
+      if (status != null) queryParams['status'] = status;
+      if (startDate != null) queryParams['startDate'] = startDate;
+      if (endDate != null) queryParams['endDate'] = endDate;
+
+      final uri = Uri.parse('${ApiConfig.baseUrl}/sos/history').replace(queryParameters: queryParams);
+      final response = await http.get(uri, headers: headers);
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      return Map<String, dynamic>.from(data['data'] ?? {});
+    } catch (e) {
+      print('Get SOS history filtered error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get SOS history for specific child (legacy method)
   Future<List<Map<String, dynamic>>> getSOSHistory(String childId, {int limit = 10, int skip = 0}) async {
     try {
       final headers = await _getHeaders();
@@ -957,6 +1051,75 @@ class ApiService {
     } catch (e) {
       print('Get SOS history error: $e');
       return [];
+    }
+  }
+
+  /// Get SOS stats (AC 4.3.7 - Optional) - Story 4.3
+  Future<Map<String, dynamic>> getSOSStats({
+    String? startDate,
+    String? endDate,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final queryParams = <String, String>{};
+      if (startDate != null) queryParams['startDate'] = startDate;
+      if (endDate != null) queryParams['endDate'] = endDate;
+
+      final uri = Uri.parse('${ApiConfig.baseUrl}/sos/stats').replace(queryParameters: queryParams);
+      final response = await http.get(uri, headers: headers);
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      return Map<String, dynamic>.from(data['data'] ?? {});
+    } catch (e) {
+      print('Get SOS stats error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get SOS details by ID (AC 4.2.3) - Story 4.2
+  Future<Map<String, dynamic>> getSOSDetails(String sosId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/sos/$sosId'),
+        headers: headers,
+      );
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      return Map<String, dynamic>.from(data['data'] ?? {});
+    } catch (e) {
+      print('Get SOS details error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update SOS status (AC 4.2.6, 4.4.5) - Story 4.2, 4.4
+  Future<Map<String, dynamic>> updateSOSStatus(
+    String sosId,
+    String status, {
+    String? notes,
+    String? reason,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.put(
+        Uri.parse('${ApiConfig.baseUrl}/sos/$sosId/status'),
+        headers: headers,
+        body: jsonEncode({
+          'status': status,
+          if (notes != null) 'notes': notes,
+          if (reason != null) 'reason': reason,
+        }),
+      );
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      return Map<String, dynamic>.from(data['data'] ?? {});
+    } catch (e) {
+      print('Update SOS status error: $e');
+      rethrow;
     }
   }
 }
