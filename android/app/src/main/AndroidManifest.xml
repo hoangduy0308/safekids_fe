@@ -24,6 +24,9 @@
     <!-- Boot receiver to restart tracking after reboot -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     
+    <!-- Screen Time & Device Usage Stats (for app and device usage tracking) -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+    
     <application
         android:label="safekids_app"
         android:name="${applicationName}"

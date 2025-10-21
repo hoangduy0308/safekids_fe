@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
+import 'device_usage_service.dart';
 
 /// Screen Time Tracker Service (AC 5.2.1, 5.2.2, 5.2.4) - Story 5.2
 /// Tracks screen on/off time and uploads usage data to backend
@@ -15,12 +16,15 @@ class ScreenTimeTrackerService {
   final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
 
   Timer? _uploadTimer;
+  Timer? _deviceUsageTimer;
   DateTime? _sessionStart;
   Box<Map>? _sessionsBox;
 
   int _todayUsageMinutes = 0;
   String _currentDate = '';
   bool _initialized = false;
+  
+  final DeviceUsageService _deviceUsageService = DeviceUsageService();
 
   Future<void> init() async {
     if (_initialized) return;
@@ -37,15 +41,46 @@ class ScreenTimeTrackerService {
         ),
       );
 
+      // Query device usage immediately
+      await _queryDeviceUsage();
+
+      // Start device usage query timer (every 5 minutes)
+      _deviceUsageTimer = Timer.periodic(const Duration(minutes: 5), (_) {
+        _queryDeviceUsage();
+      });
+
       // Start upload timer (every 5 minutes)
       _uploadTimer = Timer.periodic(const Duration(minutes: 5), (_) {
         _uploadUsage();
       });
 
       _initialized = true;
-      print('[ScreenTime Tracker] Initialized successfully');
+      print('[ScreenTime Tracker] Initialized successfully with device usage tracking');
     } catch (e) {
       print('[ScreenTime Tracker] Init error: $e');
+    }
+  }
+
+  /// Query device usage from UsageStatsManager
+  /// Updates _todayUsageMinutes with total device app usage
+  Future<void> _queryDeviceUsage() async {
+    try {
+      final deviceUsage = await _deviceUsageService.getTodayDeviceUsage();
+      final totalAppUsageMinutes = deviceUsage['totalAppUsageMinutes'] as int? ?? 0;
+
+      // Update today's usage
+      _todayUsageMinutes = totalAppUsageMinutes;
+
+      // Check if new day
+      final today = _getTodayDate();
+      if (today != _currentDate) {
+        _currentDate = today;
+        _clearDailyFlags();
+      }
+
+      print('[ScreenTime] Device usage updated: $_todayUsageMinutes minutes');
+    } catch (e) {
+      print('[ScreenTime] Query device usage error: $e');
     }
   }
 
@@ -217,6 +252,7 @@ class ScreenTimeTrackerService {
 
   void dispose() {
     _uploadTimer?.cancel();
+    _deviceUsageTimer?.cancel();
     _sessionsBox?.close();
   }
 }
