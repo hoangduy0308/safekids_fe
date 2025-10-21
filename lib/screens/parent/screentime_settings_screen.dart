@@ -77,6 +77,7 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
           
           // Load today's usage
           final usage = await ApiService().getTodayUsage(childId);
+          print('[ScreenTimeSettings] Loaded usage for ${_children[i]['name']}: $usage');
           _childUsage[childId] = usage;
           
           // Load screen time config
@@ -110,11 +111,30 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
   }
 
   Widget _buildChildCard(Map<String, dynamic> child) {
-    final childId = child['_id'] as String;
+    final childId = child['_id'] as String? ?? '';
+    final childName = child['fullName'] as String? ?? child['name'] as String? ?? 'Unknown';
+    final childAge = child['age'] as int?;
     final usage = _childUsage[childId];
     final totalMinutes = usage?['totalMinutes'] as int? ?? 0;
     final hours = totalMinutes ~/ 60;
     final minutes = totalMinutes % 60;
+    
+    // Get daily limit from config
+    final config = child['config'] as Map<String, dynamic>?;
+    final dailyLimit = config?['dailyLimitMinutes'] as int? ?? 120;
+    final percent = dailyLimit > 0 ? (totalMinutes / dailyLimit).clamp(0.0, 1.3) : 0.0;
+    
+    // Get status color
+    Color statusColor = Colors.green;
+    if (percent >= 1.0) {
+      statusColor = Colors.red;
+    } else if (percent >= 0.9) {
+      statusColor = Colors.orange;
+    } else if (percent >= 0.7) {
+      statusColor = Colors.orange[300]!;
+    }
+    
+    print('[ScreenTimeCard] Building card: childId=$childId, name=$childName, usage=$usage, limit=$dailyLimit, percent=$percent');
     
     return Card(
       elevation: 2,
@@ -140,17 +160,18 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        child['name'],
+                        childName,
                         style: AppTypography.h3.copyWith(color: AppColors.textPrimary),
                       ),
                       SizedBox(height: AppSpacing.xxs),
-                      Text(
-                        '${child['age']} tuổi',
-                        style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
-                      ),
+                      if (childAge != null)
+                        Text(
+                          '$childAge tuổi',
+                          style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                        ),
                       SizedBox(height: 4),
                       Text(
-                        'Hôm nay: ${hours}h ${minutes}p',
+                        'Hôm nay: ${hours}h ${minutes}p / ${dailyLimit ~/ 60}h',
                         style: AppTypography.caption.copyWith(
                           color: AppColors.textSecondary,
                           fontWeight: FontWeight.w500,
@@ -159,7 +180,38 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
                     ],
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios, color: AppColors.textLight, size: 16),
+                // Percent display
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${(percent * 100).toInt()}%',
+                    style: AppTypography.caption.copyWith(
+                      color: statusColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: AppSpacing.md),
+            
+            // Progress Bar
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: percent.clamp(0.0, 1.0),
+                    backgroundColor: Colors.grey[300],
+                    valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                    minHeight: 8,
+                  ),
+                ),
               ],
             ),
             SizedBox(height: AppSpacing.md),
