@@ -39,14 +39,24 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
   }
 
   Future<void> _refreshUsageData() async {
+    print('[ScreenTimeSettings] Refreshing usage data for ${_children.length} children');
     for (var child in _children) {
-      final childId = child['_id'] as String;
+      final childId = child['_id'] as String?;
+      final childName = child['name'] ?? child['fullName'] ?? 'Unknown';
+      
+      if (childId == null) {
+        print('[ScreenTimeSettings] Skipping child with null ID: $childName');
+        continue;
+      }
+      
       try {
         final usage = await ApiService().getTodayUsage(childId);
+        print('[ScreenTimeSettings] Refreshed usage for $childName: ${usage['totalMinutes']}');
         setState(() {
           _childUsage[childId] = usage;
         });
       } catch (e) {
+        print('[ScreenTimeSettings] Error refreshing usage for $childName: $e');
         // Continue on error
       }
     }
@@ -56,7 +66,10 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
     try {
       // Load children from user profile API
       final profile = await ApiService().getProfile();
+      print('[ScreenTimeSettings] Profile loaded: ${profile.keys}');
+      
       final linkedUsers = profile['linkedUsers'] as List?;
+      print('[ScreenTimeSettings] Linked users: ${linkedUsers?.length ?? 0}');
       
       final children = linkedUsers != null 
           ? linkedUsers
@@ -65,10 +78,14 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
               .toList()
           : [];
 
+      print('[ScreenTimeSettings] Found ${children.length} children');
+
       setState(() {
         _children = List<Map<String, dynamic>>.from(children);
         _loading = false;
       });
+      
+      print('[ScreenTimeSettings] Children set, starting to load data');
 
       // Load config, usage, and suggestions for each child
       for (int i = 0; i < _children.length; i++) {
