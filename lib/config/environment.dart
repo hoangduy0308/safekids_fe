@@ -11,13 +11,13 @@ class EnvironmentConfig {
   
   static const Map<Environment, Map<String, String>> _config = {
     Environment.local: {
-      'apiUrl': 'https://e82ae9da97ea.ngrok-free.app/api',
-      'socketUrl': 'https://e82ae9da97ea.ngrok-free.app',
+      'apiUrl': 'https://4bcb5f6ab8f1.ngrok-free.app/api',
+      'socketUrl': 'https://4bcb5f6ab8f1.ngrok-free.app',
       'name': 'Local (Emulator)',
     },
     Environment.dev: {
-      'apiUrl': 'https://e82ae9da97ea.ngrok-free.app/api',
-      'socketUrl': 'https://e82ae9da97ea.ngrok-free.app',
+      'apiUrl': 'https://4bcb5f6ab8f1.ngrok-free.app/api',
+      'socketUrl': 'https://4bcb5f6ab8f1.ngrok-free.app',
       'name': 'Development (Azure)',
     },
     Environment.production: {
@@ -37,6 +37,7 @@ class EnvironmentConfig {
   static bool get isLocal => currentEnvironment == Environment.local;
   static bool get isDev => currentEnvironment == Environment.dev;
 }
+
 
 
 

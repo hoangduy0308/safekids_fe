@@ -403,6 +403,97 @@ class ApiService {
     }
   }
 
+  /// Verify email with token
+  Future<Map<String, dynamic>> verifyEmail(String token) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/auth/verify-email?token=$token'),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        final error = jsonDecode(response.body);
+        throw Exception(error['message'] ?? 'Verification failed');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Resend verification email
+  Future<void> resendVerification(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/auth/resend-verification'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      );
+
+      if (response.statusCode != 200) {
+        final error = jsonDecode(response.body);
+        throw Exception(error['message'] ?? 'Failed to resend verification');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Forgot password - request OTP via email or SMS
+  Future<Map<String, dynamic>> forgotPassword({
+    required String contactInfo, // email or phone
+    required String method, // 'email' or 'sms'
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/auth/forgot-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          if (method == 'email') 'email': contactInfo else 'phone': contactInfo,
+          'method': method,
+        }),
+      );
+
+      if (response.statusCode >= 400) {
+        final body = jsonDecode(response.body);
+        throw Exception(body['message'] ?? 'Yêu cầu thất bại');
+      }
+
+      return jsonDecode(response.body);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Reset password with OTP
+  Future<Map<String, dynamic>> resetPassword({
+    required String contactInfo, // email or phone
+    required String otp,
+    required String newPassword,
+    required String method, // 'email' or 'sms'
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/auth/reset-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          if (method == 'email') 'email': contactInfo else 'phone': contactInfo,
+          'otp': otp,
+          'newPassword': newPassword,
+        }),
+      );
+
+      if (response.statusCode >= 400) {
+        final body = jsonDecode(response.body);
+        throw Exception(body['message'] ?? 'Đặt lại mật khẩu thất bại');
+      }
+
+      return jsonDecode(response.body);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// USER PROFILE METHODS
 
   /// Get current user profile

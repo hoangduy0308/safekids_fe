@@ -732,6 +732,27 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                       ],
                     ),
                   ),
+                  const SizedBox(width: AppSpacing.sm),
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.mediumImpact();
+                      _showLogoutDialog(context.read<AuthProvider>());
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(AppSpacing.sm),
+                      decoration: BoxDecoration(
+                        color: AppColors.danger.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.logout_rounded,
+                        size: 28,
+                        color: AppColors.danger,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1146,5 +1167,32 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
         ],
       ),
     );
+  }
+
+  void _showLogoutDialog(AuthProvider authProvider) async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Đăng xuất'),
+        content: const Text('Bạn có chắc chắn muốn đăng xuất?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Đăng xuất',
+              style: AppTypography.button.copyWith(color: AppColors.danger),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true) {
+      await authProvider.logout();
+    }
   }
 }
