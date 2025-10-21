@@ -46,8 +46,9 @@ class ScreenTimeTrackerService {
         ),
       );
 
-      // Query device usage immediately
+      // Query device usage immediately and upload
       await _queryDeviceUsage();
+      await _uploadUsage();
 
       // Start device usage query timer (every 5 minutes)
       _deviceUsageTimer = Timer.periodic(const Duration(minutes: 5), (_) {
@@ -162,7 +163,8 @@ class ScreenTimeTrackerService {
       final today = _getTodayDate();
       final sessions = _sessionsBox?.values.where((s) => s['date'] == today).toList() ?? [];
 
-      if (sessions.isEmpty) return;
+      // Always upload if totalMinutes > 0 (from device usage or sessions)
+      if (_todayUsageMinutes == 0) return;
 
       final prefs = await SharedPreferences.getInstance();
       final childId = prefs.getString('userId');
@@ -179,7 +181,7 @@ class ScreenTimeTrackerService {
         sessions: sessions.cast<Map<String, dynamic>>(),
       );
 
-      print('[ScreenTime] Usage uploaded: $_todayUsageMinutes minutes');
+      print('[ScreenTime] Usage uploaded: $_todayUsageMinutes minutes (${sessions.length} sessions)');
 
       // Check for local notifications (AC 5.2.8)
       await _checkLimitsForLocalNotification();
