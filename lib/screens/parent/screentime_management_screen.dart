@@ -307,7 +307,8 @@ class _ScreenTimeManagementScreenState extends State<ScreenTimeManagementScreen>
   /// Build child usage card with realtime data and status
   Widget _buildChildUsageCard(Map<String, dynamic> child) {
     final childId = child['_id'] as String;
-    final fullName = child['fullName'] as String;
+    final fullName = child['fullName'] as String? ?? child['name'] as String? ?? 'Unknown';
+    final age = child['age'] as int?;
     final usage = _childUsage[childId];
     
     if (usage == null) {
@@ -336,14 +337,14 @@ class _ScreenTimeManagementScreenState extends State<ScreenTimeManagementScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Avatar + Name + Usage
+            // Avatar + Name + Age + Usage
             Row(
               children: [
                 CircleAvatar(
                   radius: 24,
                   backgroundColor: AppColors.childPrimary.withOpacity(0.2),
                   child: Text(
-                    fullName[0].toUpperCase(),
+                    fullName.isNotEmpty ? fullName[0].toUpperCase() : '?',
                     style: AppTypography.h3.copyWith(
                       color: AppColors.childPrimary,
                       fontWeight: FontWeight.bold,
@@ -355,12 +356,27 @@ class _ScreenTimeManagementScreenState extends State<ScreenTimeManagementScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        fullName,
-                        style: AppTypography.label.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              fullName,
+                              style: AppTypography.label.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
+                      if (age != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          '$age tuổi',
+                          style: AppTypography.caption.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 4),
                       Row(
                         children: [
