@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../parent/parent_dashboard_screen.dart';
 import '../child/child_home_screen.dart';
 import 'register_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -233,13 +234,10 @@ class _LoginScreenState extends State<LoginScreen> {
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () {
-                // TODO: Implement forgot password flow
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Tính năng này sẽ được cập nhật trong phiên bản tiếp theo'),
-                    backgroundColor: AppColors.textSecondary,
-                    behavior: SnackBarBehavior.floating,
-                    duration: Duration(seconds: 2),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ForgotPasswordScreen(),
                   ),
                 );
               },

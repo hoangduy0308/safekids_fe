@@ -219,4 +219,50 @@ class AuthProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
   }
+
+  /// Forgot password - request OTP via email or SMS
+  Future<Map<String, dynamic>> forgotPassword(String contactInfo, String method) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final result = await ApiService().forgotPassword(
+        contactInfo: contactInfo,
+        method: method,
+      );
+      _isLoading = false;
+      notifyListeners();
+      return {'success': true, 'data': result};
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      notifyListeners();
+      return {'success': false, 'message': _errorMessage};
+    }
+  }
+
+  /// Reset password with OTP
+  Future<Map<String, dynamic>> resetPassword(String contactInfo, String otp, String newPassword, String method) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final result = await ApiService().resetPassword(
+        contactInfo: contactInfo,
+        otp: otp,
+        newPassword: newPassword,
+        method: method,
+      );
+      _isLoading = false;
+      notifyListeners();
+      return {'success': true, 'data': result};
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      notifyListeners();
+      return {'success': false, 'message': _errorMessage};
+    }
+  }
 }
