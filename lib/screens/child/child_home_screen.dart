@@ -40,6 +40,7 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
   final _socketService = SocketService();
   final Set<String> _processedRequests = {};
   int _pendingRequestsCount = 0;
+  List<Map<String, dynamic>> _sosSignals = [];
 
   final _navItems = [
     {'icon': Icons.home_rounded, 'label': 'Trang chủ'},
@@ -70,6 +71,7 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
     _initLocationTracking();
     _initSocketConnection();
     _loadPendingRequestsCount();
+    _loadSOSSignals();
   }
 
   Future<void> _loadPendingRequestsCount() async {
@@ -78,6 +80,28 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
       if (mounted) {
         setState(() {
           _pendingRequestsCount = requests.length;
+        });
+      }
+    } catch (e) {
+      debugPrint('[ChildHome] Error loading requests: $e');
+    }
+  }
+
+  Future<void> _loadSOSSignals() async {
+    try {
+      // TODO: Fetch SOS signals from backend
+      // For now, create sample data structure
+      if (mounted) {
+        setState(() {
+          _sosSignals = [
+            // Sample SOS signal structure:
+            // {
+            //   'id': 'sos_1',
+            //   'description': 'Tín hiệu SOS đã được gửi đến phụ huynh',
+            //   'location': 'Quận 1, Tp.HCM',
+            //   'time': '5 phút trước',
+            // }
+          ];
         });
       }
     } catch (e) {
@@ -388,7 +412,8 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
                 ),
               ).then((_) => _loadPendingRequestsCount());
             },
-            recentActivities: [], // TODO: Add recent activities
+            recentActivities: [],
+            sosSignals: _sosSignals,
           ),
         ).then((_) => _loadPendingRequestsCount());
       },
