@@ -109,6 +109,11 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
     }
   }
 
+  List<Map<String, dynamic>> _formatRecentActivities() {
+    // TODO: Add recent activities for child (chat, achievements, etc)
+    return [];
+  }
+
   Future<void> _initLocationTracking() async {
     await _locationService.initialize();
     await _loadLocationSettings();
@@ -412,7 +417,7 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
                 ),
               ).then((_) => _loadPendingRequestsCount());
             },
-            recentActivities: [],
+            recentActivities: _formatRecentActivities(),
             sosSignals: _sosSignals,
           ),
         ).then((_) => _loadPendingRequestsCount());

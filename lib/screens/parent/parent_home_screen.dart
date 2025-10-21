@@ -398,6 +398,21 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
     return '${dateTime.day}/${dateTime.month} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 
+  List<Map<String, dynamic>> _formatRecentActivities() {
+    return _recentStatuses.map((status) {
+      final timestamp = _statusTimestamp(status);
+      final formattedTime = _formatTime(timestamp);
+      
+      return {
+        'title': '${status['name'] ?? 'Con em'} ${status['action'] ?? ''}',
+        'description': status['action'] ?? '',
+        'time': formattedTime,
+        'icon': status['icon'] ?? Icons.notifications,
+        'color': status['color'] ?? AppColors.childPrimary,
+      };
+    }).toList();
+  }
+
   void _setupAnimations() {
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 600),
@@ -730,7 +745,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                         ),
                         builder: (_) => NotificationCenter(
                           pendingRequestsCount: 0,
-                          recentActivities: _recentStatuses,
+                          recentActivities: _formatRecentActivities(),
                           sosSignals: _sosSignals,
                         ),
                       );
