@@ -40,6 +40,12 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        mini: true,
+        onPressed: () => Navigator.pushNamed(context, '/map-smoke-test'),
+        tooltip: 'Map Smoke Test',
+        child: const Icon(Icons.map),
+      ),
     );
   }
 

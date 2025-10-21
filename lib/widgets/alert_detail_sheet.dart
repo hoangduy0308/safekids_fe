@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../config/environment.dart';
 import '../models/geofence_alert.dart';
 import '../models/location.dart' as location_model;
 import '../models/child_detail_data.dart';
 import '../screens/parent/child_map_screen.dart';
 import '../theme/app_typography.dart';
 import '../theme/app_colors.dart';
+
+String _buildStaticMapUrl(double latitude, double longitude) {
+  final key = EnvironmentConfig.mapTilerApiKey;
+  if (key.isEmpty) {
+    return 'https://staticmap.openstreetmap.de/staticmap.php?center=$latitude,$longitude&zoom=15&size=600x300&markers=$latitude,$longitude,red';
+  }
+  return 'https://api.maptiler.com/maps/streets/static/${longitude},${latitude},15/600x300.png?key=$key';
+}
 
 class AlertDetailSheet extends StatelessWidget {
   final GeofenceAlertModel alert;
@@ -27,20 +35,9 @@ class AlertDetailSheet extends StatelessWidget {
               height: 160,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: GoogleMap(
-                  initialCameraPosition: CameraPosition(
-                    target: LatLng(alert.latitude, alert.longitude),
-                    zoom: 15,
-                  ),
-                  myLocationButtonEnabled: false,
-                  mapToolbarEnabled: false,
-                  markers: {
-                    Marker(
-                      markerId: MarkerId(alert.id),
-                      position: LatLng(alert.latitude, alert.longitude),
-                    ),
-                  },
-                  liteModeEnabled: true,
+                child: Image.network(
+                  _buildStaticMapUrl(alert.latitude, alert.longitude),
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
@@ -49,17 +46,17 @@ class AlertDetailSheet extends StatelessWidget {
             _row(Icons.shield, 'Vùng', alert.geofenceName),
             _row(Icons.label, 'Loại', alert.geofenceType == 'safe' ? 'Vùng An Toàn' : 'Vùng Nguy Hiểm'),
             _row(Icons.access_time, 'Thời gian', alert.timestamp.toLocal().toString()),
-            _row(Icons.my_location, 'Vị trí', '${alert.latitude.toStringAsFixed(6)}, ${alert.longitude.toStringAsFixed(6)}'),
+            _row(Icons.my_location, 'Vị trí', '${alert.latitude}, ${alert.longitude}'),
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.map),
-                label: const Text('Xem trên bản đồ'),
+                label: const Text('Xem tr�n b?n d?'),
                 onPressed: () {
                   HapticFeedback.lightImpact();
                   final selected = location_model.Location(
-                    id: 'alert-${alert.id}',
+                    id: 'alert-${alert.id ?? ''}',
                     userId: alert.childId,
                     latitude: alert.latitude,
                     longitude: alert.longitude,
@@ -105,10 +102,15 @@ class AlertDetailSheet extends StatelessWidget {
         children: [
           Icon(icon, size: 18, color: AppColors.textSecondary),
           const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(label, style: AppTypography.caption),
-            Text(value, style: AppTypography.body),
-          ]))
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: AppTypography.caption),
+                Text(value, style: AppTypography.body),
+              ],
+            ),
+          )
         ],
       ),
     );

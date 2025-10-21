@@ -1,7 +1,8 @@
-import 'dart:math' show log;
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
 import '../models/geofence.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
@@ -32,15 +33,18 @@ class GeofenceMapView extends StatefulWidget {
   State<GeofenceMapView> createState() => _GeofenceMapViewState();
 }
 
-class _GeofenceMapViewState extends State<GeofenceMapView> {
-  GoogleMapController? _mapController;
+class _GeofenceMapViewState extends State<GeofenceMapView>
+    with AutomaticKeepAliveClientMixin {
+  final MapController _mapController = MapController();
+  double _currentZoom = _defaultZoom;
+  LatLng _currentCenter = _defaultCenter;
+  bool _mapReady = false;
   final ApiService _apiService = ApiService();
 
-  Set<Circle> _circles = {};
   bool _drawMode = false;
   LatLng? _geofenceCenter;
   double _geofenceRadius = 100.0;
-  Circle? _tempCircle;
+  LatLng? _tempCenter;
   List<Geofence> _geofences = [];
   bool _isLoading = true;
   String? _focusedGeofenceId;
@@ -52,70 +56,62 @@ class _GeofenceMapViewState extends State<GeofenceMapView> {
       ? _loadedLinkedChildren
       : widget.linkedChildren;
 
-  static const CameraPosition _defaultPosition = CameraPosition(
-    target: LatLng(21.0285, 105.8542),
-    zoom: 12,
+  static const LatLng _defaultCenter = LatLng(21.0285, 105.8542);
+  static const double _defaultZoom = 12;
+  static const String _osmTileUrl =
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  static const String _mapTilerUrlTemplate =
+      'https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key={key}';
+  static const String _mapTilerKey = String.fromEnvironment(
+    'MAPTILER_API_KEY',
+    defaultValue: '',
   );
+
+  String get _tileUrl => _mapTilerKey.isEmpty
+      ? _osmTileUrl
+      : _mapTilerUrlTemplate.replaceFirst('{key}', _mapTilerKey);
 
   @override
   void initState() {
     super.initState();
+    _currentCenter = widget.initialCenter ?? _defaultCenter;
     _drawMode = widget.showDrawControls && widget.startInDrawMode;
     _loadGeofences();
     _loadLinkedChildrenIfNeeded();
-    
+
     // If initialCenter provided, set it up and skip draw mode
     if (widget.initialCenter != null) {
-      print('[GeofenceMapView] InitialCenter provided: ${widget.initialCenter}');
-      _geofenceCenter = widget.initialCenter;
-      _tempCircle = Circle(
-        circleId: CircleId('temp'),
-        center: widget.initialCenter!,
-        radius: _geofenceRadius,
-        fillColor: Colors.blue.withOpacity(0.2),
-        strokeColor: Colors.blue,
-        strokeWidth: 2,
+      print(
+        '[GeofenceMapView] InitialCenter provided: ${widget.initialCenter}',
       );
+      _geofenceCenter = widget.initialCenter;
+      _tempCenter = widget.initialCenter;
       _drawMode = false;
-      
+
       // Trigger UI update after frame
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        print('[GeofenceMapView] Post frame callback - temp circle ready');
+        print('[GeofenceMapView] Post frame callback - temp geofence ready');
       });
     }
   }
 
-  Future<void> _onMapCreated(GoogleMapController controller) async {
-    _mapController = controller;
-    print('[GeofenceMapView] Map created');
-    
-    // If initialCenter provided, animate camera and show radius slider
+  void _onMapReady() async {
+    if (_mapReady) return;
+    _mapReady = true;
+
     if (widget.initialCenter != null && !_hasAnimatedToInitialCenter) {
       _hasAnimatedToInitialCenter = true;
-      print('[GeofenceMapView] Animating to initialCenter: ${widget.initialCenter}');
-      
       final zoomLevel = _calculateZoomLevel(_geofenceRadius);
-      print('[GeofenceMapView] Zoom level: $zoomLevel');
-      
-      await _mapController!.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(target: widget.initialCenter!, zoom: zoomLevel),
-        ),
-      );
-      
-      print('[GeofenceMapView] Animation complete');
-      
-      // Update circles after animation
-      setState(() {
-        print('[GeofenceMapView] Updating circles, tempCircle: $_tempCircle');
-      });
-      
-      // Show radius slider after animation completes
-      await Future.delayed(Duration(milliseconds: 500));
-      if (mounted) {
-        print('[GeofenceMapView] Showing radius slider');
+      _currentZoom = zoomLevel;
+      _currentCenter = widget.initialCenter!;
+      _mapController.move(_currentCenter, zoomLevel);
+
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted && !_drawMode && widget.initialCenter != null) {
         _showRadiusSlider();
       }
+    } else {
+      _mapController.move(_currentCenter, _currentZoom);
     }
   }
 
@@ -236,10 +232,8 @@ class _GeofenceMapViewState extends State<GeofenceMapView> {
       );
       setState(() {
         _geofences = geofences;
-        _updateCircles();
         _isLoading = false;
       });
-      print('[GeofenceMapView] Circles count: ${_circles.length}');
 
       //  NEW: Focus on initial geofence if provided
       if (widget.initialFocusedGeofenceId != null) {
@@ -267,23 +261,21 @@ class _GeofenceMapViewState extends State<GeofenceMapView> {
   //  NEW: Calculate zoom level based on radius
   double _calculateZoomLevel(double radiusInMeters) {
     final maxDistance = radiusInMeters * 2.5;
-    final zoomLevel = 16 - (log(maxDistance / 400) / log(2));
+    final zoomLevel = 16 - (math.log(maxDistance / 400) / math.log(2));
     return zoomLevel.clamp(10.0, 20.0);
   }
 
   //  NEW: Focus on specific geofence with highlight + auto-show details
   Future<void> _focusOnGeofence(String geofenceId) async {
     final geofence = _geofences.where((g) => g.id == geofenceId).firstOrNull;
-    if (geofence == null || _mapController == null) return;
+    if (geofence == null) return;
 
     setState(() => _focusedGeofenceId = geofenceId);
 
     final zoomLevel = _calculateZoomLevel(geofence.radius);
-    await _mapController!.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(target: geofence.latLng, zoom: zoomLevel),
-      ),
-    );
+    _currentZoom = zoomLevel;
+    _currentCenter = geofence.latLng;
+    _mapController.move(geofence.latLng, zoomLevel);
 
     // Auto-show details sheet after animation
     await Future.delayed(Duration(milliseconds: 500));
@@ -292,53 +284,103 @@ class _GeofenceMapViewState extends State<GeofenceMapView> {
     }
   }
 
-  void _updateCircles() {
-    _circles.clear();
-    for (final geofence in _geofences) {
-      final isFocused = _focusedGeofenceId == geofence.id;
+  List<Geofence> _visibleGeofences() {
+    if (_focusedGeofenceId != null) {
+      return _geofences.where((g) => g.id == _focusedGeofenceId).toList();
+    }
+    return _geofences;
+  }
+
+  List<Polygon> _buildGeofencePolygons() {
+    final polygons = <Polygon>[];
+
+    for (final geofence in _visibleGeofences()) {
       final color = geofence.isDangerZone ? Colors.red : Colors.green;
+      final isFocused = _focusedGeofenceId == geofence.id;
 
-      print(
-        '[GeofenceMapView] Creating circle for ${geofence.name}: center=${geofence.latLng}, radius=${geofence.radius}',
-      );
-
-      _circles.add(
-        Circle(
-          circleId: CircleId(geofence.id),
-          center: geofence.latLng,
-          radius: geofence.radius,
-          fillColor: color.withOpacity(isFocused ? 0.4 : 0.2),
-          strokeColor: isFocused ? color : color,
-          strokeWidth: isFocused ? 4 : 2,
-          onTap: () => _showGeofenceDetails(geofence),
+      polygons.add(
+        Polygon(
+          points: _createCirclePoints(geofence.latLng, geofence.radius),
+          isFilled: true,
+          color: color.withOpacity(isFocused ? 0.35 : 0.18),
+          borderColor: color,
+          borderStrokeWidth: isFocused ? 3 : 1.5,
         ),
       );
     }
-    print('[GeofenceMapView] Updated circles, total: ${_circles.length}');
+
+    if (_tempCenter != null) {
+      polygons.add(
+        Polygon(
+          points: _createCirclePoints(_tempCenter!, _geofenceRadius),
+          isFilled: true,
+          color: Colors.blue.withOpacity(0.25),
+          borderColor: Colors.blue,
+          borderStrokeWidth: 2,
+        ),
+      );
+    }
+
+    return polygons;
   }
 
-  Set<Circle> _getDisplayCircles() {
-    // Nếu có temp circle (đang vẽ vùng mới hoặc từ suggestion), hiển thị nó
-    if (_tempCircle != null) {
-      print('[GetDisplayCircles] Showing temp circle at ${_tempCircle!.center}');
-      return {..._circles, _tempCircle!};
-    }
+  List<Marker> _buildGeofenceMarkers() {
+    final markers = <Marker>[];
 
-    // Nếu có vùng được focus (click vào để xem), chỉ hiển thị vùng đó
-    if (_focusedGeofenceId != null) {
-      print(
-        '[GetDisplayCircles] Filtering to focused geofence: $_focusedGeofenceId',
+    for (final geofence in _visibleGeofences()) {
+      final isFocused = _focusedGeofenceId == geofence.id;
+      markers.add(
+        Marker(
+          point: geofence.latLng,
+          width: 40,
+          height: 40,
+          child: GestureDetector(
+            onTap: () => _showGeofenceDetails(geofence),
+            child: Icon(
+              Icons.adjust,
+              color: isFocused ? Colors.orangeAccent : Colors.blueGrey,
+              size: isFocused ? 32 : 24,
+            ),
+          ),
+        ),
       );
-      final filteredCircles = _circles
-          .where((c) => c.circleId.value == _focusedGeofenceId)
-          .toSet();
-      print('[GetDisplayCircles] Showing ${filteredCircles.length} circle(s)');
-      return filteredCircles;
     }
 
-    // Không có focus, hiển thị tất cả
-    print('[GetDisplayCircles] Showing all ${_circles.length} geofence circles');
-    return _circles;
+    if (_tempCenter != null) {
+      markers.add(
+        Marker(
+          point: _tempCenter!,
+          width: 36,
+          height: 36,
+          child: const Icon(Icons.radio_button_checked, color: Colors.blue),
+        ),
+      );
+    }
+
+    return markers;
+  }
+
+  List<LatLng> _createCirclePoints(LatLng center, double radius) {
+    const segments = 60;
+    const earthRadius = 6371000.0; // meters
+    final latRad = center.latitude * math.pi / 180;
+    final lngRad = center.longitude * math.pi / 180;
+    final angularDistance = radius / earthRadius;
+
+    return List<LatLng>.generate(segments, (index) {
+      final bearing = 2 * math.pi * index / segments;
+      final pointLat = math.asin(
+        math.sin(latRad) * math.cos(angularDistance) +
+            math.cos(latRad) * math.sin(angularDistance) * math.cos(bearing),
+      );
+      final pointLng =
+          lngRad +
+          math.atan2(
+            math.sin(bearing) * math.sin(angularDistance) * math.cos(latRad),
+            math.cos(angularDistance) - math.sin(latRad) * math.sin(pointLat),
+          );
+      return LatLng(pointLat * 180 / math.pi, pointLng * 180 / math.pi);
+    });
   }
 
   Future<void> _goToMyLocation() async {
@@ -374,16 +416,10 @@ class _GeofenceMapViewState extends State<GeofenceMapView> {
         '[GoToMyLocation] Got position: ${position.latitude}, ${position.longitude}',
       );
 
-      if (_mapController != null) {
-        await _mapController!.animateCamera(
-          CameraUpdate.newCameraPosition(
-            CameraPosition(
-              target: LatLng(position.latitude, position.longitude),
-              zoom: 15,
-            ),
-          ),
-        );
-      }
+      final target = LatLng(position.latitude, position.longitude);
+      _currentCenter = target;
+      _currentZoom = math.max(_currentZoom, 15);
+      _mapController.move(target, _currentZoom);
 
       ScaffoldMessenger.of(
         context,
@@ -400,14 +436,7 @@ class _GeofenceMapViewState extends State<GeofenceMapView> {
     if (_drawMode) {
       setState(() {
         _geofenceCenter = position;
-        _tempCircle = Circle(
-          circleId: CircleId('temp'),
-          center: position,
-          radius: _geofenceRadius,
-          fillColor: Colors.blue.withOpacity(0.2),
-          strokeColor: Colors.blue,
-          strokeWidth: 2,
-        );
+        _tempCenter = position;
       });
       _showRadiusSlider();
     }
@@ -436,9 +465,7 @@ class _GeofenceMapViewState extends State<GeofenceMapView> {
                 label: '${_geofenceRadius.toInt()}m',
                 onChanged: (value) {
                   setModalState(() => _geofenceRadius = value);
-                  setState(() {
-                    _tempCircle = _tempCircle!.copyWith(radiusParam: value);
-                  });
+                  setState(() {});
                 },
               ),
               SizedBox(height: 16),
@@ -528,7 +555,7 @@ class _GeofenceMapViewState extends State<GeofenceMapView> {
       setState(() {
         _drawMode = false;
         _geofenceCenter = null;
-        _tempCircle = null;
+        _tempCenter = null;
       });
       print('[CreateGeofence] Hoàn tất');
     } catch (e, stackTrace) {
@@ -647,7 +674,11 @@ class _GeofenceMapViewState extends State<GeofenceMapView> {
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context); // Add this line
     return Scaffold(
       appBar: AppBar(
         title: Text(_drawMode ? 'Vẽ Vùng Mới' : 'Quản Lý Vùng'),
@@ -656,14 +687,48 @@ class _GeofenceMapViewState extends State<GeofenceMapView> {
       ),
       body: Stack(
         children: [
-          GoogleMap(
-            initialCameraPosition: _defaultPosition,
-            circles: _getDisplayCircles(),
-            myLocationEnabled: true,
-            myLocationButtonEnabled: false,
-            zoomControlsEnabled: false,
-            onMapCreated: _onMapCreated,
-            onTap: widget.showDrawControls ? _onMapTap : null,
+          FlutterMap(
+            mapController: _mapController,
+            options: MapOptions(
+              initialCenter: widget.initialCenter ?? _currentCenter,
+              initialZoom: widget.initialCenter != null
+                  ? _calculateZoomLevel(_geofenceRadius)
+                  : _currentZoom,
+              minZoom: 3,
+              maxZoom: 19,
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+              ),
+              onTap: widget.showDrawControls
+                  ? (tapPosition, position) => _onMapTap(position)
+                  : null,
+              onMapReady: _onMapReady,
+              onPositionChanged: (camera, hasGesture) {
+                final newZoom = camera.zoom;
+                final newCenter = camera.center;
+
+                if (newZoom == null || newCenter == null) {
+                  debugPrint(
+                    '[GeofenceMapView] Null camera payload received: zoom=$newZoom, center=$newCenter',
+                  );
+                }
+
+                if (newZoom != null) {
+                  _currentZoom = newZoom;
+                }
+                if (newCenter != null) {
+                  _currentCenter = newCenter;
+                }
+              },
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: _tileUrl,
+                userAgentPackageName: 'com.safekids.safekids_app',
+              ),
+              PolygonLayer(polygons: _buildGeofencePolygons()),
+              MarkerLayer(markers: _buildGeofenceMarkers()),
+            ],
           ),
           if (_isLoading) Center(child: CircularProgressIndicator()),
           // Status indicator + Create zone toggle
@@ -685,7 +750,7 @@ class _GeofenceMapViewState extends State<GeofenceMapView> {
                       ],
                     ),
                     child: Text(
-                      'Vùng: ${_circles.length}',
+                      'Zones: ${_geofences.length + (_tempCenter != null ? 1 : 0)}',
                       style: AppTypography.captionSmall.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -789,12 +854,11 @@ class _GeofenceMapViewState extends State<GeofenceMapView> {
                 FloatingActionButton.small(
                   heroTag: 'zoom_in',
                   backgroundColor: Colors.white,
-                  onPressed: () async {
-                    if (_mapController != null) {
-                      await _mapController!.animateCamera(
-                        CameraUpdate.zoomBy(1),
-                      );
-                    }
+                  onPressed: () {
+                    setState(() {
+                      _currentZoom = (_currentZoom + 1).clamp(3.0, 19.0);
+                      _mapController.move(_currentCenter, _currentZoom);
+                    });
                   },
                   child: Icon(Icons.add, color: AppColors.parentPrimaryLight),
                 ),
@@ -802,12 +866,11 @@ class _GeofenceMapViewState extends State<GeofenceMapView> {
                 FloatingActionButton.small(
                   heroTag: 'zoom_out',
                   backgroundColor: Colors.white,
-                  onPressed: () async {
-                    if (_mapController != null) {
-                      await _mapController!.animateCamera(
-                        CameraUpdate.zoomBy(-1),
-                      );
-                    }
+                  onPressed: () {
+                    setState(() {
+                      _currentZoom = (_currentZoom - 1).clamp(3.0, 19.0);
+                      _mapController.move(_currentCenter, _currentZoom);
+                    });
                   },
                   child: Icon(
                     Icons.remove,
@@ -834,7 +897,7 @@ class _GeofenceMapViewState extends State<GeofenceMapView> {
 
   @override
   void dispose() {
-    _mapController?.dispose();
+    _mapController.dispose();
     super.dispose();
   }
 }

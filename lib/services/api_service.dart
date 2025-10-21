@@ -20,7 +20,10 @@ class ApiService {
   /// Get authenticated headers
   Future<Map<String, String>> _getHeaders() async {
     final token = await _getToken();
-    print('[ApiService] Using token: $token'); // Debugging line
+    final maskedToken = token != null && token.length > 8 
+      ? '${token.substring(0, 4)}...${token.substring(token.length - 4)}' 
+      : '***';
+    print('[ApiService] Auth token: $maskedToken'); // Masked for security
     return {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',

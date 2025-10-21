@@ -138,6 +138,8 @@ class AuthProvider extends ChangeNotifier {
         _socketService.connect(_user!.id);
         // Send FCM token to backend after successful login
         await _sendFCMToken();
+        // Refresh user data to get linked accounts
+        await refreshUser();
       }
       notifyListeners();
       return true;

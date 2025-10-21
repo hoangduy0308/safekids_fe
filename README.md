@@ -110,7 +110,7 @@ File: `lib/constants/app_constants.dart`
 
 ### Location & Maps
 - `geolocator` - Location tracking
-- `google_maps_flutter` - Map display
+- lutter_map + MapTiler tiles - Map display
 - `geocoding` - Address lookup
 
 ### Firebase

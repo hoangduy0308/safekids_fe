@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../services/api_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+
+import '../../config/environment.dart';
+
+String _buildStaticMapUrl(double latitude, double longitude) {
+  final key = EnvironmentConfig.mapTilerApiKey;
+  if (key.isEmpty) {
+    return 'https://staticmap.openstreetmap.de/staticmap.php?center=$latitude,$longitude&zoom=16&size=600x300&markers=$latitude,$longitude,red';
+  }
+  return 'https://api.maptiler.com/maps/streets/static/${longitude},${latitude},16/600x300.png?key=$key';
+}
 
 /// SOS Alert Screen (AC 4.2.3, 4.2.4) - Story 4.2
 /// Full-screen modal displaying SOS emergency details
@@ -317,21 +326,9 @@ class _SOSAlertScreenState extends State<SOSAlertScreen> {
         ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: GoogleMap(
-        initialCameraPosition: CameraPosition(
-          target: LatLng(lat, lng),
-          zoom: 16,
-        ),
-        markers: {
-          Marker(
-            markerId: const MarkerId('sos'),
-            position: LatLng(lat, lng),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-            infoWindow: InfoWindow(title: 'SOS - $childName'),
-          ),
-        },
-        zoomControlsEnabled: false,
-        myLocationButtonEnabled: false,
+      child: Image.network(
+        _buildStaticMapUrl(lat, lng),
+        fit: BoxFit.cover,
       ),
     );
   }

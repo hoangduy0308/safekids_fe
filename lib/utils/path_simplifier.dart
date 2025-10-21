@@ -1,4 +1,4 @@
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:latlong2/latlong.dart';
 import 'dart:math';
 
 /// Path simplification using Douglas-Peucker algorithm (Task 5 - AC 2.4.6)
