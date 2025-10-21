@@ -21,6 +21,7 @@ import './sos_countdown_dialog.dart';
 import './sos_success_screen.dart';
 import '../../utils/offline_sos_queue.dart';
 import '../../widgets/child/screentime_usage_widget.dart';
+import '../../widgets/child/notification_center.dart';
 import '../chat/chat_list_screen.dart';
 
 class ChildHomeScreen extends StatefulWidget {
@@ -370,10 +371,24 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
   Widget _buildNotificationButton() {
     return GestureDetector(
       onTap: () {
-        showDialog(
+        showModalBottomSheet(
           context: context,
-          builder: (_) => PendingLinkRequestsDialog(
-            onRequestsUpdated: _loadPendingRequestsCount,
+          isScrollControlled: true,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          builder: (_) => NotificationCenter(
+            pendingRequestsCount: _pendingRequestsCount,
+            onShowPendingRequests: () {
+              Navigator.pop(context);
+              showDialog(
+                context: context,
+                builder: (_) => PendingLinkRequestsDialog(
+                  onRequestsUpdated: _loadPendingRequestsCount,
+                ),
+              ).then((_) => _loadPendingRequestsCount());
+            },
+            recentActivities: [], // TODO: Add recent activities
           ),
         ).then((_) => _loadPendingRequestsCount());
       },
