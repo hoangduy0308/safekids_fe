@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 import '../../widgets/parent/screentime_suggestions_widget.dart';
@@ -12,48 +13,111 @@ class ScreenTimeSettingsScreen extends StatefulWidget {
 class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
   bool _loading = true;
   List<Map<String, dynamic>> _children = [];
+  Map<String, Map<String, dynamic>> _childUsage = {};
   String? _error;
+  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
     super.initState();
     _loadChildren();
+    _startAutoRefresh();
+  }
+
+  @override
+  void dispose() {
+    _autoRefreshTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 60), (_) {
+      if (mounted) {
+        _refreshUsageData();
+      }
+    });
+  }
+
+  Future<void> _refreshUsageData() async {
+    print('[ScreenTimeSettings] Refreshing usage data for ${_children.length} children');
+    for (var child in _children) {
+      final childId = child['_id'] as String?;
+      final childName = child['name'] ?? child['fullName'] ?? 'Unknown';
+      
+      if (childId == null) {
+        print('[ScreenTimeSettings] Skipping child with null ID: $childName');
+        continue;
+      }
+      
+      try {
+        final usage = await ApiService().getTodayUsage(childId);
+        print('[ScreenTimeSettings] Refreshed usage for $childName: ${usage['totalMinutes']}');
+        setState(() {
+          _childUsage[childId] = usage;
+        });
+      } catch (e) {
+        print('[ScreenTimeSettings] Error refreshing usage for $childName: $e');
+        // Continue on error
+      }
+    }
   }
 
   Future<void> _loadChildren() async {
     try {
-      // This would normally come from a parent state management or API
-      // For now, we'll mock the children data based on current user
+      // Load children from user profile API
+      final profile = await ApiService().getProfile();
+      print('[ScreenTimeSettings] Profile loaded: ${profile.keys}');
+      
+      final linkedUsers = profile['linkedUsers'] as List?;
+      print('[ScreenTimeSettings] Linked users: ${linkedUsers?.length ?? 0}');
+      
+      final children = linkedUsers != null 
+          ? linkedUsers
+              .whereType<Map<String, dynamic>>()
+              .where((u) => u['role'] == 'child')
+              .toList()
+          : [];
+
+      print('[ScreenTimeSettings] Found ${children.length} children');
+
       setState(() {
-        _children = [
-          {
-            '_id': '64f8a9b2e4b3a9c8c8e8c9a1',
-            'name': 'Nguyễn Văn An',
-            'age': 10,
-            'role': 'child',
-            'suggestions': null
-          },
-          {
-            '_id': '64f8a9b2e4b3a9c8c8e8c9a2', 
-            'name': 'Nguyễn Thị Bình',
-            'age': 8,
-            'role': 'child',
-            'suggestions': null
-          }
-        ];
+        _children = List<Map<String, dynamic>>.from(children);
         _loading = false;
       });
+      
+      print('[ScreenTimeSettings] Children set, starting to load data');
 
-      // Load suggestions for each child
+      // Load config, usage, and suggestions for each child
       for (int i = 0; i < _children.length; i++) {
         try {
-          final suggestions = await ApiService().getScreenTimeSuggestions(_children[i]['_id']);
+          final childId = _children[i]['_id'] as String?;
+          if (childId == null) continue;
+          
+          // Load today's usage
+          final usage = await ApiService().getTodayUsage(childId);
+          final childName = _children[i]['name'] ?? _children[i]['fullName'] ?? 'Unknown';
+          print('[ScreenTimeSettings] Loaded usage for $childName: totalMinutes=${usage['totalMinutes']}');
+          _childUsage[childId] = Map<String, dynamic>.from(usage);
+          
+          // Load screen time config
+          final config = await ApiService().getScreenTimeConfig(childId);
+          _children[i]['config'] = Map<String, dynamic>.from(config);
+          
+          // Load suggestions
+          final suggestions = await ApiService().getScreenTimeSuggestions(childId);
+          _children[i]['suggestions'] = suggestions;
+          
           setState(() {
-            _children[i]['suggestions'] = suggestions;
+            _children = [..._children]; // Trigger rebuild
           });
         } catch (e) {
-          print('Failed to load suggestions for ${_children[i]['name']}: $e');
-          // Continue without suggestions
+          final childId = _children[i]['_id'] as String?;
+          final childName = _children[i]['name'] ?? 'Unknown';
+          print('[ScreenTimeSettings] Failed to load data for $childName: $e');
+          if (childId != null) {
+            _childUsage[childId] = {'totalMinutes': 0, 'sessions': []};
+          }
+          // Continue without full data
         }
       }
     } catch (e) {
@@ -70,6 +134,61 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
   }
 
   Widget _buildChildCard(Map<String, dynamic> child) {
+    final childId = child['_id'] as String? ?? '';
+    final childName = child['fullName'] as String? ?? child['name'] as String? ?? 'Unknown';
+    final childAge = child['age'] as int?;
+    
+    // Safely convert totalMinutes from any type (int, double, string)
+    final usage = _childUsage[childId];
+    int totalMinutes = 0;
+    try {
+      final val = usage?['totalMinutes'];
+      if (val is int) {
+        totalMinutes = val;
+      } else if (val is double) {
+        totalMinutes = val.toInt();
+      } else if (val is String) {
+        totalMinutes = int.tryParse(val) ?? 0;
+      }
+    } catch (e) {
+      print('[ScreenTimeCard] Error parsing totalMinutes: $e');
+      totalMinutes = 0;
+    }
+    
+    final hours = totalMinutes ~/ 60;
+    final minutes = totalMinutes % 60;
+    
+    // Get daily limit from config - safely convert
+    final config = child['config'] as Map<String, dynamic>?;
+    int dailyLimit = 120;
+    try {
+      final val = config?['dailyLimitMinutes'];
+      if (val is int) {
+        dailyLimit = val;
+      } else if (val is double) {
+        dailyLimit = val.toInt();
+      } else if (val is String) {
+        dailyLimit = int.tryParse(val) ?? 120;
+      }
+    } catch (e) {
+      print('[ScreenTimeCard] Error parsing dailyLimit: $e');
+      dailyLimit = 120;
+    }
+    
+    final percent = dailyLimit > 0 ? (totalMinutes / dailyLimit).clamp(0.0, 1.3) : 0.0;
+    
+    // Get status color
+    Color statusColor = Colors.green;
+    if (percent >= 1.0) {
+      statusColor = Colors.red;
+    } else if (percent >= 0.9) {
+      statusColor = Colors.orange;
+    } else if (percent >= 0.7) {
+      statusColor = Colors.orange[300]!;
+    }
+    
+    print('[ScreenTimeCard] Card: $childName, usage=$totalMinutes min, limit=$dailyLimit min, percent=${(percent*100).toInt()}%');
+    
     return Card(
       elevation: 2,
       margin: EdgeInsets.only(bottom: AppSpacing.md),
@@ -94,18 +213,58 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        child['name'],
+                        childName,
                         style: AppTypography.h3.copyWith(color: AppColors.textPrimary),
                       ),
                       SizedBox(height: AppSpacing.xxs),
+                      if (childAge != null)
+                        Text(
+                          '$childAge tuổi',
+                          style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                        ),
+                      SizedBox(height: 4),
                       Text(
-                        '${child['age']} tuổi',
-                        style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                        'Hôm nay: ${hours}h ${minutes}p / ${dailyLimit ~/ 60}h',
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios, color: AppColors.textLight, size: 16),
+                // Percent display
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${(percent * 100).toInt()}%',
+                    style: AppTypography.caption.copyWith(
+                      color: statusColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: AppSpacing.md),
+            
+            // Progress Bar
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: percent.clamp(0.0, 1.0),
+                    backgroundColor: Colors.grey[300],
+                    valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                    minHeight: 8,
+                  ),
+                ),
               ],
             ),
             SizedBox(height: AppSpacing.md),

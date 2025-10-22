@@ -18,6 +18,7 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/parent/notification_badge.dart';
 import '../../widgets/parent/notification_panel.dart';
+import '../../widgets/child/notification_center.dart';
 import 'child_map_screen.dart';
 import 'link_child_screen.dart';
 
@@ -187,6 +188,7 @@ class ParentHomeScreen extends StatefulWidget {
 class _ParentHomeScreenState extends State<ParentHomeScreen>
     with TickerProviderStateMixin {
   List<Map<String, dynamic>> _recentStatuses = [];
+  List<Map<String, dynamic>> _sosSignals = [];
   late AnimationController _fadeController;
   late AnimationController _slideController;
   late ConfettiController _confettiController;
@@ -335,6 +337,18 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
       _addRecentStatus(sosAlert);
       print('[ParentHome] Added SOS alert. Total: ${_recentStatuses.length}');
 
+      // Add to SOS signals
+      final sosSignal = {
+        'id': sosId,
+        'description': 'Tín hiệu SOS từ ${data['childName'] ?? "con"}',
+        'location': data['location']?.toString() ?? 'Chưa có vị trí',
+        'time': _formatTime(timestamp),
+        'status': 'sent',
+      };
+      setState(() {
+        _sosSignals.insert(0, sosSignal);
+      });
+
       // AC 4.2.5: Show in-app alert modal immediately (Story 4.2 Task 7)
       if (sosId.isNotEmpty) {
         _showSOSAlertModal(sosId);
@@ -370,6 +384,33 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
       _addRecentStatus(geofenceAlert);
       print('[ParentHome] Updated statuses. Total: ${_recentStatuses.length}');
     };
+  }
+
+  String _formatTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inMinutes < 1) return 'Vừa xong';
+    if (difference.inMinutes < 60) return '${difference.inMinutes}m trước';
+    if (difference.inHours < 24) return '${difference.inHours}h trước';
+    if (difference.inDays < 7) return '${difference.inDays}d trước';
+
+    return '${dateTime.day}/${dateTime.month} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+  }
+
+  List<Map<String, dynamic>> _formatRecentActivities() {
+    return _recentStatuses.map((status) {
+      final timestamp = _statusTimestamp(status);
+      final formattedTime = _formatTime(timestamp);
+      
+      return {
+        'title': '${status['name'] ?? 'Con em'} ${status['action'] ?? ''}',
+        'description': status['action'] ?? '',
+        'time': formattedTime,
+        'icon': status['icon'] ?? Icons.notifications,
+        'color': status['color'] ?? AppColors.childPrimary,
+      };
+    }).toList();
   }
 
   void _setupAnimations() {
@@ -696,13 +737,18 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                   GestureDetector(
                     onTap: () {
                       HapticFeedback.lightImpact();
-                      setState(
-                        () => _showNotificationPanel = !_showNotificationPanel,
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                        ),
+                        builder: (_) => NotificationCenter(
+                          pendingRequestsCount: 0,
+                          recentActivities: _formatRecentActivities(),
+                          sosSignals: _sosSignals,
+                        ),
                       );
-                      if (_showNotificationPanel &&
-                          notificationProvider.notifications.isEmpty) {
-                        notificationProvider.loadNotifications();
-                      }
                     },
                     child: Stack(
                       children: [

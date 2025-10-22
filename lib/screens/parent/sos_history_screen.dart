@@ -111,11 +111,21 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
       }
     } catch (e) {
       if (mounted) {
+        String errorMsg = 'Không thể tải lịch sử SOS';
+        if (e.toString().contains('Connection closed')) {
+          errorMsg = 'Kết nối bị đóng. Vui lòng thử lại.';
+        } else if (e.toString().contains('timed out')) {
+          errorMsg = 'Yêu cầu quá lâu. Vui lòng thử lại.';
+        } else if (e.toString().contains('Connection refused')) {
+          errorMsg = 'Không thể kết nối tới server. Kiểm tra kết nối mạng.';
+        }
+        
         setState(() {
           _loading = false;
-          _errorMessage = e.toString();
+          _errorMessage = errorMsg;
         });
       }
+      print('Load SOS history error: $e');
     }
   }
 

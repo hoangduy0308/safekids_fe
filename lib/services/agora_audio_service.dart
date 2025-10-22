@@ -2,7 +2,7 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/foundation.dart';
 
 class AgoraAudioService extends ChangeNotifier {
-  static const String agoraAppId = 'YOUR_AGORA_APP_ID'; // Replace with your Agora App ID
+  static const String agoraAppId = 'c1f5593f44cc4e1092509377b1fdaa25';
   
   late RtcEngine _engine;
   bool _isInitialized = false;

@@ -21,6 +21,7 @@ import './sos_countdown_dialog.dart';
 import './sos_success_screen.dart';
 import '../../utils/offline_sos_queue.dart';
 import '../../widgets/child/screentime_usage_widget.dart';
+import '../../widgets/child/notification_center.dart';
 import '../chat/chat_list_screen.dart';
 
 class ChildHomeScreen extends StatefulWidget {
@@ -39,6 +40,7 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
   final _socketService = SocketService();
   final Set<String> _processedRequests = {};
   int _pendingRequestsCount = 0;
+  List<Map<String, dynamic>> _sosSignals = [];
 
   final _navItems = [
     {'icon': Icons.home_rounded, 'label': 'Trang chủ'},
@@ -69,6 +71,7 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
     _initLocationTracking();
     _initSocketConnection();
     _loadPendingRequestsCount();
+    _loadSOSSignals();
   }
 
   Future<void> _loadPendingRequestsCount() async {
@@ -80,8 +83,35 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
         });
       }
     } catch (e) {
+      debugPrint('[ChildHome] Error loading requests: $e');
+    }
+  }
+
+  Future<void> _loadSOSSignals() async {
+    try {
+      // TODO: Fetch SOS signals from backend
+      // For now, create sample data structure
+      if (mounted) {
+        setState(() {
+          _sosSignals = [
+            // Sample SOS signal structure:
+            // {
+            //   'id': 'sos_1',
+            //   'description': 'Tín hiệu SOS đã được gửi đến phụ huynh',
+            //   'location': 'Quận 1, Tp.HCM',
+            //   'time': '5 phút trước',
+            // }
+          ];
+        });
+      }
+    } catch (e) {
       debugPrint('[ChildHome] Error loading pending requests: $e');
     }
+  }
+
+  List<Map<String, dynamic>> _formatRecentActivities() {
+    // TODO: Add recent activities for child (chat, achievements, etc)
+    return [];
   }
 
   Future<void> _initLocationTracking() async {
@@ -370,10 +400,25 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
   Widget _buildNotificationButton() {
     return GestureDetector(
       onTap: () {
-        showDialog(
+        showModalBottomSheet(
           context: context,
-          builder: (_) => PendingLinkRequestsDialog(
-            onRequestsUpdated: _loadPendingRequestsCount,
+          isScrollControlled: true,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          builder: (_) => NotificationCenter(
+            pendingRequestsCount: _pendingRequestsCount,
+            onShowPendingRequests: () {
+              Navigator.pop(context);
+              showDialog(
+                context: context,
+                builder: (_) => PendingLinkRequestsDialog(
+                  onRequestsUpdated: _loadPendingRequestsCount,
+                ),
+              ).then((_) => _loadPendingRequestsCount());
+            },
+            recentActivities: _formatRecentActivities(),
+            sosSignals: _sosSignals,
           ),
         ).then((_) => _loadPendingRequestsCount());
       },

@@ -3,9 +3,15 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
+import 'device_usage_service.dart';
 
 /// Screen Time Tracker Service (AC 5.2.1, 5.2.2, 5.2.4) - Story 5.2
-/// Tracks screen on/off time and uploads usage data to backend
+/// Tracks device-wide screen time via Android UsageStatsManager
+/// Falls back to app-level session tracking if UsageStatsManager returns 0
+/// 
+/// NOTE: PACKAGE_USAGE_STATS permission requires manual enable:
+/// Settings → Apps → SafeKids → Permissions → Usage access
+/// Without this, UsageStatsManager returns 0 and falls back to session tracking
 class ScreenTimeTrackerService {
   static final ScreenTimeTrackerService _instance = ScreenTimeTrackerService._internal();
   factory ScreenTimeTrackerService() => _instance;
@@ -15,12 +21,15 @@ class ScreenTimeTrackerService {
   final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
 
   Timer? _uploadTimer;
+  Timer? _deviceUsageTimer;
   DateTime? _sessionStart;
   Box<Map>? _sessionsBox;
 
   int _todayUsageMinutes = 0;
   String _currentDate = '';
   bool _initialized = false;
+  
+  final DeviceUsageService _deviceUsageService = DeviceUsageService();
 
   Future<void> init() async {
     if (_initialized) return;
@@ -37,15 +46,55 @@ class ScreenTimeTrackerService {
         ),
       );
 
+      // Query device usage immediately and upload
+      await _queryDeviceUsage();
+      await _uploadUsage();
+
+      // Start device usage query timer (every 5 minutes)
+      _deviceUsageTimer = Timer.periodic(const Duration(minutes: 5), (_) {
+        _queryDeviceUsage();
+      });
+
       // Start upload timer (every 5 minutes)
       _uploadTimer = Timer.periodic(const Duration(minutes: 5), (_) {
         _uploadUsage();
       });
 
       _initialized = true;
-      print('[ScreenTime Tracker] Initialized successfully');
+      print('[ScreenTime Tracker] Initialized successfully with device usage tracking');
     } catch (e) {
       print('[ScreenTime Tracker] Init error: $e');
+    }
+  }
+
+  /// Query device usage from UsageStatsManager
+  /// Falls back to session tracking if device usage is 0
+  /// Updates _todayUsageMinutes with total device app usage
+  Future<void> _queryDeviceUsage() async {
+    try {
+      final deviceUsage = await _deviceUsageService.getTodayDeviceUsage();
+      var totalAppUsageMinutes = deviceUsage['totalAppUsageMinutes'] as int? ?? 0;
+
+      // Fallback to session tracking if device usage is 0
+      if (totalAppUsageMinutes == 0) {
+        await _loadTodayUsage();
+        print('[ScreenTime] Device usage returned 0, using session tracking: $_todayUsageMinutes minutes');
+      } else {
+        // Update today's usage from device
+        _todayUsageMinutes = totalAppUsageMinutes;
+        print('[ScreenTime] Device usage updated: $_todayUsageMinutes minutes');
+      }
+
+      // Check if new day
+      final today = _getTodayDate();
+      if (today != _currentDate) {
+        _currentDate = today;
+        _clearDailyFlags();
+      }
+    } catch (e) {
+      print('[ScreenTime] Query device usage error: $e');
+      // Fallback to session tracking on error
+      await _loadTodayUsage();
     }
   }
 
@@ -114,7 +163,8 @@ class ScreenTimeTrackerService {
       final today = _getTodayDate();
       final sessions = _sessionsBox?.values.where((s) => s['date'] == today).toList() ?? [];
 
-      if (sessions.isEmpty) return;
+      // Always upload if totalMinutes > 0 (from device usage or sessions)
+      if (_todayUsageMinutes == 0) return;
 
       final prefs = await SharedPreferences.getInstance();
       final childId = prefs.getString('userId');
@@ -131,7 +181,7 @@ class ScreenTimeTrackerService {
         sessions: sessions.cast<Map<String, dynamic>>(),
       );
 
-      print('[ScreenTime] Usage uploaded: $_todayUsageMinutes minutes');
+      print('[ScreenTime] Usage uploaded: $_todayUsageMinutes minutes (${sessions.length} sessions)');
 
       // Check for local notifications (AC 5.2.8)
       await _checkLimitsForLocalNotification();
@@ -217,6 +267,7 @@ class ScreenTimeTrackerService {
 
   void dispose() {
     _uploadTimer?.cancel();
+    _deviceUsageTimer?.cancel();
     _sessionsBox?.close();
   }
 }
