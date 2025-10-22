@@ -23,6 +23,9 @@ import '../../utils/offline_sos_queue.dart';
 import '../../widgets/child/screentime_usage_widget.dart';
 import '../../widgets/child/notification_center.dart';
 import '../chat/chat_list_screen.dart';
+import '../shared/profile_screen.dart';
+import './time_management_screen.dart';
+import './notifications_screen.dart';
 
 class ChildHomeScreen extends StatefulWidget {
   const ChildHomeScreen({Key? key}) : super(key: key);
@@ -229,73 +232,80 @@ class _ChildHomeScreenState extends State<ChildHomeScreen>
       backgroundColor: Color(0xFFF5F7FA),
       body: Stack(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.childPrimary.withOpacity(0.05),
-                  Color(0xFFF5F7FA),
-                  Color(0xFFF5F7FA),
-                ],
-                stops: [0.0, 0.2, 1.0],
+          if (_currentIndex == 0)
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.childPrimary.withOpacity(0.05),
+                    Color(0xFFF5F7FA),
+                    Color(0xFFF5F7FA),
+                  ],
+                  stops: [0.0, 0.2, 1.0],
+                ),
               ),
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: CustomScrollView(
-                physics: BouncingScrollPhysics(),
-                slivers: [
-                  SliverToBoxAdapter(child: _buildMinimalHeader(authProvider)),
-                  SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
-                  SliverToBoxAdapter(
-                    child: _buildPersonalizedGreeting(userName),
-                  ),
-                  SliverToBoxAdapter(
-                    child: ChangeNotifierProvider<LocationService>.value(
-                      value: _locationService,
-                      child: const OfflineIndicator(),
+              child: SafeArea(
+                bottom: false,
+                child: CustomScrollView(
+                  physics: BouncingScrollPhysics(),
+                  slivers: [
+                    SliverToBoxAdapter(child: _buildMinimalHeader(authProvider)),
+                    SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
+                    SliverToBoxAdapter(
+                      child: _buildPersonalizedGreeting(userName),
                     ),
-                  ),
-                  SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
-                  SliverToBoxAdapter(
-                    child: FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SlideTransition(
-                        position: _slideAnimation,
-                        child: _buildSOSCard(context),
+                    SliverToBoxAdapter(
+                      child: ChangeNotifierProvider<LocationService>.value(
+                        value: _locationService,
+                        child: const OfflineIndicator(),
                       ),
                     ),
-                  ),
-                  SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
-                  SliverToBoxAdapter(child: _buildScreenTimeWidget()),
-                  SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                      child: Text(
-                        'Hoạt động của bạn',
-                        style: AppTypography.h3.copyWith(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                    SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
+                    SliverToBoxAdapter(
+                      child: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: SlideTransition(
+                          position: _slideAnimation,
+                          child: _buildSOSCard(context),
                         ),
                       ),
                     ),
-                  ),
-                  SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
-                  SliverToBoxAdapter(
-                    child: FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: _buildActivityGrid(context),
+                    SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
+                    SliverToBoxAdapter(child: _buildScreenTimeWidget()),
+                    SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                        child: Text(
+                          'Hoạt động của bạn',
+                          style: AppTypography.h3.copyWith(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  SliverToBoxAdapter(child: SizedBox(height: 100)),
-                ],
+                    SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
+                    SliverToBoxAdapter(
+                      child: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: _buildActivityGrid(context),
+                      ),
+                    ),
+                    SliverToBoxAdapter(child: SizedBox(height: 100)),
+                  ],
+                ),
               ),
             ),
-          ),
+          if (_currentIndex == 1)
+            const TimeManagementScreen(),
+          if (_currentIndex == 2)
+            const NotificationsScreen(),
+          if (_currentIndex == 3)
+            const ProfileScreen(),
           Positioned(bottom: 0, left: 0, right: 0, child: _buildGlassNavBar()),
         ],
       ),
@@ -537,34 +547,7 @@ class _ChildHomeScreenState extends State<ChildHomeScreen>
               color: AppColors.textPrimary,
             ),
           ),
-          if (_pendingRequestsCount > 0)
-            Positioned(
-              top: -4,
-              right: -4,
-              child: Container(
-                padding: EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: AppColors.danger,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.danger.withOpacity(0.4),
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
-                child: Text(
-                  _pendingRequestsCount.toString(),
-                  style: AppTypography.overline.copyWith(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    height: 1,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
+
         ],
       ),
     );
@@ -728,22 +711,24 @@ class _ChildHomeScreenState extends State<ChildHomeScreen>
             'Thời gian sử dụng',
             'Xem thời gian bạn đã dùng thiết bị',
             AppColors.childAccent,
+            onTap: () => setState(() => _currentIndex = 1),
           ),
           SizedBox(height: AppSpacing.md),
           _buildChatCard(context),
           SizedBox(height: AppSpacing.md),
           _buildActivityCard(
-            Icons.assignment_rounded,
-            'Nhiệm vụ',
-            'Hoàn thành nhiệm vụ hàng ngày',
-            AppColors.info,
+            Icons.notifications_active_rounded,
+            'Thông báo',
+            'Xem tất cả thông báo của bạn',
+            AppColors.warning,
+            onTap: () => setState(() => _currentIndex = 2),
           ),
           SizedBox(height: AppSpacing.md),
           _buildActivityCard(
             Icons.stars_rounded,
             'Phần thưởng',
             'Nhận thưởng khi hoàn thành tốt',
-            AppColors.warning,
+            AppColors.info,
           ),
         ],
       ),
@@ -834,73 +819,79 @@ class _ChildHomeScreenState extends State<ChildHomeScreen>
     IconData icon,
     String title,
     String description,
-    Color color,
-  ) {
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: Color(0xFFF5F7FA),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            offset: Offset(4, 4),
-            blurRadius: 12,
-          ),
-          BoxShadow(
-            color: Colors.white.withOpacity(0.9),
-            offset: Offset(-3, -3),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+    Color color, {
+    VoidCallback? onTap,
+  }) {
+    final hasAction = onTap != null;
+    
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: Color(0xFFF5F7FA),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              offset: Offset(4, 4),
+              blurRadius: 12,
             ),
-            child: Icon(icon, color: color, size: 28),
-          ),
-          SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTypography.body.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+            BoxShadow(
+              color: Colors.white.withOpacity(0.9),
+              offset: Offset(-3, -3),
+              blurRadius: 10,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 28),
+            ),
+            SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTypography.body.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  description,
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.textSecondary,
+                  SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.warning.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              'Sắp có',
-              style: AppTypography.overline.copyWith(
-                fontWeight: FontWeight.w600,
-                color: AppColors.warning,
+                ],
               ),
             ),
-          ),
-        ],
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: hasAction ? color.withOpacity(0.1) : AppColors.warning.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                hasAction ? 'Mở' : 'Sắp có',
+                style: AppTypography.overline.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: hasAction ? color : AppColors.warning,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

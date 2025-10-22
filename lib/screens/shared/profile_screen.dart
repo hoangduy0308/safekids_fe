@@ -3,7 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_typography.dart';
+import '../../theme/app_spacing.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/api_service.dart';
 import '../../widgets/common/empty_state_widget.dart';
 import 'edit_profile_screen.dart';
 
@@ -62,236 +66,204 @@ class _ProfileScreenState extends State<ProfileScreen>
     final linkedAccounts = user.linkedUsersData
         .where((u) => u['role'] == (isParent ? 'child' : 'parent'))
         .toList();
+    final roleColor = isParent ? AppColors.parentPrimary : AppColors.childPrimary;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      body: Stack(
-        children: [
-          FadeTransition(
-            opacity: _fadeAnimation,
-            child: SlideTransition(
-              position: _slideAnimation,
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  await authProvider.refreshUser();
-                },
-                color: isParent
-                    ? AppColors.parentPrimary
-                    : AppColors.childPrimary,
-                child: SingleChildScrollView(
-                  physics: AlwaysScrollableScrollPhysics(),
+      backgroundColor: Colors.white,
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await authProvider.refreshUser();
+            },
+            color: roleColor,
+            child: CustomScrollView(
+              physics: AlwaysScrollableScrollPhysics(),
+              slivers: [
+                // Modern AppBar with gradient header
+                SliverAppBar(
+                  expandedHeight: 240,
+                  pinned: true,
+                  elevation: 0,
+                  backgroundColor: Colors.white,
+                  leading: Container(
+                    margin: EdgeInsets.all(AppSpacing.sm),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 8,
+                        )
+                      ],
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                  actions: [
+                    Container(
+                      margin: EdgeInsets.all(AppSpacing.sm),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 8,
+                          )
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.edit, color: roleColor),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => EditProfileScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.all(AppSpacing.sm),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 8,
+                          )
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.logout, color: AppColors.textSecondary),
+                        onPressed: () {
+                          _showLogoutDialog(context, authProvider);
+                        },
+                      ),
+                    ),
+                  ],
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            roleColor,
+                            roleColor.withOpacity(0.7),
+                          ],
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Avatar
+                          Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.15),
+                                  blurRadius: 20,
+                                  offset: Offset(0, 10),
+                                )
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                user.name.isNotEmpty
+                                    ? user.name[0].toUpperCase()
+                                    : 'U',
+                                style: TextStyle(
+                                  fontSize: 40,
+                                  fontWeight: FontWeight.bold,
+                                  color: roleColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: AppSpacing.md),
+                          // Name
+                          Text(
+                            user.name,
+                            style: AppTypography.h2.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: AppSpacing.xs),
+                          // Role badge
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.25),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.5),
+                              ),
+                            ),
+                            child: Text(
+                              isParent ? 'Phụ Huynh' : 'Trẻ Em',
+                              style: AppTypography.caption.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                // Content
+                SliverToBoxAdapter(
                   child: Column(
                     children: [
-                      _buildModernHeader(context, user, isParent),
                       SizedBox(height: AppSpacing.lg),
-                      _buildQuickStats(context, user, linkedAccounts, isParent),
-                      SizedBox(height: AppSpacing.md),
-                      _buildInfoCards(context, user),
-                      SizedBox(height: AppSpacing.md),
+                      _buildStatsSection(user, linkedAccounts, isParent, roleColor),
+                      SizedBox(height: AppSpacing.lg),
+                      _buildInfoSection(user, isParent, roleColor),
+                      SizedBox(height: AppSpacing.lg),
                       _buildLinkedAccountsSection(
                         context,
                         linkedAccounts,
                         isParent,
+                        roleColor,
                       ),
-                      SizedBox(height: AppSpacing.md),
-                      _buildActionButtons(context, authProvider),
+                      SizedBox(height: AppSpacing.lg),
+                      _buildSettingsSection(context, authProvider, roleColor),
                       SizedBox(height: AppSpacing.xl),
                     ],
                   ),
                 ),
-              ),
+              ],
             ),
           ),
-          // Floating back button
-          Positioned(
-            top: MediaQuery.of(context).padding.top + AppSpacing.sm,
-            left: AppSpacing.sm,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.shadowColor.withOpacity(0.1),
-                    blurRadius: AppSpacing.sm,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: IconButton(
-                icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
-                onPressed: () {
-                  HapticFeedback.lightImpact();
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-          ),
-          // Floating edit button
-          Positioned(
-            top: MediaQuery.of(context).padding.top + AppSpacing.sm,
-            right: AppSpacing.sm,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.shadowColor.withOpacity(0.1),
-                    blurRadius: AppSpacing.sm,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: IconButton(
-                icon: Icon(
-                  Icons.edit,
-                  color: isParent
-                      ? AppColors.parentPrimary
-                      : AppColors.childPrimary,
-                ),
-                onPressed: () {
-                  HapticFeedback.lightImpact();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => EditProfileScreen()),
-                  );
-                },
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildModernHeader(BuildContext context, user, bool isParent) {
-    final roleColor = isParent
-        ? AppColors.parentPrimary
-        : AppColors.childPrimary;
-
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        60,
-        AppSpacing.md,
-        AppSpacing.xl,
-      ),
-      child: Column(
-        children: [
-          // Avatar with ring - Larger and more prominent
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              // Outer ring with animation-ready design
-              Container(
-                width: 140,
-                height: 140,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [roleColor, roleColor.withOpacity(0.5)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-              ),
-              // Avatar
-              Container(
-                width: 130,
-                height: 130,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: roleColor.withOpacity(0.25),
-                      blurRadius: AppSpacing.lg,
-                      offset: Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
-                    style: AppTypography.h1
-                        .copyWith(color: roleColor)
-                        .copyWith(fontSize: 52, letterSpacing: -1),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: AppSpacing.lg),
-          // Name - Larger for better hierarchy
-          Text(
-            user.name,
-            style: AppTypography.h1
-                .copyWith(color: AppColors.textPrimary)
-                .copyWith(fontSize: 32, letterSpacing: -0.5, height: 1.2),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          SizedBox(height: AppSpacing.xs),
-          // Email - Better readability
-          Text(
-            user.email,
-            style: AppTypography.body
-                .copyWith(color: AppColors.textSecondary)
-                .copyWith(letterSpacing: 0.2),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          SizedBox(height: AppSpacing.md),
-          // Role badge - More prominent
-          Center(
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.xs,
-              ),
-              decoration: BoxDecoration(
-                color: roleColor.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                border: Border.all(
-                  color: roleColor.withOpacity(0.25),
-                  width: 1.5,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    isParent ? Icons.family_restroom : Icons.child_care,
-                    color: roleColor,
-                    size: AppSpacing.iconSm,
-                  ),
-                  SizedBox(width: AppSpacing.sm),
-                  Text(
-                    isParent ? 'Phụ Huynh' : 'Trẻ Em',
-                    style: AppTypography.body
-                        .copyWith(color: roleColor)
-                        .copyWith(
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.3,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickStats(
-    BuildContext context,
+  Widget _buildStatsSection(
     user,
     List linkedAccounts,
     bool isParent,
+    Color roleColor,
   ) {
     final createdDate = user.createdAt != null
         ? DateFormat('dd/MM/yyyy').format(user.createdAt)
@@ -303,19 +275,19 @@ class _ProfileScreenState extends State<ProfileScreen>
         children: [
           Expanded(
             child: _buildStatCard(
-              Icons.people_outline,
+              Icons.people_outline_rounded,
               linkedAccounts.length.toString(),
               isParent ? 'Trẻ em' : 'Phụ huynh',
-              isParent ? AppColors.parentSecondary : AppColors.childAccent,
+              roleColor,
             ),
           ),
           SizedBox(width: AppSpacing.md),
           Expanded(
             child: _buildStatCard(
-              Icons.calendar_today_outlined,
+              Icons.calendar_today_rounded,
               createdDate,
               'Tham gia',
-              isParent ? AppColors.parentAccent : AppColors.childPrimary,
+              roleColor.withOpacity(0.7),
             ),
           ),
         ],
@@ -330,73 +302,87 @@ class _ProfileScreenState extends State<ProfileScreen>
     Color color,
   ) {
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.md,
-      ),
+      padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadowColor.withOpacity(0.08),
-            blurRadius: AppSpacing.xs,
-            offset: Offset(0, 3),
-          ),
-        ],
+        border: Border.all(
+          color: Colors.grey[200]!,
+          width: 1,
+        ),
       ),
       child: Column(
         children: [
           Container(
-            padding: EdgeInsets.all(AppSpacing.xs),
+            padding: EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withOpacity(0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: AppSpacing.iconMd),
+            child: Icon(icon, color: color, size: 20),
           ),
           SizedBox(height: AppSpacing.md),
           Text(
             value,
-            style: AppTypography.h3
-                .copyWith(color: AppColors.textPrimary)
-                .copyWith(letterSpacing: -0.3),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            style: AppTypography.h3.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          SizedBox(height: AppSpacing.xxs),
+          SizedBox(height: 4),
           Text(
             label,
-            style: AppTypography.caption
-                .copyWith(color: AppColors.textSecondary)
-                .copyWith(fontWeight: FontWeight.w500),
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoCards(BuildContext context, user) {
-    final isParent = user.role == 'parent';
+  Widget _buildInfoSection(user, bool isParent, Color roleColor) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Padding(
+            padding: EdgeInsets.only(left: AppSpacing.sm),
+            child: Text(
+              'Thông tin cá nhân',
+              style: AppTypography.h3.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          SizedBox(height: AppSpacing.md),
+          if (user.email.isNotEmpty)
+            _buildInfoRow(
+              Icons.email_outlined,
+              'Email',
+              user.email,
+              roleColor,
+            ),
           if (user.phone != null && user.phone.isNotEmpty)
-            _buildInfoCard(
-              Icons.phone_outlined,
-              'Số điện thoại',
-              user.phone,
-              isParent ? AppColors.parentPrimary : AppColors.childPrimary,
+            Padding(
+              padding: EdgeInsets.only(top: AppSpacing.sm),
+              child: _buildInfoRow(
+                Icons.phone_outlined,
+                'Số điện thoại',
+                user.phone,
+                roleColor,
+              ),
             ),
           if (user.age != null)
             Padding(
-              padding: EdgeInsets.only(top: AppSpacing.md),
-              child: _buildInfoCard(
+              padding: EdgeInsets.only(top: AppSpacing.sm),
+              child: _buildInfoRow(
                 Icons.cake_outlined,
                 'Tuổi',
                 '${user.age} tuổi',
-                isParent ? AppColors.parentAccent : AppColors.childAccent,
+                roleColor,
               ),
             ),
         ],
@@ -404,7 +390,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  Widget _buildInfoCard(
+  Widget _buildInfoRow(
     IconData icon,
     String label,
     String value,
@@ -415,13 +401,10 @@ class _ProfileScreenState extends State<ProfileScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadowColor.withOpacity(0.08),
-            blurRadius: AppSpacing.xs,
-            offset: Offset(0, 3),
-          ),
-        ],
+        border: Border.all(
+          color: Colors.grey[200]!,
+          width: 1,
+        ),
       ),
       child: Row(
         children: [
@@ -429,9 +412,9 @@ class _ProfileScreenState extends State<ProfileScreen>
             padding: EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
               color: color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: color, size: AppSpacing.iconMd),
+            child: Icon(icon, color: color, size: 20),
           ),
           SizedBox(width: AppSpacing.md),
           Expanded(
@@ -440,19 +423,18 @@ class _ProfileScreenState extends State<ProfileScreen>
               children: [
                 Text(
                   label,
-                  style: AppTypography.caption
-                      .copyWith(color: AppColors.textSecondary)
-                      .copyWith(fontWeight: FontWeight.w500),
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-                SizedBox(height: AppSpacing.xxs),
+                SizedBox(height: 4),
                 Text(
                   value,
-                  style: AppTypography.body
-                      .copyWith(color: AppColors.textPrimary)
-                      .copyWith(
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.2,
-                      ),
+                  style: AppTypography.body.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -462,14 +444,14 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
+
+
   Widget _buildLinkedAccountsSection(
     BuildContext context,
     List<Map<String, dynamic>> accounts,
     bool isParent,
+    Color roleColor,
   ) {
-    final roleColor = isParent
-        ? AppColors.parentSecondary
-        : AppColors.childPrimary;
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -540,6 +522,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     final avatarColor = isParent
         ? AppColors.childAccent
         : AppColors.parentPrimary;
+    final accountId = account['_id'] ?? account['id'];
 
     return Container(
       margin: EdgeInsets.only(bottom: AppSpacing.xs),
@@ -548,126 +531,130 @@ class _ProfileScreenState extends State<ProfileScreen>
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         border: Border.all(color: AppColors.borderLight.withOpacity(0.5)),
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {},
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          child: Padding(
-            padding: EdgeInsets.all(AppSpacing.sm),
-            child: Row(
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: avatarColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  ),
-                  child: Center(
-                    child: Text(
-                      (account['name'] ?? 'U')[0].toUpperCase(),
-                      style: AppTypography.h3.copyWith(color: avatarColor),
-                    ),
-                  ),
+      child: Padding(
+        padding: EdgeInsets.all(AppSpacing.sm),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: avatarColor.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              ),
+              child: Center(
+                child: Text(
+                  (account['name'] ?? 'U')[0].toUpperCase(),
+                  style: AppTypography.h3.copyWith(color: avatarColor),
                 ),
-                SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        account['name'] ?? 'Unknown',
-                        style: AppTypography.body
-                            .copyWith(color: AppColors.textPrimary)
-                            .copyWith(
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: -0.2,
-                            ),
-                      ),
-                      SizedBox(height: AppSpacing.xxs),
-                      Text(
-                        account['email'] ?? '',
-                        style: AppTypography.caption.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xs,
-                    vertical: AppSpacing.xxs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.successLight,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  ),
-                  child: Text(
-                    'Liên kết',
-                    style: AppTypography.caption
-                        .copyWith(color: AppColors.success)
-                        .copyWith(fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+            SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    account['name'] ?? 'Unknown',
+                    style: AppTypography.body
+                        .copyWith(color: AppColors.textPrimary)
+                        .copyWith(
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.2,
+                        ),
+                  ),
+                  SizedBox(height: AppSpacing.xxs),
+                  Text(
+                    account['email'] ?? '',
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            GestureDetector(
+              onTap: () => _showUnlinkDialog(context, accountId, account['name'] ?? 'Unknown'),
+              child: Container(
+                padding: EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.danger.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(
+                  Icons.close,
+                  size: 18,
+                  color: AppColors.danger,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, AuthProvider authProvider) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.shadowColor.withOpacity(0.08),
-              blurRadius: AppSpacing.sm,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              HapticFeedback.mediumImpact();
-              _showLogoutDialog(context, authProvider);
-            },
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.logout_rounded,
-                    color: AppColors.danger,
-                    size: AppSpacing.iconSm,
-                  ),
-                  SizedBox(width: AppSpacing.xs),
-                  Text(
-                    'Đăng xuất',
-                    style: AppTypography.body
-                        .copyWith(color: AppColors.danger)
-                        .copyWith(fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
+  Future<void> _showUnlinkDialog(
+    BuildContext context,
+    String accountId,
+    String accountName,
+  ) async {
+    final authProvider = context.read<AuthProvider>();
+    final shouldUnlink = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Xóa liên kết'),
+        content: Text('Bạn có chắc chắn muốn xóa liên kết với $accountName?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Xóa',
+              style: AppTypography.button.copyWith(color: AppColors.danger),
             ),
           ),
-        ),
+        ],
       ),
     );
+
+    if (shouldUnlink == true) {
+      try {
+        final apiService = ApiService();
+        await apiService.removeChildLink(accountId);
+        await authProvider.refreshUser();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Đã xóa liên kết với $accountName'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi: $e'),
+              backgroundColor: AppColors.danger,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Widget _buildSettingsSection(
+    BuildContext context,
+    AuthProvider authProvider,
+    Color roleColor,
+  ) {
+    return SizedBox.shrink();
   }
 
   void _showLogoutDialog(
@@ -678,7 +665,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Đăng xuất'),
-        content: Text('Bạn có chắc chắn muốn đăng xuất?'),
+        content: Text('Bạn có chắc chắn muốn đăng xuất không?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -688,7 +675,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             onPressed: () => Navigator.pop(context, true),
             child: Text(
               'Đăng xuất',
-              style: AppTypography.button.copyWith(color: AppColors.danger),
+              style: AppTypography.button.copyWith(color: AppColors.textSecondary),
             ),
           ),
         ],
@@ -699,4 +686,5 @@ class _ProfileScreenState extends State<ProfileScreen>
       await authProvider.logout();
     }
   }
+
 }

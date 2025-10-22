@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../models/location.dart' as location_model;
 import '../../models/user.dart';
 import '../../services/api_service.dart';
@@ -8,6 +9,8 @@ import '../../widgets/parent/child_location_map.dart';
 import '../../models/child_detail_data.dart';
 import '../../widgets/parent/geofence_suggestions_section.dart';
 import '../../widgets/geofence_map_view.dart';
+import '../chat/chat_list_screen.dart';
+import './location_history_screen.dart';
 import 'dart:ui';
 import '../../theme/app_typography.dart';
 import 'package:latlong2/latlong.dart';
@@ -251,6 +254,70 @@ class _ChildMapScreenState extends State<ChildMapScreen> {
 
   // --- Helper methods copied from ChildDetailSheet ---
 
+  void _openChatScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ChatListScreen(),
+      ),
+    );
+  }
+
+  Future<void> _openNavigation() async {
+    try {
+      if (widget.selectedLocation == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Không có vị trí để chỉ đường'),
+          ),
+        );
+        return;
+      }
+
+      final lat = widget.selectedLocation!.latitude;
+      final lng = widget.selectedLocation!.longitude;
+      final childName = Uri.encodeComponent(widget.childName);
+
+      final uri = Uri.parse(
+        'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&destination_name=$childName',
+      );
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Không thể mở ứng dụng bản đồ'),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: $e'),
+          ),
+        );
+      }
+    }
+  }
+
+  void _openLocationHistory() {
+    print('[ChildMapScreen] Opening history - childId: ${widget.childDetail.childId}, name: ${widget.childName}');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LocationHistoryScreen(
+          childId: widget.childDetail.childId,
+          childName: widget.childName,
+          initialDate: DateTime.now(),
+        ),
+      ),
+    );
+  }
+
   Widget _buildActionButtons(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -264,16 +331,19 @@ class _ChildMapScreenState extends State<ChildMapScreen> {
           icon: Icons.message_rounded,
           label: 'Nhắn tin',
           color: Colors.blue,
+          onTap: _openChatScreen,
         ),
         _buildActionButton(
           icon: Icons.navigation_rounded,
           label: 'Chỉ đường',
           color: Colors.purple,
+          onTap: _openNavigation,
         ),
         _buildActionButton(
           icon: Icons.history_rounded,
           label: 'Lịch sử',
           color: Colors.orange,
+          onTap: _openLocationHistory,
         ),
       ],
     );

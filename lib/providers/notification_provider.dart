@@ -27,37 +27,23 @@ class NotificationProvider extends ChangeNotifier {
 
   Future<void> loadNotifications() async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Load notifications from local storage or in-memory (simulating Firebase)
+      await Future.delayed(const Duration(milliseconds: 300));
 
-      _notifications = [
-        NotificationItem(
-          id: '1',
-          childId: 'child1',
-          childName: 'Hdi',
-          category: NotificationCategory.alert,
-          title: 'đã rời khỏi vùng an toàn',
-          description: 'Vị trí: Ngoài nhà',
-          timestamp: DateTime.now().subtract(const Duration(minutes: 1)),
-          isRead: false,
-          actionLabel: 'Xem bản đồ',
-          metadata: {'type': 'location', 'safe': false},
-        ),
-        NotificationItem(
-          id: '2',
-          childId: 'child1',
-          childName: 'Hdi',
-          category: NotificationCategory.update,
-          title: 'đã vào vùng an toàn',
-          description: 'Vị trí: Nhà',
-          timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-          isRead: false,
-          actionLabel: 'Xem bản đồ',
-          metadata: {'type': 'location', 'safe': true},
-        ),
-      ];
+      // In a real app, this would fetch from:
+      // 1. Firebase Firestore/Realtime Database
+      // 2. Backend API endpoint
+      // 3. Local SQLite database
+
+      // For now, keeping empty list for real data to be populated
+      // by Firebase onMessage listeners
+      if (_notifications.isEmpty) {
+        _notifications = [];
+      }
 
       _errorMessage = null;
     } catch (e) {

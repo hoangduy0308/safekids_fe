@@ -21,6 +21,7 @@ import '../../widgets/parent/notification_panel.dart';
 import '../../widgets/child/notification_center.dart';
 import 'child_map_screen.dart';
 import 'link_child_screen.dart';
+import '../shared/profile_screen.dart';
 
 class MemberCardWithInteraction extends StatefulWidget {
   final String name;
@@ -784,20 +785,25 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                   GestureDetector(
                     onTap: () {
                       HapticFeedback.mediumImpact();
-                      _showLogoutDialog(context.read<AuthProvider>());
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ProfileScreen(),
+                        ),
+                      );
                     },
                     child: Container(
                       padding: const EdgeInsets.all(AppSpacing.sm),
                       decoration: BoxDecoration(
-                        color: AppColors.danger.withOpacity(0.1),
+                        color: AppColors.parentPrimary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(
                           AppSpacing.radiusMd,
                         ),
                       ),
-                      child: const Icon(
-                        Icons.logout_rounded,
+                      child: Icon(
+                        Icons.person_rounded,
                         size: 28,
-                        color: AppColors.danger,
+                        color: AppColors.parentPrimary,
                       ),
                     ),
                   ),
@@ -1227,30 +1233,4 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
     );
   }
 
-  void _showLogoutDialog(AuthProvider authProvider) async {
-    final shouldLogout = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Đăng xuất'),
-        content: const Text('Bạn có chắc chắn muốn đăng xuất?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Hủy'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              'Đăng xuất',
-              style: AppTypography.button.copyWith(color: AppColors.danger),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (shouldLogout == true) {
-      await authProvider.logout();
-    }
-  }
 }
