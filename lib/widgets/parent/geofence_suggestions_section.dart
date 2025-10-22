@@ -18,10 +18,12 @@ class GeofenceSuggestionsSection extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<GeofenceSuggestionsSection> createState() => _GeofenceSuggestionsSectionState();
+  State<GeofenceSuggestionsSection> createState() =>
+      _GeofenceSuggestionsSectionState();
 }
 
-class _GeofenceSuggestionsSectionState extends State<GeofenceSuggestionsSection> {
+class _GeofenceSuggestionsSectionState
+    extends State<GeofenceSuggestionsSection> {
   late Future<List<GeofenceSuggestion>> _suggestionsFuture;
 
   @override
@@ -64,18 +66,18 @@ class _GeofenceSuggestionsSectionState extends State<GeofenceSuggestionsSection>
         suggestion.center.latitude,
         suggestion.center.longitude,
       );
-      
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đã ẩn gợi ý')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Đã ẩn gợi ý')));
         _loadSuggestions();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
       }
     }
   }
@@ -118,10 +120,7 @@ class _GeofenceSuggestionsSectionState extends State<GeofenceSuggestionsSection>
                     children: [
                       Icon(Icons.lightbulb, color: AppColors.warning, size: 24),
                       const SizedBox(width: AppSpacing.sm),
-                      Text(
-                        'Gợi Ý Vùng Thông Minh',
-                        style: AppTypography.h3,
-                      ),
+                      Text('Gợi Ý Vùng Thông Minh', style: AppTypography.h3),
                       const Spacer(),
                       IconButton(
                         icon: const Icon(Icons.refresh),
@@ -133,13 +132,15 @@ class _GeofenceSuggestionsSectionState extends State<GeofenceSuggestionsSection>
                   const SizedBox(height: AppSpacing.sm),
 
                   // List of suggestion cards
-                  ...suggestions.map((suggestion) => GeofenceSuggestionCard(
-                    suggestion: suggestion,
-                    onCreateTap: () {
-                      widget.onCreateGeofence?.call(suggestion);
-                    },
-                    onDismissTap: () => _dismissSuggestion(suggestion),
-                  )),
+                  ...suggestions.map(
+                    (suggestion) => GeofenceSuggestionCard(
+                      suggestion: suggestion,
+                      onCreateTap: () {
+                        widget.onCreateGeofence?.call(suggestion);
+                      },
+                      onDismissTap: () => _dismissSuggestion(suggestion),
+                    ),
+                  ),
                 ],
               ),
             ),

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
@@ -20,7 +20,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
   final _ageController = TextEditingController();
-  
+
   String _selectedRole = 'parent';
   bool _obscurePassword = true;
 
@@ -38,15 +38,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final authProvider = context.read<AuthProvider>();
-    
+
     final success = await authProvider.register(
       name: _fullNameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text,
       phone: _phoneController.text.trim(),
       role: _selectedRole,
-      age: _selectedRole == 'child' && _ageController.text.isNotEmpty 
-          ? int.tryParse(_ageController.text) 
+      age: _selectedRole == 'child' && _ageController.text.isNotEmpty
+          ? int.tryParse(_ageController.text)
           : null,
     );
 
@@ -68,7 +68,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           content: Text(authProvider.errorMessage ?? 'Đăng ký thất bại'),
           backgroundColor: AppColors.danger,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
     }
@@ -89,7 +91,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           physics: BouncingScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.xxl),
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            0,
+            AppSpacing.xl,
+            AppSpacing.xxl,
+          ),
           child: Form(
             key: _formKey,
             child: Column(
@@ -98,12 +105,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Header
                 _buildHeader(),
                 SizedBox(height: AppSpacing.xxl),
-                
+
                 // Registration Form
                 _buildRegistrationForm(),
-                
+
                 SizedBox(height: AppSpacing.xl),
-                
+
                 // Login Link
                 _buildLoginLink(),
               ],
@@ -132,11 +139,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
         SizedBox(height: AppSpacing.md),
-        
-        Text(
-          'Tạo tài khoản',
-          style: AppTypography.h1,
-        ),
+
+        Text('Tạo tài khoản', style: AppTypography.h1),
         SizedBox(height: AppSpacing.xs),
         Text(
           'Điền thông tin để bắt đầu',
@@ -180,7 +184,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             },
           ),
           SizedBox(height: AppSpacing.md),
-          
+
           // Email
           _buildTextField(
             controller: _emailController,
@@ -192,14 +196,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
               if (value == null || value.trim().isEmpty) {
                 return 'Vui lòng nhập email';
               }
-              if (!RegExp(r'^[\w-\.]+@[\w-]+\.[a-zA-Z]{2,}$').hasMatch(value.trim())) {
+              if (!RegExp(
+                r'^[\w-\.]+@[\w-]+\.[a-zA-Z]{2,}$',
+              ).hasMatch(value.trim())) {
                 return 'Email không hợp lệ';
               }
               return null;
             },
           ),
           SizedBox(height: 16),
-          
+
           // Password
           _buildTextField(
             controller: _passwordController,
@@ -209,7 +215,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             obscureText: _obscurePassword,
             suffixIcon: IconButton(
               icon: Icon(
-                _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                _obscurePassword
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
                 color: AppColors.textLight,
               ),
               onPressed: () {
@@ -229,7 +237,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             },
           ),
           SizedBox(height: 16),
-          
+
           // Phone
           _buildTextField(
             controller: _phoneController,
@@ -248,10 +256,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             },
           ),
           SizedBox(height: 16),
-          
+
           // Role Selection
           _buildRoleSelector(),
-          
+
           // Age (conditional for child)
           if (_selectedRole == 'child') ...[
             SizedBox(height: 16),
@@ -278,9 +286,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               },
             ),
           ],
-          
+
           SizedBox(height: AppSpacing.xl),
-          
+
           // Register Button
           _buildRegisterButton(),
         ],
@@ -301,10 +309,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: AppTypography.label,
-        ),
+        Text(label, style: AppTypography.label),
         SizedBox(height: AppSpacing.xs),
         TextFormField(
           controller: controller,
@@ -314,7 +319,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: AppTypography.body.copyWith(color: AppColors.textLight),
-            prefixIcon: Icon(prefixIcon, color: AppColors.parentPrimary, size: AppSpacing.iconSm),
+            prefixIcon: Icon(
+              prefixIcon,
+              color: AppColors.parentPrimary,
+              size: AppSpacing.iconSm,
+            ),
             suffixIcon: suffixIcon,
             filled: true,
             fillColor: AppColors.inputBackground,
@@ -338,7 +347,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
               borderSide: BorderSide(color: AppColors.danger, width: 2),
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
           ),
           validator: validator,
         ),
@@ -350,10 +362,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Chọn vai trò',
-          style: AppTypography.label,
-        ),
+        Text('Chọn vai trò', style: AppTypography.label),
         SizedBox(height: 8),
         Row(
           children: [
@@ -387,7 +396,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     required Color color,
   }) {
     final isSelected = _selectedRole == value;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -397,7 +406,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : AppColors.inputBackground,
+          color: isSelected
+              ? color.withOpacity(0.1)
+              : AppColors.inputBackground,
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           border: Border.all(
             color: isSelected ? color : AppColors.borderLight,
@@ -414,10 +425,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
             SizedBox(height: AppSpacing.xs),
             Text(
               label,
-              style: AppTypography.bodySmall.copyWith(                color: isSelected ? color : AppColors.textSecondary,
-              ).copyWith(
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              ),
+              style: AppTypography.bodySmall
+                  .copyWith(color: isSelected ? color : AppColors.textSecondary)
+                  .copyWith(
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  ),
             ),
           ],
         ),
@@ -453,7 +465,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   )
                 : Text(
                     'Đăng ký',
-                    style: AppTypography.buttonLarge.copyWith(color: Colors.white, letterSpacing: 0.3),                  ),
+                    style: AppTypography.buttonLarge.copyWith(
+                      color: Colors.white,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
           ),
         );
       },
@@ -466,14 +482,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       children: [
         Text(
           'Đã có tài khoản? ',
-          style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),        ),
+          style: AppTypography.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
         TextButton(
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(
-                builder: (context) => LoginScreen(),
-              ),
+              MaterialPageRoute(builder: (context) => LoginScreen()),
             );
           },
           style: TextButton.styleFrom(
@@ -483,7 +500,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           child: Text(
             'Đăng nhập',
-            style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w700, color: AppColors.parentPrimary, decoration: TextDecoration.underline, decorationColor: AppColors.parentPrimary),          ),
+            style: AppTypography.bodySmall.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppColors.parentPrimary,
+              decoration: TextDecoration.underline,
+              decorationColor: AppColors.parentPrimary,
+            ),
+          ),
         ),
       ],
     );

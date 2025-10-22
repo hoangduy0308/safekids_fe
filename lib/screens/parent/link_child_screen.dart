@@ -34,8 +34,8 @@ class _LinkChildScreenState extends State<LinkChildScreen> {
     try {
       await ApiService().sendLinkRequest(
         _emailController.text.trim(),
-        message: _messageController.text.trim().isEmpty 
-            ? null 
+        message: _messageController.text.trim().isEmpty
+            ? null
             : _messageController.text.trim(),
       );
 
@@ -46,21 +46,24 @@ class _LinkChildScreenState extends State<LinkChildScreen> {
           content: Text('✅ Đã gửi yêu cầu! Chờ trẻ em chấp nhận.'),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
         ),
       );
       Navigator.pop(context, true);
-      
     } catch (e) {
       if (!mounted) return;
-      
+
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('❌ ${e.toString()}'),
           backgroundColor: AppColors.danger,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
         ),
       );
     }
@@ -85,12 +88,12 @@ class _LinkChildScreenState extends State<LinkChildScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(height: AppSpacing.md),
-                
+
                 // Linked Children Section
                 _buildLinkedChildrenSection(),
-                
+
                 SizedBox(height: AppSpacing.xl),
-                
+
                 // Icon
                 Container(
                   width: 80,
@@ -105,41 +108,43 @@ class _LinkChildScreenState extends State<LinkChildScreen> {
                     color: AppColors.parentSecondary,
                   ),
                 ),
-                
+
                 SizedBox(height: AppSpacing.lg),
-                
+
                 // Title
                 Text(
                   'Liên kết với con em',
-                  style: AppTypography.h2.copyWith(color: AppColors.textPrimary),
+                  style: AppTypography.h2.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 SizedBox(height: AppSpacing.sm),
-                
+
                 // Description
                 Text(
                   'Gửi yêu cầu liên kết đến tài khoản trẻ em. Con em cần chấp nhận yêu cầu để hoàn tất kết nối.',
-                  style: AppTypography.body.copyWith(color: AppColors.textSecondary).copyWith(
-                    fontSize: 15,
-                  ),
+                  style: AppTypography.body
+                      .copyWith(color: AppColors.textSecondary)
+                      .copyWith(fontSize: 15),
                 ),
-                
+
                 SizedBox(height: AppSpacing.xl),
-                
+
                 // Email Field
                 _buildEmailField(),
-                
+
                 SizedBox(height: AppSpacing.md),
-                
+
                 // Message Field (Optional)
                 _buildMessageField(),
-                
+
                 SizedBox(height: AppSpacing.lg),
-                
+
                 // Send Request Button
                 _buildSendButton(),
-                
+
                 SizedBox(height: AppSpacing.md),
-                
+
                 // Info Card
                 _buildInfoCard(),
               ],
@@ -156,9 +161,9 @@ class _LinkChildScreenState extends State<LinkChildScreen> {
       children: [
         Text(
           'Email của trẻ em',
-          style: AppTypography.bodySmall.copyWith(color: AppColors.textPrimary).copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTypography.bodySmall
+              .copyWith(color: AppColors.textPrimary)
+              .copyWith(fontWeight: FontWeight.w600),
         ),
         SizedBox(height: AppSpacing.sm),
         TextFormField(
@@ -168,7 +173,11 @@ class _LinkChildScreenState extends State<LinkChildScreen> {
           decoration: InputDecoration(
             hintText: 'child@email.com',
             hintStyle: AppTypography.body.copyWith(color: AppColors.textLight),
-            prefixIcon: Icon(Icons.email_outlined, color: AppColors.parentSecondary, size: AppSpacing.iconSm),
+            prefixIcon: Icon(
+              Icons.email_outlined,
+              color: AppColors.parentSecondary,
+              size: AppSpacing.iconSm,
+            ),
             filled: true,
             fillColor: AppColors.inputBackground,
             border: OutlineInputBorder(
@@ -181,7 +190,10 @@ class _LinkChildScreenState extends State<LinkChildScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              borderSide: BorderSide(color: AppColors.parentSecondary, width: 2),
+              borderSide: BorderSide(
+                color: AppColors.parentSecondary,
+                width: 2,
+              ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
@@ -191,7 +203,10 @@ class _LinkChildScreenState extends State<LinkChildScreen> {
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
               borderSide: BorderSide(color: AppColors.danger, width: 2),
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -213,9 +228,9 @@ class _LinkChildScreenState extends State<LinkChildScreen> {
       children: [
         Text(
           'Lời nhắn (tùy chọn)',
-          style: AppTypography.bodySmall.copyWith(color: AppColors.textPrimary).copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTypography.bodySmall
+              .copyWith(color: AppColors.textPrimary)
+              .copyWith(fontWeight: FontWeight.w600),
         ),
         SizedBox(height: AppSpacing.sm),
         TextFormField(
@@ -238,9 +253,15 @@ class _LinkChildScreenState extends State<LinkChildScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              borderSide: BorderSide(color: AppColors.parentSecondary, width: 2),
+              borderSide: BorderSide(
+                color: AppColors.parentSecondary,
+                width: 2,
+              ),
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
           ),
         ),
       ],
@@ -273,10 +294,9 @@ class _LinkChildScreenState extends State<LinkChildScreen> {
               )
             : Text(
                 'Gửi Yêu Cầu',
-                style: AppTypography.body.copyWith(color: Colors.white).copyWith(
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.3,
-                ),
+                style: AppTypography.body
+                    .copyWith(color: Colors.white)
+                    .copyWith(fontWeight: FontWeight.w600, letterSpacing: 0.3),
               ),
       ),
     );
@@ -302,9 +322,9 @@ class _LinkChildScreenState extends State<LinkChildScreen> {
           Expanded(
             child: Text(
               'Trẻ em sẽ nhận được thông báo và cần chấp nhận yêu cầu để hoàn tất liên kết.',
-              style: AppTypography.caption.copyWith(color: AppColors.info).copyWith(
-                height: 1.4,
-              ),
+              style: AppTypography.caption
+                  .copyWith(color: AppColors.info)
+                  .copyWith(height: 1.4),
             ),
           ),
         ],
@@ -317,12 +337,12 @@ class _LinkChildScreenState extends State<LinkChildScreen> {
       builder: (context, authProvider, child) {
         // Get linked children from AuthProvider
         final linkedChildren = authProvider.user?.linkedUsersData ?? [];
-        
+
         // Filter for children only (role == 'child')
         final childrenList = linkedChildren
             .where((user) => user['role'] == 'child')
             .toList();
-        
+
         if (childrenList.isEmpty) {
           return SizedBox.shrink();
         }
@@ -343,12 +363,12 @@ class _LinkChildScreenState extends State<LinkChildScreen> {
                 final child = childrenList[index];
                 final name = child['name'] ?? child['fullName'] ?? 'Unknown';
                 final email = child['email'] ?? '';
-                final initial = name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?';
-                
+                final initial = name.isNotEmpty
+                    ? name.substring(0, 1).toUpperCase()
+                    : '?';
+
                 return ListTile(
-                  leading: CircleAvatar(
-                    child: Text(initial),
-                  ),
+                  leading: CircleAvatar(child: Text(initial)),
                   title: Text(name),
                   subtitle: Text(email),
                   trailing: Icon(Icons.check_circle, color: AppColors.success),

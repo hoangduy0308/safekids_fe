@@ -7,7 +7,8 @@ class User {
   final String role; // 'parent' or 'child'
   final int? age;
   final List<String> linkedUsers; // User IDs or populated user objects
-  final List<Map<String, dynamic>> linkedUsersData; // Populated user objects from backend
+  final List<Map<String, dynamic>>
+  linkedUsersData; // Populated user objects from backend
   final String? fcmToken;
   final DateTime createdAt;
 
@@ -77,7 +78,7 @@ class User {
     mergeLinkedList(json['linkedUsers']);
     mergeLinkedList(json['linkedChildren']);
     mergeLinkedList(json['linkedParents']);
-    
+
     return User(
       id: json['_id'] ?? json['id'] ?? '',
       name: json['name'] ?? json['fullName'] ?? '',
@@ -89,7 +90,9 @@ class User {
       linkedUsers: linkedUserIds,
       linkedUsersData: linkedUsersDataList,
       fcmToken: json['fcmToken'],
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(
+        json['createdAt'] ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 

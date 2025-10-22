@@ -24,10 +24,7 @@ class GeofenceSuggestionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(
-          color: AppColors.warning.withOpacity(0.3),
-          width: 1,
-        ),
+        border: Border.all(color: AppColors.warning.withOpacity(0.3), width: 1),
         boxShadow: [
           BoxShadow(
             color: AppColors.warning.withOpacity(0.1),
@@ -47,7 +44,11 @@ class GeofenceSuggestionCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(Icons.lightbulb_outline, color: AppColors.warning, size: 24),
+                  Icon(
+                    Icons.lightbulb_outline,
+                    color: AppColors.warning,
+                    size: 24,
+                  ),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
                     suggestion.name,
@@ -63,7 +64,11 @@ class GeofenceSuggestionCard extends StatelessWidget {
                     color: AppColors.surfaceVariant.withOpacity(0.5),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.close, size: 18, color: AppColors.textSecondary),
+                  child: Icon(
+                    Icons.close,
+                    size: 18,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
             ],
@@ -73,7 +78,8 @@ class GeofenceSuggestionCard extends StatelessWidget {
           // Details: Location and Visit Count
           _buildDetailRow(
             icon: Icons.location_on_outlined,
-            text: '${suggestion.center.latitude.toStringAsFixed(4)}, ${suggestion.center.longitude.toStringAsFixed(4)}',
+            text:
+                '${suggestion.center.latitude.toStringAsFixed(4)}, ${suggestion.center.longitude.toStringAsFixed(4)}',
           ),
           const SizedBox(height: AppSpacing.sm),
           _buildDetailRow(
@@ -109,7 +115,11 @@ class GeofenceSuggestionCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.add_location_alt_outlined, color: Colors.white, size: 20),
+                  const Icon(
+                    Icons.add_location_alt_outlined,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
                     'Tạo Vùng An Toàn',
@@ -129,7 +139,10 @@ class GeofenceSuggestionCard extends StatelessWidget {
       children: [
         Icon(icon, size: 16, color: AppColors.textSecondary),
         const SizedBox(width: AppSpacing.sm),
-        Text(text, style: AppTypography.caption.copyWith(color: AppColors.textSecondary)),
+        Text(
+          text,
+          style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+        ),
       ],
     );
   }

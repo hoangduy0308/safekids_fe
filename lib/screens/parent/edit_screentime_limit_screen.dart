@@ -10,13 +10,12 @@ import '../../theme/app_typography.dart';
 class EditScreenTimeLimitScreen extends StatefulWidget {
   final Map<String, dynamic> child;
 
-  const EditScreenTimeLimitScreen({
-    Key? key,
-    required this.child,
-  }) : super(key: key);
+  const EditScreenTimeLimitScreen({Key? key, required this.child})
+    : super(key: key);
 
   @override
-  State<EditScreenTimeLimitScreen> createState() => _EditScreenTimeLimitScreenState();
+  State<EditScreenTimeLimitScreen> createState() =>
+      _EditScreenTimeLimitScreenState();
 }
 
 class _EditScreenTimeLimitScreenState extends State<EditScreenTimeLimitScreen> {
@@ -145,9 +144,7 @@ class _EditScreenTimeLimitScreenState extends State<EditScreenTimeLimitScreen> {
             // Daily limit slider
             Text(
               'Giới Hạn Hằng Ngày',
-              style: AppTypography.h3.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTypography.h3.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: AppSpacing.sm),
             Card(
@@ -192,9 +189,7 @@ class _EditScreenTimeLimitScreenState extends State<EditScreenTimeLimitScreen> {
             // Bedtime mode
             Text(
               'Chế Độ Giờ Ngủ',
-              style: AppTypography.h3.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTypography.h3.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: AppSpacing.sm),
             Card(
@@ -255,10 +250,7 @@ class _EditScreenTimeLimitScreenState extends State<EditScreenTimeLimitScreen> {
                     ),
                     const Divider(height: 1),
                     ListTile(
-                      leading: const Icon(
-                        Icons.wb_sunny,
-                        color: Colors.orange,
-                      ),
+                      leading: const Icon(Icons.wb_sunny, color: Colors.orange),
                       title: const Text('Kết Thúc'),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -291,7 +283,9 @@ class _EditScreenTimeLimitScreenState extends State<EditScreenTimeLimitScreen> {
                         padding: const EdgeInsets.all(AppSpacing.md),
                         decoration: BoxDecoration(
                           color: AppColors.info.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusSm,
+                          ),
                           border: Border.all(
                             color: AppColors.info.withOpacity(0.3),
                           ),
@@ -368,8 +362,10 @@ class _EditScreenTimeLimitScreenState extends State<EditScreenTimeLimitScreen> {
         childId: widget.child['_id'],
         dailyLimit: _dailyLimit,
         bedtimeEnabled: _bedtimeEnabled,
-        bedtimeStart: '${_bedtimeStart.hour.toString().padLeft(2, '0')}:${_bedtimeStart.minute.toString().padLeft(2, '0')}',
-        bedtimeEnd: '${_bedtimeEnd.hour.toString().padLeft(2, '0')}:${_bedtimeEnd.minute.toString().padLeft(2, '0')}',
+        bedtimeStart:
+            '${_bedtimeStart.hour.toString().padLeft(2, '0')}:${_bedtimeStart.minute.toString().padLeft(2, '0')}',
+        bedtimeEnd:
+            '${_bedtimeEnd.hour.toString().padLeft(2, '0')}:${_bedtimeEnd.minute.toString().padLeft(2, '0')}',
       );
 
       if (mounted) {

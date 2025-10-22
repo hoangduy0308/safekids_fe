@@ -32,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     // Save BuildContext before async call
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    
+
     final authProvider = context.read<AuthProvider>();
     final success = await authProvider.login(
       email: _emailController.text.trim(),
@@ -42,19 +42,19 @@ class _LoginScreenState extends State<LoginScreen> {
     if (success) {
       // Navigate to appropriate screen based on user role
       if (!mounted) return;
-      
+
       final isParent = authProvider.isParent;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => isParent 
-            ? const ParentDashboardScreen()
-            : const ChildHomeScreen(),
+          builder: (context) => isParent
+              ? const ParentDashboardScreen()
+              : const ChildHomeScreen(),
         ),
       );
     } else {
       final errorMsg = authProvider.errorMessage ?? 'Đăng nhập thất bại';
-      
+
       // Show error using saved ScaffoldMessenger (works even if widget unmounts)
       scaffoldMessenger.showSnackBar(
         SnackBar(
@@ -72,7 +72,9 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           backgroundColor: AppColors.danger,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           duration: Duration(seconds: 4),
           margin: EdgeInsets.all(16),
         ),
@@ -83,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    
+
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       body: SafeArea(
@@ -98,16 +100,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   // Top Spacer
                   SizedBox(height: screenHeight * 0.08),
-                  
+
                   // Logo & Brand
                   _buildHeader(),
-                  
+
                   // Spacer
                   SizedBox(height: screenHeight * 0.06),
-                  
+
                   // Login Form Card
                   _buildLoginForm(),
-                  
+
                   // Bottom Actions
                   SizedBox(height: 24),
                   _buildRegisterLink(),
@@ -139,14 +141,11 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         SizedBox(height: AppSpacing.lg),
-        
+
         // App Name
-        Text(
-          'SafeKids',
-          style: AppTypography.h1,
-        ),
+        Text('SafeKids', style: AppTypography.h1),
         SizedBox(height: AppSpacing.xs),
-        
+
         // Tagline
         Text(
           'Bảo vệ con em, An tâm cha mẹ',
@@ -174,12 +173,9 @@ class _LoginScreenState extends State<LoginScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Form Title
-          Text(
-            'Đăng nhập',
-            style: AppTypography.h2,
-          ),
+          Text('Đăng nhập', style: AppTypography.h2),
           SizedBox(height: AppSpacing.xl),
-          
+
           // Email Field
           _buildTextField(
             controller: _emailController,
@@ -198,7 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
             },
           ),
           SizedBox(height: AppSpacing.md),
-          
+
           // Password Field
           _buildTextField(
             controller: _passwordController,
@@ -208,7 +204,9 @@ class _LoginScreenState extends State<LoginScreen> {
             obscureText: _obscurePassword,
             suffixIcon: IconButton(
               icon: Icon(
-                _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                _obscurePassword
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
                 color: AppColors.textLight,
               ),
               onPressed: () {
@@ -227,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen> {
               return null;
             },
           ),
-          
+
           // Forgot Password Link
           SizedBox(height: AppSpacing.md),
           Align(
@@ -248,15 +246,15 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               child: Text(
                 'Quên mật khẩu?',
-                style: AppTypography.bodySmall.copyWith(color: AppColors.parentPrimary).copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTypography.bodySmall
+                    .copyWith(color: AppColors.parentPrimary)
+                    .copyWith(fontWeight: FontWeight.w600),
               ),
             ),
           ),
-          
+
           SizedBox(height: AppSpacing.xl),
-          
+
           // Login Button
           _buildLoginButton(),
         ],
@@ -277,10 +275,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: AppTypography.label,
-        ),
+        Text(label, style: AppTypography.label),
         SizedBox(height: 8),
         TextFormField(
           controller: controller,
@@ -289,8 +284,14 @@ class _LoginScreenState extends State<LoginScreen> {
           style: AppTypography.body,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: AppTypography.bodySmall.copyWith(color: AppColors.textLight),
-            prefixIcon: Icon(prefixIcon, color: AppColors.parentPrimary, size: AppSpacing.iconSm),
+            hintStyle: AppTypography.bodySmall.copyWith(
+              color: AppColors.textLight,
+            ),
+            prefixIcon: Icon(
+              prefixIcon,
+              color: AppColors.parentPrimary,
+              size: AppSpacing.iconSm,
+            ),
             suffixIcon: suffixIcon,
             filled: true,
             fillColor: AppColors.inputBackground,
@@ -326,7 +327,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         return SizedBox(
-            height: AppSpacing.buttonHeightMd,
+          height: AppSpacing.buttonHeightMd,
           child: ElevatedButton(
             onPressed: authProvider.isLoading ? null : _handleLogin,
             style: ElevatedButton.styleFrom(
@@ -350,7 +351,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   )
                 : Text(
                     'Đăng nhập',
-                    style: AppTypography.buttonLarge.copyWith(color: Colors.white, letterSpacing: 0.3),
+                    style: AppTypography.buttonLarge.copyWith(
+                      color: Colors.white,
+                      letterSpacing: 0.3,
+                    ),
                   ),
           ),
         );
@@ -364,15 +368,15 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         Text(
           'Chưa có tài khoản? ',
-          style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+          style: AppTypography.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+          ),
         ),
         TextButton(
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => const RegisterScreen(),
-              ),
+              MaterialPageRoute(builder: (context) => const RegisterScreen()),
             );
           },
           style: TextButton.styleFrom(
@@ -382,7 +386,12 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           child: Text(
             'Đăng ký ngay',
-            style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w700, color: AppColors.parentPrimary, decoration: TextDecoration.underline, decorationColor: AppColors.parentPrimary),
+            style: AppTypography.bodySmall.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppColors.parentPrimary,
+              decoration: TextDecoration.underline,
+              decorationColor: AppColors.parentPrimary,
+            ),
           ),
         ),
       ],

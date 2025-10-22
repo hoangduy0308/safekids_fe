@@ -14,10 +14,12 @@ class ScreenTimeManagementScreen extends StatefulWidget {
   const ScreenTimeManagementScreen({Key? key}) : super(key: key);
 
   @override
-  State<ScreenTimeManagementScreen> createState() => _ScreenTimeManagementScreenState();
+  State<ScreenTimeManagementScreen> createState() =>
+      _ScreenTimeManagementScreenState();
 }
 
-class _ScreenTimeManagementScreenState extends State<ScreenTimeManagementScreen> {
+class _ScreenTimeManagementScreenState
+    extends State<ScreenTimeManagementScreen> {
   List<Map<String, dynamic>> _children = [];
   Map<String, Map<String, dynamic>> _childUsage = {}; // childId → usage data
   bool _loading = true;
@@ -48,17 +50,19 @@ class _ScreenTimeManagementScreenState extends State<ScreenTimeManagementScreen>
 
   Future<void> _loadChildren() async {
     setState(() => _loading = true);
-    
+
     try {
       final profile = await ApiService().getProfile();
       final linkedUsers = profile['linkedUsers'] as List?;
-      _children = linkedUsers != null 
-          ? List<Map<String, dynamic>>.from(linkedUsers.where((u) => u['role'] == 'child'))
+      _children = linkedUsers != null
+          ? List<Map<String, dynamic>>.from(
+              linkedUsers.where((u) => u['role'] == 'child'),
+            )
           : [];
-      
+
       // Load usage for each child
       await _loadUsageForAllChildren();
-      
+
       setState(() => _loading = false);
     } catch (e) {
       setState(() => _loading = false);
@@ -77,7 +81,7 @@ class _ScreenTimeManagementScreenState extends State<ScreenTimeManagementScreen>
       try {
         final usage = await ApiService().getTodayUsage(childId);
         final config = await ApiService().getScreenTimeConfig(childId);
-        
+
         _childUsage[childId] = {
           ...usage,
           'dailyLimit': config['dailyLimitMinutes'] ?? 120,
@@ -127,26 +131,22 @@ class _ScreenTimeManagementScreenState extends State<ScreenTimeManagementScreen>
           const SizedBox(height: 8),
           Text(
             'Thiết lập giới hạn, xem báo cáo và nhận gợi ý thông minh',
-            style: AppTypography.body.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            style: AppTypography.body.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.xl),
 
           // Quick Actions Cards
           _buildQuickActionsSection(),
-          
+
           const SizedBox(height: AppSpacing.xl),
 
           // Children List
           Text(
             'Trẻ Em Của Bạn',
-            style: AppTypography.h3.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: AppTypography.h3.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: AppSpacing.md),
-          
+
           // Realtime update indicator
           if (_refreshing)
             Padding(
@@ -169,7 +169,7 @@ class _ScreenTimeManagementScreenState extends State<ScreenTimeManagementScreen>
                 ],
               ),
             ),
-          
+
           ..._children.map((child) => _buildChildUsageCard(child)),
         ],
       ),
@@ -220,9 +220,7 @@ class _ScreenTimeManagementScreenState extends State<ScreenTimeManagementScreen>
       children: [
         Text(
           'Truy Cập Nhanh',
-          style: AppTypography.h3.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTypography.h3.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: AppSpacing.md),
         Row(
@@ -318,25 +316,28 @@ class _ScreenTimeManagementScreenState extends State<ScreenTimeManagementScreen>
   /// Build child usage card with realtime data and status
   Widget _buildChildUsageCard(Map<String, dynamic> child) {
     final childId = child['_id'] as String;
-    final fullName = child['fullName'] as String? ?? child['name'] as String? ?? 'Unknown';
+    final fullName =
+        child['fullName'] as String? ?? child['name'] as String? ?? 'Unknown';
     final age = child['age'] as int?;
     final usage = _childUsage[childId];
-    
+
     if (usage == null) {
       return _buildShimmerCard(height: 180);
     }
-    
+
     final totalMinutes = usage['totalMinutes'] as int? ?? 0;
     final hours = totalMinutes ~/ 60;
     final minutes = totalMinutes % 60;
-    
+
     // Get daily limit from config (loaded from database)
     final dailyLimit = usage['dailyLimit'] as int? ?? 120;
-    final percent = dailyLimit > 0 ? (totalMinutes / dailyLimit).clamp(0.0, 1.3) : 0.0;
-    
+    final percent = dailyLimit > 0
+        ? (totalMinutes / dailyLimit).clamp(0.0, 1.3)
+        : 0.0;
+
     // Determine status
     final StatusInfo status = _getStatusInfo(percent);
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       elevation: 2,
@@ -402,7 +403,9 @@ class _ScreenTimeManagementScreenState extends State<ScreenTimeManagementScreen>
                             SizedBox(
                               width: 10,
                               height: 10,
-                              child: CircularProgressIndicator(strokeWidth: 1.5),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.5,
+                              ),
                             ),
                           ],
                         ],
@@ -414,9 +417,9 @@ class _ScreenTimeManagementScreenState extends State<ScreenTimeManagementScreen>
                 _buildStatusBadge(status),
               ],
             ),
-            
+
             const SizedBox(height: AppSpacing.md),
-            
+
             // Progress Bar
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -440,9 +443,9 @@ class _ScreenTimeManagementScreenState extends State<ScreenTimeManagementScreen>
                 ),
               ],
             ),
-            
+
             const SizedBox(height: AppSpacing.md),
-            
+
             // Quick Action Buttons
             Row(
               children: [
@@ -546,8 +549,6 @@ class _ScreenTimeManagementScreenState extends State<ScreenTimeManagementScreen>
     );
   }
 
-
-
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
@@ -563,9 +564,7 @@ class _ScreenTimeManagementScreenState extends State<ScreenTimeManagementScreen>
             const SizedBox(height: AppSpacing.md),
             Text(
               'Chưa Có Trẻ Em',
-              style: AppTypography.h3.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.h3.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
@@ -609,9 +608,5 @@ class StatusInfo {
   final IconData icon;
   final Color color;
 
-  StatusInfo({
-    required this.label,
-    required this.icon,
-    required this.color,
-  });
+  StatusInfo({required this.label, required this.icon, required this.color});
 }

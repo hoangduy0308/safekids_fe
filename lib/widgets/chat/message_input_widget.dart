@@ -58,9 +58,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   void _pickImage() {
     // TODO: Implement image picker
     // For now, this is a placeholder
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Image picker coming soon')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Image picker coming soon')));
   }
 
   @override

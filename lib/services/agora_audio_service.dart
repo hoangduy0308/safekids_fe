@@ -3,12 +3,12 @@ import 'package:flutter/foundation.dart';
 
 class AgoraAudioService extends ChangeNotifier {
   static const String agoraAppId = 'c1f5593f44cc4e1092509377b1fdaa25';
-  
+
   late RtcEngine _engine;
   bool _isInitialized = false;
   bool _isInCall = false;
   int? _remoteUserUid;
-  
+
   bool get isInCall => _isInCall;
   bool get isInitialized => _isInitialized;
   int? get remoteUserUid => _remoteUserUid;
@@ -17,11 +17,11 @@ class AgoraAudioService extends ChangeNotifier {
     try {
       _engine = createAgoraRtcEngine();
       await _engine.initialize(const RtcEngineContext(appId: agoraAppId));
-      
+
       // Audio-only mode
       await _engine.enableAudio();
       await _engine.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
-      
+
       // Register event handlers
       _engine.registerEventHandler(
         RtcEngineEventHandler(
@@ -40,7 +40,7 @@ class AgoraAudioService extends ChangeNotifier {
           },
         ),
       );
-      
+
       _isInitialized = true;
       notifyListeners();
     } catch (e) {
@@ -61,7 +61,7 @@ class AgoraAudioService extends ChangeNotifier {
         uid: uid,
         options: const ChannelMediaOptions(),
       );
-      
+
       _isInCall = true;
       notifyListeners();
       debugPrint('[Agora] Joined channel: $channelName');

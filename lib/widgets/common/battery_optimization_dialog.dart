@@ -4,12 +4,14 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
 import '../../theme/app_colors.dart';
 import 'package:safekids_app/theme/app_typography.dart';
+
 /// Dialog hướng dẫn tắt battery optimization theo từng hãng điện thoại
 class BatteryOptimizationDialog extends StatefulWidget {
   const BatteryOptimizationDialog({Key? key}) : super(key: key);
 
   @override
-  State<BatteryOptimizationDialog> createState() => _BatteryOptimizationDialogState();
+  State<BatteryOptimizationDialog> createState() =>
+      _BatteryOptimizationDialogState();
 }
 
 class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
@@ -29,7 +31,8 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
     try {
       final deviceInfo = DeviceInfoPlugin();
       final androidInfo = await deviceInfo.androidInfo;
-      final isIgnoring = await FlutterForegroundTask.isIgnoringBatteryOptimizations;
+      final isIgnoring =
+          await FlutterForegroundTask.isIgnoringBatteryOptimizations;
 
       setState(() {
         _manufacturer = androidInfo.manufacturer.toLowerCase();
@@ -45,7 +48,7 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
 
   Future<void> _requestExemption() async {
     await FlutterForegroundTask.requestIgnoreBatteryOptimization();
-    
+
     // Recheck status after returning from settings
     await Future.delayed(Duration(seconds: 1));
     await _checkStatus();
@@ -53,19 +56,24 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
 
   String _getManufacturerName() {
     if (_manufacturer.contains('samsung')) return 'Samsung';
-    if (_manufacturer.contains('xiaomi') || _manufacturer.contains('redmi') || _manufacturer.contains('poco')) {
+    if (_manufacturer.contains('xiaomi') ||
+        _manufacturer.contains('redmi') ||
+        _manufacturer.contains('poco')) {
       return 'Xiaomi/Redmi/Poco';
     }
-    if (_manufacturer.contains('huawei') || _manufacturer.contains('honor')) return 'Huawei/Honor';
-    if (_manufacturer.contains('oppo') || _manufacturer.contains('realme')) return 'Oppo/Realme';
-    if (_manufacturer.contains('vivo') || _manufacturer.contains('iqoo')) return 'Vivo/iQOO';
+    if (_manufacturer.contains('huawei') || _manufacturer.contains('honor'))
+      return 'Huawei/Honor';
+    if (_manufacturer.contains('oppo') || _manufacturer.contains('realme'))
+      return 'Oppo/Realme';
+    if (_manufacturer.contains('vivo') || _manufacturer.contains('iqoo'))
+      return 'Vivo/iQOO';
     if (_manufacturer.contains('oneplus')) return 'OnePlus';
     return 'Android';
   }
 
   List<String> _getInstructions() {
     final manufacturer = _manufacturer.toLowerCase();
-    
+
     if (manufacturer.contains('samsung')) {
       return [
         'Settings → Apps → SafeKids → Battery',
@@ -75,8 +83,10 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
         'Allow background activity → ON',
       ];
     }
-    
-    if (manufacturer.contains('xiaomi') || manufacturer.contains('redmi') || manufacturer.contains('poco')) {
+
+    if (manufacturer.contains('xiaomi') ||
+        manufacturer.contains('redmi') ||
+        manufacturer.contains('poco')) {
       return [
         '⚠️ MIUI rất strict về battery!',
         'Settings → Apps → SafeKids',
@@ -86,7 +96,7 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
         'Settings → Battery & performance → SafeKids → No restrictions',
       ];
     }
-    
+
     if (manufacturer.contains('huawei') || manufacturer.contains('honor')) {
       return [
         'Settings → Apps → SafeKids → Battery',
@@ -98,7 +108,7 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
         'Phone Manager → Protected apps → SafeKids → ON',
       ];
     }
-    
+
     if (manufacturer.contains('oppo') || manufacturer.contains('realme')) {
       return [
         'Settings → Battery → Energy Saver',
@@ -108,7 +118,7 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
         'Startup Manager → SafeKids → Allow',
       ];
     }
-    
+
     if (manufacturer.contains('vivo') || manufacturer.contains('iqoo')) {
       return [
         'Settings → Battery',
@@ -118,7 +128,7 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
         'Background activity manager → Allow high power consumption',
       ];
     }
-    
+
     if (manufacturer.contains('oneplus')) {
       return [
         'Settings → Apps → SafeKids → Battery',
@@ -126,7 +136,7 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
         'Advanced optimization → Deep optimization → Disable',
       ];
     }
-    
+
     // Stock Android / Generic
     return [
       'Settings → Apps → SafeKids',
@@ -168,7 +178,7 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
                   Container(
                     padding: EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: _isIgnoring 
+                      color: _isIgnoring
                           ? Colors.green.withOpacity(0.1)
                           : AppColors.warning.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
@@ -188,83 +198,115 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
                             _isIgnoring
                                 ? 'Battery optimization đã được tắt ✓'
                                 : 'Battery optimization đang BẬT (cần tắt)',
-                            style: AppTypography.body.copyWith(fontWeight: FontWeight.w600, color: _isIgnoring ? Colors.green : AppColors.warning),                          ),
+                            style: AppTypography.body.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: _isIgnoring
+                                  ? Colors.green
+                                  : AppColors.warning,
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  
+
                   SizedBox(height: 16),
-                  
+
                   // Manufacturer
                   Text(
                     'Điện thoại: ${_getManufacturerName()}',
-                    style: AppTypography.label.copyWith(fontWeight: FontWeight.w600),
-                  ),                  
+                    style: AppTypography.label.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   SizedBox(height: 8),
-                  
+
                   // Why
                   Text(
                     'Tại sao cần tắt?',
-                    style: AppTypography.caption.copyWith(fontWeight: FontWeight.w600),
-                  ),                  SizedBox(height: 4),
+                    style: AppTypography.caption.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: 4),
                   Text(
                     'Để SafeKids có thể chạy ngầm và theo dõi vị trí liên tục, đảm bảo an toàn cho con bạn.',
-                    style: AppTypography.captionSmall.copyWith(color: Colors.grey[600]),
-                  ),                  
+                    style: AppTypography.captionSmall.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
                   SizedBox(height: 12),
-                  
+
                   // Impact
                   Row(
                     children: [
-                      Icon(Icons.battery_std, size: 16, color: Colors.grey[600]),
+                      Icon(
+                        Icons.battery_std,
+                        size: 16,
+                        color: Colors.grey[600],
+                      ),
                       SizedBox(width: 4),
                       Text(
                         'Pin: ~5-10% mỗi ngày',
-                        style: AppTypography.overline.copyWith(color: Colors.grey[600]),
-                      ),                      SizedBox(width: 12),
+                        style: AppTypography.overline.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      SizedBox(width: 12),
                       Icon(Icons.data_usage, size: 16, color: Colors.grey[600]),
                       SizedBox(width: 4),
                       Text(
                         'Data: ~1.7MB/tháng',
-                        style: AppTypography.overline.copyWith(color: Colors.grey[600]),
-                      ),                    ],
+                        style: AppTypography.overline.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
                   ),
-                  
+
                   if (!_isIgnoring) ...[
                     SizedBox(height: 16),
                     Divider(),
                     SizedBox(height: 8),
-                    
+
                     // Instructions
                     Text(
                       'Hướng dẫn:',
-                      style: AppTypography.caption.copyWith(fontWeight: FontWeight.w600),
-                    ),                    SizedBox(height: 8),
-                    
+                      style: AppTypography.caption.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+
                     ..._getInstructions().asMap().entries.map((entry) {
                       return Padding(
-                        padding: EdgeInsets.only(bottom: 6, left: entry.value.startsWith('⚠️') ? 0 : 8),
+                        padding: EdgeInsets.only(
+                          bottom: 6,
+                          left: entry.value.startsWith('⚠️') ? 0 : 8,
+                        ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (!entry.value.startsWith('⚠️'))
                               Text(
                                 '${entry.key + 1}. ',
-                                style: AppTypography.captionSmall.copyWith(fontWeight: FontWeight.w500),
+                                style: AppTypography.captionSmall.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             Expanded(
                               child: Text(
                                 entry.value,
                                 style: AppTypography.captionSmall.copyWith(
-                                  color: entry.value.startsWith('⚠️') 
-                                      ? AppColors.warning 
+                                  color: entry.value.startsWith('⚠️')
+                                      ? AppColors.warning
                                       : Colors.grey[700],
                                   fontWeight: entry.value.startsWith('⚠️')
                                       ? FontWeight.w600
                                       : FontWeight.normal,
                                 ),
-                              ),                            ),
+                              ),
+                            ),
                           ],
                         ),
                       );
@@ -295,7 +337,7 @@ class _BatteryOptimizationDialogState extends State<BatteryOptimizationDialog> {
 /// Helper function để show dialog
 Future<void> showBatteryOptimizationDialog(BuildContext context) async {
   if (!Platform.isAndroid) return;
-  
+
   return showDialog(
     context: context,
     builder: (context) => BatteryOptimizationDialog(),

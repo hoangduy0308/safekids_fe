@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:safekids_app/theme/app_typography.dart';
+
 class GeofenceAlertDialog extends StatelessWidget {
   final String childName;
   final String geofenceName;
@@ -26,11 +27,7 @@ class GeofenceAlertDialog extends StatelessWidget {
     return AlertDialog(
       title: Row(
         children: [
-          Icon(
-            Icons.warning,
-            color: Colors.orange,
-            size: 24,
-          ),
+          Icon(Icons.warning, color: Colors.orange, size: 24),
           const SizedBox(width: 8),
           const Text('Cảnh Báo Vùng'),
         ],
@@ -41,10 +38,8 @@ class GeofenceAlertDialog extends StatelessWidget {
         children: [
           Text(
             _alertText,
-            style: AppTypography.body.copyWith(
-              fontWeight: FontWeight.w500,
-            )
-            ),
+            style: AppTypography.body.copyWith(fontWeight: FontWeight.w500),
+          ),
           const SizedBox(height: 8),
           Text(
             'Thời gian: ${TimeOfDay.now().format(context)}',
@@ -53,10 +48,7 @@ class GeofenceAlertDialog extends StatelessWidget {
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: onClose,
-          child: const Text('Đóng'),
-        ),
+        TextButton(onPressed: onClose, child: const Text('Đóng')),
         ElevatedButton(
           onPressed: onViewMap,
           style: ElevatedButton.styleFrom(

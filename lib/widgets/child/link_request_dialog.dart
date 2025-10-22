@@ -28,18 +28,18 @@ class _LinkRequestDialogState extends State<LinkRequestDialog> {
 
   Future<void> _acceptRequest() async {
     if (_isProcessing) return;
-    
+
     setState(() => _isProcessing = true);
     HapticFeedback.mediumImpact();
 
     try {
       await ApiService().acceptLinkRequest(widget.requestId);
-      
+
       if (!mounted) return;
-      
+
       // Close dialog first
       Navigator.pop(context, true);
-      
+
       // Then show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -50,10 +50,10 @@ class _LinkRequestDialogState extends State<LinkRequestDialog> {
       );
     } catch (e) {
       if (!mounted) return;
-      
+
       // Close dialog even on error
       Navigator.pop(context, false);
-      
+
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -67,18 +67,18 @@ class _LinkRequestDialogState extends State<LinkRequestDialog> {
 
   Future<void> _rejectRequest() async {
     if (_isProcessing) return;
-    
+
     setState(() => _isProcessing = true);
     HapticFeedback.lightImpact();
 
     try {
       await ApiService().rejectLinkRequest(widget.requestId);
-      
+
       if (!mounted) return;
-      
+
       // Close dialog first
       Navigator.pop(context, false);
-      
+
       // Then show message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -89,10 +89,10 @@ class _LinkRequestDialogState extends State<LinkRequestDialog> {
       );
     } catch (e) {
       if (!mounted) return;
-      
+
       // Close dialog even on error
       Navigator.pop(context, false);
-      
+
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -121,21 +121,17 @@ class _LinkRequestDialogState extends State<LinkRequestDialog> {
                 color: Colors.blue.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.link,
-                size: 40,
-                color: Colors.blue[700],
-              ),
+              child: Icon(Icons.link, size: 40, color: Colors.blue[700]),
             ),
             SizedBox(height: 20),
-            
+
             // Title
             Text(
               'Yêu cầu liên kết',
               style: AppTypography.h3.copyWith(fontWeight: FontWeight.w700),
             ),
             SizedBox(height: 12),
-            
+
             // Sender info
             Container(
               padding: EdgeInsets.all(16),
@@ -152,7 +148,9 @@ class _LinkRequestDialogState extends State<LinkRequestDialog> {
                       Expanded(
                         child: Text(
                           widget.senderName,
-                          style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                          style: AppTypography.body.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
@@ -165,7 +163,9 @@ class _LinkRequestDialogState extends State<LinkRequestDialog> {
                       Expanded(
                         child: Text(
                           widget.senderEmail,
-                          style: AppTypography.label.copyWith(color: Colors.grey[600]),
+                          style: AppTypography.label.copyWith(
+                            color: Colors.grey[600],
+                          ),
                         ),
                       ),
                     ],
@@ -173,7 +173,7 @@ class _LinkRequestDialogState extends State<LinkRequestDialog> {
                 ],
               ),
             ),
-            
+
             if (widget.message != null && widget.message!.isNotEmpty) ...[
               SizedBox(height: 16),
               Container(
@@ -185,13 +185,15 @@ class _LinkRequestDialogState extends State<LinkRequestDialog> {
                 ),
                 child: Text(
                   widget.message!,
-                  style: AppTypography.label.copyWith(fontStyle: FontStyle.italic),
+                  style: AppTypography.label.copyWith(
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
               ),
             ],
-            
+
             SizedBox(height: 24),
-            
+
             // Buttons
             if (_isProcessing)
               CircularProgressIndicator()
@@ -210,8 +212,11 @@ class _LinkRequestDialogState extends State<LinkRequestDialog> {
                       ),
                       child: Text(
                         'Từ chối',
-                        style: AppTypography.button.copyWith(color: Colors.grey[700]),
-                      ),                    ),
+                        style: AppTypography.button.copyWith(
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ),
                   ),
                   SizedBox(width: 12),
                   Expanded(
@@ -227,8 +232,11 @@ class _LinkRequestDialogState extends State<LinkRequestDialog> {
                       ),
                       child: Text(
                         'Chấp nhận',
-                        style: AppTypography.button.copyWith(color: Colors.white),
-                      ),                    ),
+                        style: AppTypography.button.copyWith(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),

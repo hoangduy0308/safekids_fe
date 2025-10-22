@@ -17,31 +17,24 @@ class DeviceUsageService {
     required DateTime endTime,
   }) async {
     try {
-      final result = await platform.invokeMethod<Map<dynamic, dynamic>>(
-        'getDeviceUsage',
-        {
-          'startTime': startTime.millisecondsSinceEpoch,
-          'endTime': endTime.millisecondsSinceEpoch,
-        },
-      );
+      final result = await platform
+          .invokeMethod<Map<dynamic, dynamic>>('getDeviceUsage', {
+            'startTime': startTime.millisecondsSinceEpoch,
+            'endTime': endTime.millisecondsSinceEpoch,
+          });
 
       if (result == null) {
-        return {
-          'totalAppUsageMinutes': 0,
-          'appUsages': [],
-        };
+        return {'totalAppUsageMinutes': 0, 'appUsages': []};
       }
 
       return {
         'totalAppUsageMinutes': result['totalAppUsageMinutes'] ?? 0,
-        'appUsages': (result['appUsages'] as List?)?.cast<Map<String, dynamic>>() ?? [],
+        'appUsages':
+            (result['appUsages'] as List?)?.cast<Map<String, dynamic>>() ?? [],
       };
     } catch (e) {
       print('[DeviceUsage] Error: $e');
-      return {
-        'totalAppUsageMinutes': 0,
-        'appUsages': [],
-      };
+      return {'totalAppUsageMinutes': 0, 'appUsages': []};
     }
   }
 
@@ -67,7 +60,9 @@ class DeviceUsageService {
     );
 
     final foregroundTime = appUsage['totalTimeInForeground'] as int?;
-    return foregroundTime != null ? foregroundTime ~/ 60000 : 0; // Convert to minutes
+    return foregroundTime != null
+        ? foregroundTime ~/ 60000
+        : 0; // Convert to minutes
   }
 
   /// Get SafeKids app specific usage

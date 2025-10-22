@@ -6,13 +6,12 @@ import '../../theme/app_typography.dart';
 class PendingLinkRequestsDialog extends StatefulWidget {
   final VoidCallback? onRequestsUpdated;
 
-  const PendingLinkRequestsDialog({
-    Key? key,
-    this.onRequestsUpdated,
-  }) : super(key: key);
+  const PendingLinkRequestsDialog({Key? key, this.onRequestsUpdated})
+    : super(key: key);
 
   @override
-  State<PendingLinkRequestsDialog> createState() => _PendingLinkRequestsDialogState();
+  State<PendingLinkRequestsDialog> createState() =>
+      _PendingLinkRequestsDialogState();
 }
 
 class _PendingLinkRequestsDialogState extends State<PendingLinkRequestsDialog> {
@@ -34,7 +33,7 @@ class _PendingLinkRequestsDialogState extends State<PendingLinkRequestsDialog> {
       if (accept) {
         await ApiService().acceptLinkRequest(requestId);
         if (!mounted) return;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('✅ Đã chấp nhận yêu cầu'),
@@ -45,7 +44,7 @@ class _PendingLinkRequestsDialogState extends State<PendingLinkRequestsDialog> {
       } else {
         await ApiService().rejectLinkRequest(requestId);
         if (!mounted) return;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Đã từ chối yêu cầu'),
@@ -54,13 +53,13 @@ class _PendingLinkRequestsDialogState extends State<PendingLinkRequestsDialog> {
           ),
         );
       }
-      
+
       widget.onRequestsUpdated?.call();
       _loadRequests();
       setState(() {});
     } catch (e) {
       if (!mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('❌ Lỗi: ${e.toString()}'),
@@ -103,19 +102,28 @@ class _PendingLinkRequestsDialogState extends State<PendingLinkRequestsDialog> {
                     children: [
                       Text(
                         'Yêu cầu liên kết',
-                        style: AppTypography.h3.copyWith(fontWeight: FontWeight.w700, fontSize: 18),
+                        style: AppTypography.h3.copyWith(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                        ),
                       ),
                       SizedBox(height: 4),
                       Text(
                         'Các yêu cầu từ phụ huynh',
-                        style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
-                  child: Icon(Icons.close, color: AppColors.textSecondary, size: 24),
+                  child: Icon(
+                    Icons.close,
+                    color: AppColors.textSecondary,
+                    size: 24,
+                  ),
                 ),
               ],
             ),
@@ -130,7 +138,9 @@ class _PendingLinkRequestsDialogState extends State<PendingLinkRequestsDialog> {
                     height: 100,
                     child: Center(
                       child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation(AppColors.childPrimary),
+                        valueColor: AlwaysStoppedAnimation(
+                          AppColors.childPrimary,
+                        ),
                       ),
                     ),
                   );
@@ -146,13 +156,15 @@ class _PendingLinkRequestsDialogState extends State<PendingLinkRequestsDialog> {
                     ),
                     child: Text(
                       'Lỗi tải yêu cầu',
-                      style: AppTypography.label.copyWith(color: Colors.red[700]),
+                      style: AppTypography.label.copyWith(
+                        color: Colors.red[700],
+                      ),
                     ),
                   );
                 }
 
                 final requests = snapshot.data ?? [];
-                
+
                 if (requests.isEmpty) {
                   return Container(
                     padding: EdgeInsets.symmetric(vertical: 32, horizontal: 16),
@@ -180,22 +192,20 @@ class _PendingLinkRequestsDialogState extends State<PendingLinkRequestsDialog> {
                   height: 300,
                   child: SingleChildScrollView(
                     child: Column(
-                      children: List.generate(
-                        requests.length,
-                        (index) {
-                          final request = requests[index] as Map<String, dynamic>;
-                          final sender = request['sender'] as Map<String, dynamic>?;
-                          final senderName = sender?['name'] ?? 'Unknown';
-                          final senderEmail = sender?['email'] ?? '';
-                          
-                          return Column(
-                            children: [
-                              if (index > 0) Divider(height: 16, thickness: 1),
-                              _buildRequestItem(request, senderName, senderEmail),
-                            ],
-                          );
-                        },
-                      ),
+                      children: List.generate(requests.length, (index) {
+                        final request = requests[index] as Map<String, dynamic>;
+                        final sender =
+                            request['sender'] as Map<String, dynamic>?;
+                        final senderName = sender?['name'] ?? 'Unknown';
+                        final senderEmail = sender?['email'] ?? '';
+
+                        return Column(
+                          children: [
+                            if (index > 0) Divider(height: 16, thickness: 1),
+                            _buildRequestItem(request, senderName, senderEmail),
+                          ],
+                        );
+                      }),
                     ),
                   ),
                 );
@@ -207,7 +217,11 @@ class _PendingLinkRequestsDialogState extends State<PendingLinkRequestsDialog> {
     );
   }
 
-  Widget _buildRequestItem(Map<String, dynamic> request, String senderName, String senderEmail) {
+  Widget _buildRequestItem(
+    Map<String, dynamic> request,
+    String senderName,
+    String senderEmail,
+  ) {
     return Container(
       padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -226,7 +240,11 @@ class _PendingLinkRequestsDialogState extends State<PendingLinkRequestsDialog> {
                   color: AppColors.childPrimary.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(Icons.person, color: AppColors.childPrimary, size: 20),
+                child: Icon(
+                  Icons.person,
+                  color: AppColors.childPrimary,
+                  size: 20,
+                ),
               ),
               SizedBox(width: 12),
               Expanded(
@@ -235,11 +253,15 @@ class _PendingLinkRequestsDialogState extends State<PendingLinkRequestsDialog> {
                   children: [
                     Text(
                       senderName,
-                      style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                      style: AppTypography.body.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     Text(
                       senderEmail,
-                      style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

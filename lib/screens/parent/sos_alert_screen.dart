@@ -21,10 +21,7 @@ String _buildStaticMapUrl(double latitude, double longitude) {
 class SOSAlertScreen extends StatefulWidget {
   final String sosId;
 
-  const SOSAlertScreen({
-    Key? key,
-    required this.sosId,
-  }) : super(key: key);
+  const SOSAlertScreen({Key? key, required this.sosId}) : super(key: key);
 
   @override
   State<SOSAlertScreen> createState() => _SOSAlertScreenState();
@@ -89,11 +86,7 @@ class _SOSAlertScreenState extends State<SOSAlertScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: AppColors.surface,
-                ),
+                Icon(Icons.error_outline, size: 64, color: AppColors.surface),
                 const SizedBox(height: AppSpacing.lg),
                 Text(
                   _errorMessage ?? 'Không tìm thấy cảnh báo SOS',
@@ -110,7 +103,9 @@ class _SOSAlertScreenState extends State<SOSAlertScreen> {
     final child = _sosData!['child'] as Map<String, dynamic>?;
     final childName = child?['fullName'] ?? child?['name'] ?? 'Trẻ không rõ';
     final location = _sosData!['location'] as Map<String, dynamic>?;
-    final timestamp = DateTime.parse(_sosData!['timestamp'] ?? _sosData!['createdAt']);
+    final timestamp = DateTime.parse(
+      _sosData!['timestamp'] ?? _sosData!['createdAt'],
+    );
     final batteryLevel = _sosData!['batteryLevel'] as int? ?? 0;
     final status = _sosData!['status'] as String? ?? 'active';
     final resolvedBy = _sosData!['resolvedBy'] as Map<String, dynamic>?;
@@ -121,10 +116,7 @@ class _SOSAlertScreenState extends State<SOSAlertScreen> {
         backgroundColor: AppColors.danger,
         title: const Text(
           '🚨 CẢNH BÁO KHẨN CẤP',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         leading: IconButton(
@@ -144,7 +136,13 @@ class _SOSAlertScreenState extends State<SOSAlertScreen> {
               _buildResolvedBanner(resolvedBy),
 
             // Details card
-            _buildDetailsCard(childName, timestamp, batteryLevel, location, status),
+            _buildDetailsCard(
+              childName,
+              timestamp,
+              batteryLevel,
+              location,
+              status,
+            ),
 
             // Map
             if (location != null) _buildMap(location, childName),
@@ -177,11 +175,7 @@ class _SOSAlertScreenState extends State<SOSAlertScreen> {
       ),
       child: Column(
         children: [
-          Icon(
-            Icons.emergency,
-            size: 80,
-            color: AppColors.surface,
-          ),
+          Icon(Icons.emergency, size: 80, color: AppColors.surface),
           const SizedBox(height: AppSpacing.md),
           Text(
             '$childName ĐÃ GỬI TÍN HIỆU SOS!',
@@ -204,7 +198,8 @@ class _SOSAlertScreenState extends State<SOSAlertScreen> {
   }
 
   Widget _buildResolvedBanner(Map<String, dynamic> resolvedBy) {
-    final resolverName = resolvedBy['fullName'] ?? resolvedBy['name'] ?? 'Phụ huynh';
+    final resolverName =
+        resolvedBy['fullName'] ?? resolvedBy['name'] ?? 'Phụ huynh';
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -265,8 +260,8 @@ class _SOSAlertScreenState extends State<SOSAlertScreen> {
               status == 'active'
                   ? 'ĐANG CHỜ XỬ LÝ'
                   : status == 'resolved'
-                      ? 'ĐÃ XỬ LÝ'
-                      : 'CẢNH BÁO GIẢ',
+                  ? 'ĐÃ XỬ LÝ'
+                  : 'CẢNH BÁO GIẢ',
             ),
           ],
         ),
@@ -326,10 +321,7 @@ class _SOSAlertScreenState extends State<SOSAlertScreen> {
         ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: Image.network(
-        _buildStaticMapUrl(lat, lng),
-        fit: BoxFit.cover,
-      ),
+      child: Image.network(_buildStaticMapUrl(lat, lng), fit: BoxFit.cover),
     );
   }
 
@@ -446,15 +438,12 @@ class _SOSAlertScreenState extends State<SOSAlertScreen> {
       Navigator.pushNamed(
         context,
         '/map',
-        arguments: {
-          'childId': childId,
-          'sosLocation': location,
-        },
+        arguments: {'childId': childId, 'sosLocation': location},
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Không thể mở bản đồ')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Không thể mở bản đồ')));
     }
   }
 
@@ -466,9 +455,9 @@ class _SOSAlertScreenState extends State<SOSAlertScreen> {
       final uri = Uri.parse('tel:$phoneNumber');
       launchUrl(uri);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Không có số điện thoại')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Không có số điện thoại')));
     }
   }
 
@@ -504,8 +493,14 @@ class _SOSAlertScreenState extends State<SOSAlertScreen> {
                   border: OutlineInputBorder(),
                 ),
                 items: const [
-                  DropdownMenuItem(value: 'accidental', child: Text('Trẻ nhấn nhầm')),
-                  DropdownMenuItem(value: 'test', child: Text('Kiểm tra hệ thống')),
+                  DropdownMenuItem(
+                    value: 'accidental',
+                    child: Text('Trẻ nhấn nhầm'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'test',
+                    child: Text('Kiểm tra hệ thống'),
+                  ),
                   DropdownMenuItem(value: 'other', child: Text('Khác')),
                 ],
                 onChanged: (value) {
@@ -521,9 +516,7 @@ class _SOSAlertScreenState extends State<SOSAlertScreen> {
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
               child: const Text('Xác Nhận'),
             ),
           ],
@@ -575,9 +568,7 @@ class _SOSAlertScreenState extends State<SOSAlertScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.success,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
             child: const Text('Xác nhận'),
           ),
         ],

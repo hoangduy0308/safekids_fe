@@ -44,9 +44,21 @@ class AlertDetailSheet extends StatelessWidget {
             const SizedBox(height: 12),
             _row(Icons.person, 'Trẻ em', alert.childName),
             _row(Icons.shield, 'Vùng', alert.geofenceName),
-            _row(Icons.label, 'Loại', alert.geofenceType == 'safe' ? 'Vùng An Toàn' : 'Vùng Nguy Hiểm'),
-            _row(Icons.access_time, 'Thời gian', alert.timestamp.toLocal().toString()),
-            _row(Icons.my_location, 'Vị trí', '${alert.latitude}, ${alert.longitude}'),
+            _row(
+              Icons.label,
+              'Loại',
+              alert.geofenceType == 'safe' ? 'Vùng An Toàn' : 'Vùng Nguy Hiểm',
+            ),
+            _row(
+              Icons.access_time,
+              'Thời gian',
+              alert.timestamp.toLocal().toString(),
+            ),
+            _row(
+              Icons.my_location,
+              'Vị trí',
+              '${alert.latitude}, ${alert.longitude}',
+            ),
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
@@ -87,7 +99,7 @@ class AlertDetailSheet extends StatelessWidget {
                   );
                 },
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -110,7 +122,7 @@ class AlertDetailSheet extends StatelessWidget {
                 Text(value, style: AppTypography.body),
               ],
             ),
-          )
+          ),
         ],
       ),
     );

@@ -7,7 +7,8 @@ import 'edit_screentime_limit_screen.dart';
 
 class ScreenTimeSettingsScreen extends StatefulWidget {
   @override
-  _ScreenTimeSettingsScreenState createState() => _ScreenTimeSettingsScreenState();
+  _ScreenTimeSettingsScreenState createState() =>
+      _ScreenTimeSettingsScreenState();
 }
 
 class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
@@ -39,19 +40,23 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
   }
 
   Future<void> _refreshUsageData() async {
-    print('[ScreenTimeSettings] Refreshing usage data for ${_children.length} children');
+    print(
+      '[ScreenTimeSettings] Refreshing usage data for ${_children.length} children',
+    );
     for (var child in _children) {
       final childId = child['_id'] as String?;
       final childName = child['name'] ?? child['fullName'] ?? 'Unknown';
-      
+
       if (childId == null) {
         print('[ScreenTimeSettings] Skipping child with null ID: $childName');
         continue;
       }
-      
+
       try {
         final usage = await ApiService().getTodayUsage(childId);
-        print('[ScreenTimeSettings] Refreshed usage for $childName: ${usage['totalMinutes']}');
+        print(
+          '[ScreenTimeSettings] Refreshed usage for $childName: ${usage['totalMinutes']}',
+        );
         setState(() {
           _childUsage[childId] = usage;
         });
@@ -67,15 +72,15 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
       // Load children from user profile API
       final profile = await ApiService().getProfile();
       print('[ScreenTimeSettings] Profile loaded: ${profile.keys}');
-      
+
       final linkedUsers = profile['linkedUsers'] as List?;
       print('[ScreenTimeSettings] Linked users: ${linkedUsers?.length ?? 0}');
-      
-      final children = linkedUsers != null 
+
+      final children = linkedUsers != null
           ? linkedUsers
-              .whereType<Map<String, dynamic>>()
-              .where((u) => u['role'] == 'child')
-              .toList()
+                .whereType<Map<String, dynamic>>()
+                .where((u) => u['role'] == 'child')
+                .toList()
           : [];
 
       print('[ScreenTimeSettings] Found ${children.length} children');
@@ -84,7 +89,7 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
         _children = List<Map<String, dynamic>>.from(children);
         _loading = false;
       });
-      
+
       print('[ScreenTimeSettings] Children set, starting to load data');
 
       // Load config, usage, and suggestions for each child
@@ -92,21 +97,26 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
         try {
           final childId = _children[i]['_id'] as String?;
           if (childId == null) continue;
-          
+
           // Load today's usage
           final usage = await ApiService().getTodayUsage(childId);
-          final childName = _children[i]['name'] ?? _children[i]['fullName'] ?? 'Unknown';
-          print('[ScreenTimeSettings] Loaded usage for $childName: totalMinutes=${usage['totalMinutes']}');
+          final childName =
+              _children[i]['name'] ?? _children[i]['fullName'] ?? 'Unknown';
+          print(
+            '[ScreenTimeSettings] Loaded usage for $childName: totalMinutes=${usage['totalMinutes']}',
+          );
           _childUsage[childId] = Map<String, dynamic>.from(usage);
-          
+
           // Load screen time config
           final config = await ApiService().getScreenTimeConfig(childId);
           _children[i]['config'] = Map<String, dynamic>.from(config);
-          
+
           // Load suggestions
-          final suggestions = await ApiService().getScreenTimeSuggestions(childId);
+          final suggestions = await ApiService().getScreenTimeSuggestions(
+            childId,
+          );
           _children[i]['suggestions'] = suggestions;
-          
+
           setState(() {
             _children = [..._children]; // Trigger rebuild
           });
@@ -135,9 +145,10 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
 
   Widget _buildChildCard(Map<String, dynamic> child) {
     final childId = child['_id'] as String? ?? '';
-    final childName = child['fullName'] as String? ?? child['name'] as String? ?? 'Unknown';
+    final childName =
+        child['fullName'] as String? ?? child['name'] as String? ?? 'Unknown';
     final childAge = child['age'] as int?;
-    
+
     // Safely convert totalMinutes from any type (int, double, string)
     final usage = _childUsage[childId];
     int totalMinutes = 0;
@@ -154,10 +165,10 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
       print('[ScreenTimeCard] Error parsing totalMinutes: $e');
       totalMinutes = 0;
     }
-    
+
     final hours = totalMinutes ~/ 60;
     final minutes = totalMinutes % 60;
-    
+
     // Get daily limit from config - safely convert
     final config = child['config'] as Map<String, dynamic>?;
     int dailyLimit = 120;
@@ -174,9 +185,11 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
       print('[ScreenTimeCard] Error parsing dailyLimit: $e');
       dailyLimit = 120;
     }
-    
-    final percent = dailyLimit > 0 ? (totalMinutes / dailyLimit).clamp(0.0, 1.3) : 0.0;
-    
+
+    final percent = dailyLimit > 0
+        ? (totalMinutes / dailyLimit).clamp(0.0, 1.3)
+        : 0.0;
+
     // Get status color
     Color statusColor = Colors.green;
     if (percent >= 1.0) {
@@ -186,9 +199,11 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
     } else if (percent >= 0.7) {
       statusColor = Colors.orange[300]!;
     }
-    
-    print('[ScreenTimeCard] Card: $childName, usage=$totalMinutes min, limit=$dailyLimit min, percent=${(percent*100).toInt()}%');
-    
+
+    print(
+      '[ScreenTimeCard] Card: $childName, usage=$totalMinutes min, limit=$dailyLimit min, percent=${(percent * 100).toInt()}%',
+    );
+
     return Card(
       elevation: 2,
       margin: EdgeInsets.only(bottom: AppSpacing.md),
@@ -205,7 +220,11 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
                 CircleAvatar(
                   radius: 30,
                   backgroundColor: AppColors.childPrimary.withOpacity(0.1),
-                  child: Icon(Icons.child_care, color: AppColors.childPrimary, size: 30),
+                  child: Icon(
+                    Icons.child_care,
+                    color: AppColors.childPrimary,
+                    size: 30,
+                  ),
                 ),
                 SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -214,13 +233,17 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
                     children: [
                       Text(
                         childName,
-                        style: AppTypography.h3.copyWith(color: AppColors.textPrimary),
+                        style: AppTypography.h3.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       SizedBox(height: AppSpacing.xxs),
                       if (childAge != null)
                         Text(
                           '$childAge tuổi',
-                          style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       SizedBox(height: 4),
                       Text(
@@ -251,7 +274,7 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
               ],
             ),
             SizedBox(height: AppSpacing.md),
-            
+
             // Progress Bar
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -325,9 +348,9 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
             SizedBox(height: AppSpacing.sm),
             Text(
               label,
-              style: AppTypography.caption.copyWith(color: color).copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTypography.caption
+                  .copyWith(color: color)
+                  .copyWith(fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -397,93 +420,101 @@ class _ScreenTimeSettingsScreenState extends State<ScreenTimeSettingsScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.parentPrimary),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppColors.parentPrimary,
+                    ),
                   ),
                   SizedBox(height: AppSpacing.md),
                   Text(
                     'Đang tải dữ liệu...',
-                    style: AppTypography.body.copyWith(color: AppColors.textSecondary),
+                    style: AppTypography.body.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
             )
           : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        size: AppSpacing.iconXl,
-                        color: AppColors.danger,
-                      ),
-                      SizedBox(height: AppSpacing.md),
-                      Text(
-                        _error!,
-                        style: AppTypography.body.copyWith(color: AppColors.textSecondary),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: AppSpacing.md),
-                      ElevatedButton.icon(
-                        onPressed: _loadChildren,
-                        icon: Icon(Icons.refresh),
-                        label: Text('Thử lại'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.parentPrimary,
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: AppSpacing.iconXl,
+                    color: AppColors.danger,
                   ),
-                )
-              : _children.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.people_outline,
-                            size: AppSpacing.iconXl,
-                            color: AppColors.textLight,
-                          ),
-                          SizedBox(height: AppSpacing.md),
-                          Text(
-                            'Chưa có con nào được liên kết',
-                            style: AppTypography.body.copyWith(color: AppColors.textSecondary),
-                          ),
-                        ],
-                      ),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _loadChildren,
-                      color: AppColors.parentPrimary,
-                      child: ListView.builder(
-                        padding: EdgeInsets.all(AppSpacing.md),
-                        itemCount: _children.length,
-                        itemBuilder: (context, index) {
-                          final child = _children[index];
-                          
-                          return Column(
-                            children: [
-                              // Suggestions widget
-                              if (child['suggestions'] != null)
-                                ScreenTimeSuggestionsWidget(
-                                  childId: child['_id'],
-                                  suggestions: child['suggestions'],
-                                  onApplySuggestion: _onApplySuggestion,
-                                ),
-                              
-                              SizedBox(height: AppSpacing.md),
-                              
-                              // Existing child card
-                              _buildChildCard(child),
-                              
-                              SizedBox(height: AppSpacing.lg),
-                            ],
-                          );
-                        },
-                      ),
+                  SizedBox(height: AppSpacing.md),
+                  Text(
+                    _error!,
+                    style: AppTypography.body.copyWith(
+                      color: AppColors.textSecondary,
                     ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: AppSpacing.md),
+                  ElevatedButton.icon(
+                    onPressed: _loadChildren,
+                    icon: Icon(Icons.refresh),
+                    label: Text('Thử lại'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.parentPrimary,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : _children.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.people_outline,
+                    size: AppSpacing.iconXl,
+                    color: AppColors.textLight,
+                  ),
+                  SizedBox(height: AppSpacing.md),
+                  Text(
+                    'Chưa có con nào được liên kết',
+                    style: AppTypography.body.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _loadChildren,
+              color: AppColors.parentPrimary,
+              child: ListView.builder(
+                padding: EdgeInsets.all(AppSpacing.md),
+                itemCount: _children.length,
+                itemBuilder: (context, index) {
+                  final child = _children[index];
+
+                  return Column(
+                    children: [
+                      // Suggestions widget
+                      if (child['suggestions'] != null)
+                        ScreenTimeSuggestionsWidget(
+                          childId: child['_id'],
+                          suggestions: child['suggestions'],
+                          onApplySuggestion: _onApplySuggestion,
+                        ),
+
+                      SizedBox(height: AppSpacing.md),
+
+                      // Existing child card
+                      _buildChildCard(child),
+
+                      SizedBox(height: AppSpacing.lg),
+                    ],
+                  );
+                },
+              ),
+            ),
     );
   }
 }

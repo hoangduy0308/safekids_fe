@@ -54,7 +54,7 @@ class SocketService extends ChangeNotifier {
     _socket!.onConnect((_) {
       _isConnected = true;
       debugPrint('[Socket] Connected');
-      
+
       // Register user
       _socket!.emit(SocketConfig.eventRegister, userId);
       notifyListeners();

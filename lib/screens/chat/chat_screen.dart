@@ -57,9 +57,10 @@ class _ChatScreenState extends State<ChatScreen> {
       final conversationId = data['conversationId'];
       final senderId = data['senderId'];
       final currentUserId = context.read<AuthProvider>().user?.id;
-      
+
       // Only show typing indicator for other user, not for self
-      if (conversationId == widget.conversationId && senderId != currentUserId) {
+      if (conversationId == widget.conversationId &&
+          senderId != currentUserId) {
         setState(() {
           if (data['isTyping'] == true) {
             _typingUsers.add(senderId);
@@ -98,7 +99,7 @@ class _ChatScreenState extends State<ChatScreen> {
       debugPrint('[Chat] Call accepted');
       if (mounted) {
         setState(() => _isInCall = true);
-        
+
         // Setup callEnded handler BEFORE navigating
         _socketService.onCallEnded = (endData) {
           debugPrint('[ChatScreen] Call ended - closing AudioCallScreen');
@@ -107,7 +108,7 @@ class _ChatScreenState extends State<ChatScreen> {
             setState(() => _isInCall = false);
           }
         };
-        
+
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -149,9 +150,9 @@ class _ChatScreenState extends State<ChatScreen> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading messages: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading messages: $e')));
       }
     }
   }
@@ -173,7 +174,9 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _sendMessage(
-      String content, List<Map<String, dynamic>>? images) async {
+    String content,
+    List<Map<String, dynamic>>? images,
+  ) async {
     try {
       setState(() => _isSending = true);
 
@@ -193,9 +196,9 @@ class _ChatScreenState extends State<ChatScreen> {
       _loadMessages();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error sending message: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error sending message: $e')));
       }
     } finally {
       setState(() => _isSending = false);
@@ -229,9 +232,9 @@ class _ChatScreenState extends State<ChatScreen> {
       _loadMessages();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error deleting message: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error deleting message: $e')));
       }
     }
   }
@@ -285,7 +288,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   'conversationId': widget.conversationId,
                 });
                 setState(() => _isInCall = true);
-                
+
                 // Setup callEnded handler BEFORE navigating
                 _socketService.onCallEnded = (endData) {
                   debugPrint('[ChatScreen] Call ended by other party');
@@ -294,7 +297,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     setState(() => _isInCall = false);
                   }
                 };
-                
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -353,11 +356,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     color: AppColors.childPrimary,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.call,
-                    color: Colors.white,
-                    size: 22,
-                  ),
+                  child: Icon(Icons.call, color: Colors.white, size: 22),
                 ),
               ),
             ),
@@ -371,7 +370,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 : ListView.builder(
                     reverse: true,
                     padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
-                    itemCount: _messages.length + (_typingUsers.isNotEmpty ? 1 : 0),
+                    itemCount:
+                        _messages.length + (_typingUsers.isNotEmpty ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (_typingUsers.isNotEmpty && index == 0) {
                         return TypingIndicator(

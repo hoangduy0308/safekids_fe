@@ -3,7 +3,6 @@ import 'package:safekids_app/widgets/battery_optimization_guide.dart';
 
 void main() {
   group('BatteryOptimizationGuide - AC 2.6.4: Battery Optimization', () {
-    
     test('BatteryOptimizationGuide has showGuideIfNeeded method', () {
       // Verify the static method exists
       expect(BatteryOptimizationGuide.showGuideIfNeeded, isNotNull);

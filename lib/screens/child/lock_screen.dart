@@ -33,7 +33,8 @@ class LockScreen extends StatelessWidget {
 
     if (lockType == 'bedtime') {
       title = '🌙 Giờ Ngủ';
-      message = 'Đây là giờ nghỉ ngơi.\nThiết bị sẽ mở lại vào ${bedtimeEnd ?? '07:00'} sáng';
+      message =
+          'Đây là giờ nghỉ ngơi.\nThiết bị sẽ mở lại vào ${bedtimeEnd ?? '07:00'} sáng';
       icon = Icons.nightlight_round;
       bgColor = Colors.indigo;
     } else {
@@ -87,7 +88,9 @@ class LockScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                       ),
                       child: Column(
                         children: [

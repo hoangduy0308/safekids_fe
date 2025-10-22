@@ -48,7 +48,9 @@ class ChatService {
   }
 
   /// Get or create conversation with participant
-  Future<Map<String, dynamic>> getOrCreateConversation(String participantId) async {
+  Future<Map<String, dynamic>> getOrCreateConversation(
+    String participantId,
+  ) async {
     try {
       final headers = await _getHeaders();
       final response = await http.post(
@@ -72,11 +74,9 @@ class ChatService {
   }) async {
     try {
       final headers = await _getHeaders();
-      final uri = Uri.parse(ApiConfig.getMessages(conversationId))
-          .replace(queryParameters: {
-        'limit': limit.toString(),
-        'skip': skip.toString(),
-      });
+      final uri = Uri.parse(ApiConfig.getMessages(conversationId)).replace(
+        queryParameters: {'limit': limit.toString(), 'skip': skip.toString()},
+      );
 
       final response = await http.get(uri, headers: headers);
 

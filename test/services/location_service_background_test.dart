@@ -10,34 +10,22 @@ void main() {
       locationService = LocationService();
     });
 
-    test(
-      'UNIT-001: LocationService has startTracking method',
-      () {
-        expect(locationService.startTracking, isNotNull);
-      },
-    );
+    test('UNIT-001: LocationService has startTracking method', () {
+      expect(locationService.startTracking, isNotNull);
+    });
 
-    test(
-      'UNIT-002: LocationService has stopTracking method',
-      () {
-        expect(locationService.stopTracking, isNotNull);
-      },
-    );
+    test('UNIT-002: LocationService has stopTracking method', () {
+      expect(locationService.stopTracking, isNotNull);
+    });
 
-    test(
-      'UNIT-003: LocationService isTracking property starts false',
-      () {
-        expect(locationService.isTracking, false);
-      },
-    );
+    test('UNIT-003: LocationService isTracking property starts false', () {
+      expect(locationService.isTracking, false);
+    });
 
-    test(
-      'UNIT-004: LocationTaskHandler is marked with @pragma entry-point',
-      () {
-        // Test that LocationTaskHandler exists and can be used as background task
-        expect(true, true);
-      },
-    );
+    test('UNIT-004: LocationTaskHandler is marked with @pragma entry-point', () {
+      // Test that LocationTaskHandler exists and can be used as background task
+      expect(true, true);
+    });
 
     test(
       'UNIT-005: ForegroundTask configured with 5-minute interval (300,000ms)',
@@ -101,15 +89,12 @@ void main() {
         },
       );
 
-      test(
-        'SCENARIO-004: Device in Doze/Battery Saver mode',
-        () async {
-          // ForegroundService should still work (higher priority)
-          // But device may impose additional delays
-          // Battery Optimization guide helps users whitelist app
-          expect(true, true);
-        },
-      );
+      test('SCENARIO-004: Device in Doze/Battery Saver mode', () async {
+        // ForegroundService should still work (higher priority)
+        // But device may impose additional delays
+        // Battery Optimization guide helps users whitelist app
+        expect(true, true);
+      });
 
       test(
         'SCENARIO-005: Location update sends to backend + offline queue',
@@ -126,70 +111,49 @@ void main() {
     });
 
     group('Error Handling - Background Task', () {
-      test(
-        'ERROR-001: GPS disabled during background tracking',
-        () {
-          // ForegroundTask.onRepeatEvent() should handle GPS errors
-          // Should catch exception and retry with fallback message
-          expect(true, true);
-        },
-      );
+      test('ERROR-001: GPS disabled during background tracking', () {
+        // ForegroundTask.onRepeatEvent() should handle GPS errors
+        // Should catch exception and retry with fallback message
+        expect(true, true);
+      });
 
-      test(
-        'ERROR-002: Network error in background',
-        () {
-          // Should queue location offline
-          // Try again in next 5-minute cycle
-          expect(true, true);
-        },
-      );
+      test('ERROR-002: Network error in background', () {
+        // Should queue location offline
+        // Try again in next 5-minute cycle
+        expect(true, true);
+      });
 
-      test(
-        'ERROR-003: Battery low in background',
-        () {
-          // LocationService should detect low battery
-          // Optionally: switch to less frequent updates (battery_saver mode)
-          expect(true, true);
-        },
-      );
+      test('ERROR-003: Battery low in background', () {
+        // LocationService should detect low battery
+        // Optionally: switch to less frequent updates (battery_saver mode)
+        expect(true, true);
+      });
 
-      test(
-        'ERROR-004: High accuracy GPS timeout',
-        () {
-          // LocationSettings has timeLimit: 10 seconds
-          // If timeout, should fallback gracefully
-          expect(true, true);
-        },
-      );
+      test('ERROR-004: High accuracy GPS timeout', () {
+        // LocationSettings has timeLimit: 10 seconds
+        // If timeout, should fallback gracefully
+        expect(true, true);
+      });
     });
 
     group('AC 2.1.1 Verification Tests', () {
-      test(
-        'AC-001: Child app tracks location when OPEN (foreground)',
-        () {
-          // Geolocator stream with 10m distance filter should be active
-          // Real-time updates = within 1-10 seconds of movement
-          expect(true, true);
-        },
-      );
+      test('AC-001: Child app tracks location when OPEN (foreground)', () {
+        // Geolocator stream with 10m distance filter should be active
+        // Real-time updates = within 1-10 seconds of movement
+        expect(true, true);
+      });
 
-      test(
-        'AC-002: Background tracking every 5 minutes',
-        () {
-          // ForegroundTask.onRepeatEvent() fires at 300,000ms intervals
-          // Can be reduced to 1 minute for testing/demo
-          expect(true, true);
-        },
-      );
+      test('AC-002: Background tracking every 5 minutes', () {
+        // ForegroundTask.onRepeatEvent() fires at 300,000ms intervals
+        // Can be reduced to 1 minute for testing/demo
+        expect(true, true);
+      });
 
-      test(
-        'AC-003: Uses device GPS with LocationAccuracy.high',
-        () {
-          // Both foreground stream and background task use:
-          // LocationSettings(accuracy: LocationAccuracy.high)
-          expect(true, true);
-        },
-      );
+      test('AC-003: Uses device GPS with LocationAccuracy.high', () {
+        // Both foreground stream and background task use:
+        // LocationSettings(accuracy: LocationAccuracy.high)
+        expect(true, true);
+      });
 
       test(
         'AC-004: Works on Android (Foreground Service with persistent notification)',
@@ -201,14 +165,11 @@ void main() {
         },
       );
 
-      test(
-        'AC-005: iOS support deferred (Android MVP only)',
-        () {
-          // iOS background location is NOT implemented in this sprint
-          // Will be added in Epic 3
-          expect(true, true);
-        },
-      );
+      test('AC-005: iOS support deferred (Android MVP only)', () {
+        // iOS background location is NOT implemented in this sprint
+        // Will be added in Epic 3
+        expect(true, true);
+      });
 
       test(
         'AC-006: Battery efficient with 10m distance filter for foreground',

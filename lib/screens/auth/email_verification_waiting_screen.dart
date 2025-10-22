@@ -87,9 +87,7 @@ class _EmailVerificationWaitingScreenState
             children: [
               Icon(Icons.check_circle, color: AppColors.success),
               SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text('Email xác thực đã được gửi lại!'),
-              ),
+              Expanded(child: Text('Email xác thực đã được gửi lại!')),
             ],
           ),
           backgroundColor: AppColors.success.withOpacity(0.9),
@@ -203,9 +201,7 @@ class _EmailVerificationWaitingScreenState
       children: [
         Text(
           'Chúng tôi đã gửi email xác thực đến:',
-          style: AppTypography.body.copyWith(
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.body.copyWith(color: AppColors.textSecondary),
           textAlign: TextAlign.center,
         ),
         SizedBox(height: AppSpacing.xs),
@@ -250,17 +246,11 @@ class _EmailVerificationWaitingScreenState
         children: [
           Row(
             children: [
-              Icon(
-                Icons.info_outline,
-                color: AppColors.info,
-                size: 24,
-              ),
+              Icon(Icons.info_outline, color: AppColors.info, size: 24),
               SizedBox(width: AppSpacing.sm),
               Text(
                 'Hướng dẫn',
-                style: AppTypography.h3.copyWith(
-                  color: AppColors.textPrimary,
-                ),
+                style: AppTypography.h3.copyWith(color: AppColors.textPrimary),
               ),
             ],
           ),
@@ -355,8 +345,8 @@ class _EmailVerificationWaitingScreenState
           _isResending
               ? 'Đang gửi...'
               : _resendCountdown > 0
-                  ? 'Gửi lại sau ${_resendCountdown}s'
-                  : 'Gửi lại email',
+              ? 'Gửi lại sau ${_resendCountdown}s'
+              : 'Gửi lại email',
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: canResend
@@ -396,16 +386,12 @@ class _EmailVerificationWaitingScreenState
       children: [
         Text(
           'Không nhận được email?',
-          style: AppTypography.caption.copyWith(
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
         ),
         SizedBox(height: AppSpacing.xs),
         Text(
           'Kiểm tra thư mục spam hoặc nhấn "Gửi lại email"',
-          style: AppTypography.caption.copyWith(
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
           textAlign: TextAlign.center,
         ),
       ],

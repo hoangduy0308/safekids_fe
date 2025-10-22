@@ -44,10 +44,13 @@ class _NotificationPanelState extends State<NotificationPanel>
   Widget build(BuildContext context) {
     return SlideTransition(
       position: Tween<Offset>(begin: const Offset(0, -0.3), end: Offset.zero)
-          .animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOut)),
+          .animate(
+            CurvedAnimation(parent: _slideController, curve: Curves.easeOut),
+          ),
       child: FadeTransition(
         opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
-            CurvedAnimation(parent: _slideController, curve: Curves.easeOut)),
+          CurvedAnimation(parent: _slideController, curve: Curves.easeOut),
+        ),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
           child: ClipRRect(
@@ -85,89 +88,94 @@ class _NotificationPanelState extends State<NotificationPanel>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-              // Header
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: AppColors.divider),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Thông báo (${widget.notificationProvider.unreadCount})',
-                      style: AppTypography.h4,
+                  // Header
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
                     ),
-                    GestureDetector(
-                      onTap: widget.onClose,
-                      child: Icon(
-                        Icons.close,
-                        color: AppColors.textSecondary,
-                        size: 24,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: AppColors.divider),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              // Body - Notifications List
-              Expanded(
-                child: widget.notificationProvider.notifications.isEmpty
-                    ? _buildEmptyState()
-                    : SingleChildScrollView(
-                        child: Padding(
-                          padding: EdgeInsets.all(AppSpacing.md),
-                          child: Column(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Thông báo (${widget.notificationProvider.unreadCount})',
+                          style: AppTypography.h4,
+                        ),
+                        GestureDetector(
+                          onTap: widget.onClose,
+                          child: Icon(
+                            Icons.close,
+                            color: AppColors.textSecondary,
+                            size: 24,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Body - Notifications List
+                  Expanded(
+                    child: widget.notificationProvider.notifications.isEmpty
+                        ? _buildEmptyState()
+                        : SingleChildScrollView(
+                            child: Padding(
+                              padding: EdgeInsets.all(AppSpacing.md),
+                              child: Column(
+                                children: [
+                                  ...widget
+                                      .notificationProvider
+                                      .sortedNotifications
+                                      .map((notification) {
+                                        return NotificationItemWidget(
+                                          item: notification,
+                                          onDismiss: () {
+                                            widget.notificationProvider
+                                                .dismissNotification(
+                                                  notification.id,
+                                                );
+                                          },
+                                          onAction: () {
+                                            widget.notificationProvider
+                                                .markAsRead(notification.id);
+                                          },
+                                        );
+                                      })
+                                      .toList(),
+                                ],
+                              ),
+                            ),
+                          ),
+                  ),
+                  // Footer
+                  if (widget.notificationProvider.notifications.isNotEmpty)
+                    Container(
+                      padding: EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(color: AppColors.divider),
+                        ),
+                      ),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: TextButton(
+                          onPressed: () {
+                            // TODO: Navigate to full notifications page
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              ...widget.notificationProvider.sortedNotifications
-                                  .map((notification) {
-                                return NotificationItemWidget(
-                                  item: notification,
-                                  onDismiss: () {
-                                    widget.notificationProvider
-                                        .dismissNotification(notification.id);
-                                  },
-                                  onAction: () {
-                                    widget.notificationProvider
-                                        .markAsRead(notification.id);
-                                  },
-                                );
-                              }).toList(),
+                              Icon(Icons.arrow_forward, size: 16),
+                              SizedBox(width: AppSpacing.sm),
+                              Text('Xem tất cả'),
                             ],
                           ),
                         ),
                       ),
-              ),
-              // Footer
-              if (widget.notificationProvider.notifications.isNotEmpty)
-                Container(
-                  padding: EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(color: AppColors.divider),
                     ),
-                  ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: TextButton(
-                      onPressed: () {
-                        // TODO: Navigate to full notifications page
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.arrow_forward, size: 16),
-                          SizedBox(width: AppSpacing.sm),
-                          Text('Xem tất cả'),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
                 ],
               ),
             ),

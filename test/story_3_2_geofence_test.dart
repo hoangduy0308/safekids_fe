@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 
 void main() {
   group('Story 3.2 - Geofence Alert Components', () {
-    testWidgets('P1: Geofence alert dialog displays correctly', (WidgetTester tester) async {
+    testWidgets('P1: Geofence alert dialog displays correctly', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -42,10 +44,7 @@ void main() {
     });
 
     test('P1: Message text generation works correctly', () {
-      final scenarios = {
-        'exit': 'đã rời khỏi',
-        'enter': 'đã vào',
-      };
+      final scenarios = {'exit': 'đã rời khỏi', 'enter': 'đã vào'};
 
       for (final entry in scenarios.entries) {
         final actionText = entry.value;
@@ -68,19 +67,21 @@ void main() {
       }
     });
 
-    testWidgets('P2: Rapid scenario switching works', (WidgetTester tester) async {
+    testWidgets('P2: Rapid scenario switching works', (
+      WidgetTester tester,
+    ) async {
       for (int i = 0; i < 5; i++) {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: AlertDialog(
                 title: Text('Alert $i'),
-                content: Text(['exit', 'enter'][i % 2] == 'exit' 
-                  ? 'Child đã rời khỏi Zone' 
-                  : 'Child đã vào Zone'),
-                actions: [
-                  TextButton(onPressed: () {}, child: Text('Đóng')),
-                ],
+                content: Text(
+                  ['exit', 'enter'][i % 2] == 'exit'
+                      ? 'Child đã rời khỏi Zone'
+                      : 'Child đã vào Zone',
+                ),
+                actions: [TextButton(onPressed: () {}, child: Text('Đóng'))],
               ),
             ),
           ),

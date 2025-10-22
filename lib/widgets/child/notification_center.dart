@@ -24,7 +24,6 @@ class NotificationCenter extends StatefulWidget {
 class _NotificationCenterState extends State<NotificationCenter> {
   @override
   Widget build(BuildContext context) {
-
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,7 +40,11 @@ class _NotificationCenterState extends State<NotificationCenter> {
                 ),
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
-                  child: Icon(Icons.close, size: 24, color: AppColors.textPrimary),
+                  child: Icon(
+                    Icons.close,
+                    size: 24,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ],
             ),
@@ -60,15 +63,24 @@ class _NotificationCenterState extends State<NotificationCenter> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.person_add, color: AppColors.childPrimary, size: 24),
+                          Icon(
+                            Icons.person_add,
+                            color: AppColors.childPrimary,
+                            size: 24,
+                          ),
                           SizedBox(width: AppSpacing.md),
                           Text(
                             'Yêu cầu liên kết',
-                            style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
+                            style: AppTypography.h3.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                           Spacer(),
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.danger,
                               borderRadius: BorderRadius.circular(12),
@@ -86,7 +98,9 @@ class _NotificationCenterState extends State<NotificationCenter> {
                       SizedBox(height: AppSpacing.sm),
                       Text(
                         'Bạn có ${widget.pendingRequestsCount} yêu cầu liên kết chưa xử lý',
-                        style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                        style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                       SizedBox(height: AppSpacing.md),
                       SizedBox(
@@ -95,14 +109,18 @@ class _NotificationCenterState extends State<NotificationCenter> {
                           onPressed: widget.onShowPendingRequests,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.childPrimary,
-                            padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+                            padding: EdgeInsets.symmetric(
+                              vertical: AppSpacing.md,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                           child: Text(
                             'Xem yêu cầu',
-                            style: AppTypography.button.copyWith(color: Colors.white),
+                            style: AppTypography.button.copyWith(
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -125,11 +143,17 @@ class _NotificationCenterState extends State<NotificationCenter> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.emergency, color: AppColors.danger, size: 24),
+                          Icon(
+                            Icons.emergency,
+                            color: AppColors.danger,
+                            size: 24,
+                          ),
                           SizedBox(width: AppSpacing.md),
                           Text(
                             'Tín hiệu SOS',
-                            style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
+                            style: AppTypography.h3.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),
@@ -156,11 +180,17 @@ class _NotificationCenterState extends State<NotificationCenter> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.history, color: AppColors.childAccent, size: 24),
+                      Icon(
+                        Icons.history,
+                        color: AppColors.childAccent,
+                        size: 24,
+                      ),
                       SizedBox(width: AppSpacing.md),
                       Text(
                         'Hoạt động gần đây',
-                        style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
+                        style: AppTypography.h3.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
@@ -176,9 +206,14 @@ class _NotificationCenterState extends State<NotificationCenter> {
             ),
 
           // Empty State
-          if (widget.pendingRequestsCount == 0 && widget.recentActivities.isEmpty && widget.sosSignals.isEmpty)
+          if (widget.pendingRequestsCount == 0 &&
+              widget.recentActivities.isEmpty &&
+              widget.sosSignals.isEmpty)
             Padding(
-              padding: EdgeInsets.symmetric(vertical: 60, horizontal: AppSpacing.lg),
+              padding: EdgeInsets.symmetric(
+                vertical: 60,
+                horizontal: AppSpacing.lg,
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -190,12 +225,16 @@ class _NotificationCenterState extends State<NotificationCenter> {
                   SizedBox(height: AppSpacing.lg),
                   Text(
                     'Không có thông báo',
-                    style: AppTypography.h3.copyWith(color: AppColors.textSecondary),
+                    style: AppTypography.h3.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   SizedBox(height: AppSpacing.sm),
                   Text(
                     'Bạn không có thông báo mới',
-                    style: AppTypography.bodySmall.copyWith(color: AppColors.textTertiary),
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
                   ),
                 ],
               ),
@@ -219,7 +258,9 @@ class _NotificationCenterState extends State<NotificationCenter> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: (activity['color'] as Color?)?.withOpacity(0.1) ?? AppColors.childPrimary.withOpacity(0.1),
+              color:
+                  (activity['color'] as Color?)?.withOpacity(0.1) ??
+                  AppColors.childPrimary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -235,12 +276,16 @@ class _NotificationCenterState extends State<NotificationCenter> {
               children: [
                 Text(
                   activity['title'] ?? '',
-                  style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                  style: AppTypography.body.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 SizedBox(height: 4),
                 Text(
                   activity['description'] ?? '',
-                  style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -248,7 +293,9 @@ class _NotificationCenterState extends State<NotificationCenter> {
           SizedBox(width: AppSpacing.sm),
           Text(
             activity['time'] ?? '',
-            style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textTertiary,
+            ),
           ),
         ],
       ),
@@ -262,7 +309,10 @@ class _NotificationCenterState extends State<NotificationCenter> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppColors.danger.withOpacity(0.1), AppColors.danger.withOpacity(0.05)],
+          colors: [
+            AppColors.danger.withOpacity(0.1),
+            AppColors.danger.withOpacity(0.05),
+          ],
         ),
         border: Border.all(color: AppColors.danger.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(12),
@@ -277,11 +327,7 @@ class _NotificationCenterState extends State<NotificationCenter> {
               color: AppColors.danger.withOpacity(0.2),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.emergency,
-              color: AppColors.danger,
-              size: 28,
-            ),
+            child: Icon(Icons.emergency, color: AppColors.danger, size: 28),
           ),
           SizedBox(width: AppSpacing.md),
           Expanded(
@@ -317,18 +363,27 @@ class _NotificationCenterState extends State<NotificationCenter> {
                 ),
                 SizedBox(height: 8),
                 Text(
-                  signal['description'] ?? 'Tín hiệu SOS đã được gửi đến phụ huynh',
-                  style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                  signal['description'] ??
+                      'Tín hiệu SOS đã được gửi đến phụ huynh',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(Icons.location_on, size: 14, color: AppColors.textTertiary),
+                    Icon(
+                      Icons.location_on,
+                      size: 14,
+                      color: AppColors.textTertiary,
+                    ),
                     SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         signal['location'] ?? 'Chưa có vị trí',
-                        style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.textTertiary,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -336,7 +391,9 @@ class _NotificationCenterState extends State<NotificationCenter> {
                     SizedBox(width: AppSpacing.sm),
                     Text(
                       signal['time'] ?? '',
-                      style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
                     ),
                   ],
                 ),

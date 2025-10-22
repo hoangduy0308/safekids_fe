@@ -17,7 +17,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _phoneController = TextEditingController();
   final _otpController = TextEditingController();
   final _newPasswordController = TextEditingController();
-  
+
   bool _otpSent = false;
   bool _obscurePassword = true;
   String _selectedMethod = 'email'; // 'email' or 'sms'
@@ -36,12 +36,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final authProvider = context.read<AuthProvider>();
-    
+
     // Get contact info based on method
-    final contactInfo = _selectedMethod == 'email' 
-        ? _emailController.text.trim() 
+    final contactInfo = _selectedMethod == 'email'
+        ? _emailController.text.trim()
         : _phoneController.text.trim();
-    
+
     final result = await authProvider.forgotPassword(
       contactInfo,
       _selectedMethod,
@@ -125,7 +125,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           backgroundColor: AppColors.success,
         ),
       );
-      
+
       await Future.delayed(Duration(seconds: 1));
       if (mounted) {
         Navigator.of(context).pop();
@@ -163,12 +163,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               children: [
                 _buildHeader(),
                 SizedBox(height: AppSpacing.xxl),
-                
-                if (!_otpSent) ...[
-                  _buildEmailStep(),
-                ] else ...[
-                  _buildOTPStep(),
-                ],
+
+                if (!_otpSent) ...[_buildEmailStep()] else ...[_buildOTPStep()],
               ],
             ),
           ),
@@ -194,16 +190,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         ),
         SizedBox(height: AppSpacing.md),
-        
+
         Text(
           _otpSent ? 'Xác thực OTP' : 'Quên mật khẩu',
           style: AppTypography.h1,
         ),
         SizedBox(height: AppSpacing.xs),
         Text(
-          _otpSent 
-            ? 'Nhập mã OTP và mật khẩu mới'
-            : 'Chọn phương thức nhận mã OTP',
+          _otpSent
+              ? 'Nhập mã OTP và mật khẩu mới'
+              : 'Chọn phương thức nhận mã OTP',
           style: AppTypography.body.copyWith(color: AppColors.textSecondary),
           textAlign: TextAlign.center,
         ),
@@ -229,10 +225,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Method selection
-          Text(
-            'Chọn phương thức nhận mã OTP',
-            style: AppTypography.label,
-          ),
+          Text('Chọn phương thức nhận mã OTP', style: AppTypography.label),
           SizedBox(height: AppSpacing.xs),
           Row(
             children: [
@@ -253,9 +246,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ),
             ],
           ),
-          
+
           SizedBox(height: AppSpacing.md),
-          
+
           // Conditional input based on method
           if (_selectedMethod == 'email')
             _buildTextField(
@@ -268,7 +261,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 if (value == null || value.trim().isEmpty) {
                   return 'Vui lòng nhập email';
                 }
-                if (!RegExp(r'^[\w-\.]+@[\w-]+\.[a-zA-Z]{2,}$').hasMatch(value.trim())) {
+                if (!RegExp(
+                  r'^[\w-\.]+@[\w-]+\.[a-zA-Z]{2,}$',
+                ).hasMatch(value.trim())) {
                   return 'Email không hợp lệ';
                 }
                 return null;
@@ -291,13 +286,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 return null;
               },
             ),
-          
+
           SizedBox(height: AppSpacing.xl),
-          
-          _buildButton(
-            text: 'Gửi mã OTP',
-            onPressed: _requestOTP,
-          ),
+
+          _buildButton(text: 'Gửi mã OTP', onPressed: _requestOTP),
         ],
       ),
     );
@@ -328,7 +320,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             keyboardType: TextInputType.number,
           ),
           SizedBox(height: AppSpacing.md),
-          
+
           _buildTextField(
             controller: _newPasswordController,
             label: 'Mật khẩu mới',
@@ -337,7 +329,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             obscureText: _obscurePassword,
             suffixIcon: IconButton(
               icon: Icon(
-                _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                _obscurePassword
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
                 color: AppColors.textLight,
               ),
               onPressed: () {
@@ -348,11 +342,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
           ),
           SizedBox(height: AppSpacing.xl),
-          
-          _buildButton(
-            text: 'Đặt lại mật khẩu',
-            onPressed: _resetPassword,
-          ),
+
+          _buildButton(text: 'Đặt lại mật khẩu', onPressed: _resetPassword),
         ],
       ),
     );
@@ -364,7 +355,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     required String value,
   }) {
     final isSelected = _selectedMethod == value;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -372,9 +363,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         });
       },
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: AppSpacing.md, horizontal: AppSpacing.sm),
+        padding: EdgeInsets.symmetric(
+          vertical: AppSpacing.md,
+          horizontal: AppSpacing.sm,
+        ),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.parentPrimary.withOpacity(0.1) : AppColors.inputBackground,
+          color: isSelected
+              ? AppColors.parentPrimary.withOpacity(0.1)
+              : AppColors.inputBackground,
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           border: Border.all(
             color: isSelected ? AppColors.parentPrimary : AppColors.borderLight,
@@ -392,7 +388,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             Text(
               label,
               style: AppTypography.bodySmall.copyWith(
-                color: isSelected ? AppColors.parentPrimary : AppColors.textSecondary,
+                color: isSelected
+                    ? AppColors.parentPrimary
+                    : AppColors.textSecondary,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
@@ -416,10 +414,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: AppTypography.label,
-        ),
+        Text(label, style: AppTypography.label),
         SizedBox(height: AppSpacing.xs),
         TextFormField(
           controller: controller,
@@ -430,10 +425,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: AppTypography.body.copyWith(color: AppColors.textLight),
-            prefixIcon: Icon(prefixIcon, color: AppColors.parentPrimary, size: AppSpacing.iconSm),
+            prefixIcon: Icon(
+              prefixIcon,
+              color: AppColors.parentPrimary,
+              size: AppSpacing.iconSm,
+            ),
             suffixIcon: suffixIcon,
             filled: true,
-            fillColor: readOnly ? AppColors.borderLight : AppColors.inputBackground,
+            fillColor: readOnly
+                ? AppColors.borderLight
+                : AppColors.inputBackground,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
               borderSide: BorderSide.none,
@@ -454,7 +455,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
               borderSide: BorderSide(color: AppColors.danger, width: 2),
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
           ),
           validator: validator,
         ),
@@ -462,10 +466,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  Widget _buildButton({
-    required String text,
-    required VoidCallback onPressed,
-  }) {
+  Widget _buildButton({required String text, required VoidCallback onPressed}) {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         return SizedBox(
@@ -492,7 +493,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   )
                 : Text(
                     text,
-                    style: AppTypography.buttonLarge.copyWith(color: Colors.white),
+                    style: AppTypography.buttonLarge.copyWith(
+                      color: Colors.white,
+                    ),
                   ),
           ),
         );

@@ -32,6 +32,7 @@ class _AlertHistoryScreenState extends State<AlertHistoryScreen> {
     _bootstrap();
     _controller.addListener(_onScroll);
   }
+
   Future<void> _bootstrap() async {
     await _loadChildren();
     await _fetchInitial();
@@ -40,7 +41,10 @@ class _AlertHistoryScreenState extends State<AlertHistoryScreen> {
   Future<void> _loadChildren() async {
     try {
       final kids = await ApiService().getMyChildren();
-      if (mounted) setState(() { _children = kids; });
+      if (mounted)
+        setState(() {
+          _children = kids;
+        });
     } catch (_) {}
   }
 
@@ -51,13 +55,18 @@ class _AlertHistoryScreenState extends State<AlertHistoryScreen> {
   }
 
   void _onScroll() {
-    if (_controller.position.pixels >= _controller.position.maxScrollExtent - 200) {
+    if (_controller.position.pixels >=
+        _controller.position.maxScrollExtent - 200) {
       if (_hasMore && !_loading) _fetchMore();
     }
   }
 
   Future<void> _fetchInitial() async {
-    setState(() { _alerts.clear(); _skip = 0; _hasMore = true; });
+    setState(() {
+      _alerts.clear();
+      _skip = 0;
+      _hasMore = true;
+    });
     await _fetch();
   }
 
@@ -69,39 +78,61 @@ class _AlertHistoryScreenState extends State<AlertHistoryScreen> {
     DateTime? start;
     final end = DateTime.now();
     switch (_datePreset) {
-      case 'today': start = end.subtract(const Duration(hours: 24)); break;
-      case '7': start = end.subtract(const Duration(days: 7)); break;
-      case '30': start = end.subtract(const Duration(days: 30)); break;
+      case 'today':
+        start = end.subtract(const Duration(hours: 24));
+        break;
+      case '7':
+        start = end.subtract(const Duration(days: 7));
+        break;
+      case '30':
+        start = end.subtract(const Duration(days: 30));
+        break;
       case 'custom':
         start = _customStart;
         return {
           'start': _customStart?.toIso8601String(),
           'end': (_customEnd ?? end).toIso8601String(),
         };
-      default: start = null; break;
+      default:
+        start = null;
+        break;
     }
-    return { 'start': start?.toIso8601String(), 'end': end.toIso8601String() };
+    return {'start': start?.toIso8601String(), 'end': end.toIso8601String()};
   }
 
   Future<void> _fetch() async {
-    if (_loading) return; setState(() { _loading = true; });
+    if (_loading) return;
+    setState(() {
+      _loading = true;
+    });
     final r = _range();
     try {
       final data = await ApiService().getGeofenceAlerts(
-        startDate: r['start'], endDate: r['end'],
-        childId: _childId, geofenceId: _geofenceId,
-        limit: _limit, skip: _skip,
+        startDate: r['start'],
+        endDate: r['end'],
+        childId: _childId,
+        geofenceId: _geofenceId,
+        limit: _limit,
+        skip: _skip,
       );
-      final list = (data['alerts'] as List).map((e) => GeofenceAlertModel.fromJson(e)).toList();
+      final list = (data['alerts'] as List)
+          .map((e) => GeofenceAlertModel.fromJson(e))
+          .toList();
       setState(() {
         _alerts.addAll(list);
         _skip += _limit;
         _hasMore = data['hasMore'] == true;
       });
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi tải cảnh báo: $e')));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi tải cảnh báo: $e')));
     } finally {
-      if (mounted) setState(() { _loading = false; });
+      if (mounted)
+        setState(() {
+          _loading = false;
+        });
     }
   }
 
@@ -113,58 +144,85 @@ class _AlertHistoryScreenState extends State<AlertHistoryScreen> {
         children: [
           _filters(),
           const Divider(height: 1),
-          Expanded(child: _buildList())
+          Expanded(child: _buildList()),
         ],
       ),
     );
   }
 
   Widget _filters() {
-    return Column(children: [
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.all(12),
-        child: Row(children: [
-          _chip('Hôm nay', 'today'),
-          _chip('7 ngày', '7'),
-          _chip('30 ngày', '30'),
-          _chip('Tất cả', 'all'),
-          _chip('Tùy chỉnh', 'custom'),
-        ]),
-      ),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Row(children: [
-          Expanded(child: DropdownButtonFormField<String?>(
-            value: _childId,
-            decoration: const InputDecoration(labelText: 'Trẻ em'),
-            items: [
-              const DropdownMenuItem(value: null, child: Text('Tất cả trẻ em')),
-              ..._children.map((c) => DropdownMenuItem(
-                value: c['childId']?.toString() ?? c['_id']?.toString(),
-                child: Text(c['childName']?.toString() ?? c['name']?.toString() ?? ''),
-              ))
+    return Column(
+      children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              _chip('Hôm nay', 'today'),
+              _chip('7 ngày', '7'),
+              _chip('30 ngày', '30'),
+              _chip('Tất cả', 'all'),
+              _chip('Tùy chỉnh', 'custom'),
             ],
-            onChanged: (v) {
-              HapticFeedback.lightImpact();
-              setState(() { _childId = v; });
-              _fetchInitial();
-            },
-          )),
-          const SizedBox(width: 12),
-          Expanded(child: DropdownButtonFormField<String?>(
-            value: _geofenceId,
-            decoration: const InputDecoration(labelText: 'Vùng địa phương'),
-            items: const [ DropdownMenuItem(value: null, child: Text('Tất cả vùng')) ],
-            onChanged: (v) {
-              HapticFeedback.lightImpact();
-              setState(() { _geofenceId = v; });
-              _fetchInitial();
-            },
-          )),
-        ]),
-      )
-    ]);
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: DropdownButtonFormField<String?>(
+                  value: _childId,
+                  decoration: const InputDecoration(labelText: 'Trẻ em'),
+                  items: [
+                    const DropdownMenuItem(
+                      value: null,
+                      child: Text('Tất cả trẻ em'),
+                    ),
+                    ..._children.map(
+                      (c) => DropdownMenuItem(
+                        value: c['childId']?.toString() ?? c['_id']?.toString(),
+                        child: Text(
+                          c['childName']?.toString() ??
+                              c['name']?.toString() ??
+                              '',
+                        ),
+                      ),
+                    ),
+                  ],
+                  onChanged: (v) {
+                    HapticFeedback.lightImpact();
+                    setState(() {
+                      _childId = v;
+                    });
+                    _fetchInitial();
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: DropdownButtonFormField<String?>(
+                  value: _geofenceId,
+                  decoration: const InputDecoration(
+                    labelText: 'Vùng địa phương',
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: null, child: Text('Tất cả vùng')),
+                  ],
+                  onChanged: (v) {
+                    HapticFeedback.lightImpact();
+                    setState(() {
+                      _geofenceId = v;
+                    });
+                    _fetchInitial();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _chip(String label, String value) {
@@ -180,7 +238,9 @@ class _AlertHistoryScreenState extends State<AlertHistoryScreen> {
             _pickCustomRange();
             return;
           }
-          setState(() { _datePreset = value; });
+          setState(() {
+            _datePreset = value;
+          });
           _fetchInitial();
         },
         selectedColor: AppColors.parentPrimaryLight.withOpacity(0.3),
@@ -190,7 +250,10 @@ class _AlertHistoryScreenState extends State<AlertHistoryScreen> {
 
   Future<void> _pickCustomRange() async {
     final now = DateTime.now();
-    final last7 = DateTimeRange(start: now.subtract(const Duration(days: 7)), end: now);
+    final last7 = DateTimeRange(
+      start: now.subtract(const Duration(days: 7)),
+      end: now,
+    );
     final picked = await showDateRangePicker(
       context: context,
       firstDate: DateTime(now.year - 2),
@@ -204,8 +267,19 @@ class _AlertHistoryScreenState extends State<AlertHistoryScreen> {
     );
     if (picked != null) {
       setState(() {
-        _customStart = DateTime(picked.start.year, picked.start.month, picked.start.day);
-        _customEnd = DateTime(picked.end.year, picked.end.month, picked.end.day, 23, 59, 59);
+        _customStart = DateTime(
+          picked.start.year,
+          picked.start.month,
+          picked.start.day,
+        );
+        _customEnd = DateTime(
+          picked.end.year,
+          picked.end.month,
+          picked.end.day,
+          23,
+          59,
+          59,
+        );
         _datePreset = 'custom';
       });
       await _fetchInitial();

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../theme/app_colors.dart';
 import 'package:safekids_app/theme/app_typography.dart';
+
 enum LocationErrorType {
   gpsDisabled,
   permissionDenied,
@@ -12,12 +13,9 @@ enum LocationErrorType {
 class LocationErrorWidget extends StatelessWidget {
   final LocationErrorType errorType;
   final VoidCallback? onRetry;
-  
-  const LocationErrorWidget({
-    Key? key,
-    required this.errorType,
-    this.onRetry,
-  }) : super(key: key);
+
+  const LocationErrorWidget({Key? key, required this.errorType, this.onRetry})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -36,13 +34,19 @@ class LocationErrorWidget extends StatelessWidget {
           SizedBox(height: 12),
           Text(
             _getTitle(),
-            style: AppTypography.h4.copyWith(fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+            style: AppTypography.h4.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 8),
           Text(
             _getMessage(),
-            style: AppTypography.label.copyWith(color: AppColors.textSecondary, height: 1.5),
+            style: AppTypography.label.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.5,
+            ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 16),
@@ -63,7 +67,9 @@ class LocationErrorWidget extends StatelessWidget {
           backgroundColor: _getIconColor(),
           foregroundColor: Colors.white,
           padding: EdgeInsets.symmetric(vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
     );

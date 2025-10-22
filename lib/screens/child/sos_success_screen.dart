@@ -21,7 +21,8 @@ class SOSSuccessScreen extends StatefulWidget {
   State<SOSSuccessScreen> createState() => _SOSSuccessScreenState();
 }
 
-class _SOSSuccessScreenState extends State<SOSSuccessScreen> with SingleTickerProviderStateMixin {
+class _SOSSuccessScreenState extends State<SOSSuccessScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   final ApiService _apiService = ApiService();
   bool _cancelling = false;
@@ -34,7 +35,7 @@ class _SOSSuccessScreenState extends State<SOSSuccessScreen> with SingleTickerPr
       vsync: this,
     );
     _animationController.forward();
-    
+
     Future.delayed(Duration(seconds: 5), () {
       if (mounted) Navigator.pop(context);
     });
@@ -51,7 +52,9 @@ class _SOSSuccessScreenState extends State<SOSSuccessScreen> with SingleTickerPr
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Hủy Cảnh Báo SOS'),
-        content: Text('Bạn có chắc muốn hủy cảnh báo SOS này? Ba mẹ sẽ được thông báo.'),
+        content: Text(
+          'Bạn có chắc muốn hủy cảnh báo SOS này? Ba mẹ sẽ được thông báo.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -112,12 +115,15 @@ class _SOSSuccessScreenState extends State<SOSSuccessScreen> with SingleTickerPr
         children: [
           // Background
           Container(color: AppColors.success.withOpacity(0.1)),
-          
+
           // Content
           Center(
             child: ScaleTransition(
               scale: Tween<double>(begin: 0.8, end: 1.0).animate(
-                CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+                CurvedAnimation(
+                  parent: _animationController,
+                  curve: Curves.elasticOut,
+                ),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -136,9 +142,9 @@ class _SOSSuccessScreenState extends State<SOSSuccessScreen> with SingleTickerPr
                       color: AppColors.success,
                     ),
                   ),
-                  
+
                   SizedBox(height: 24),
-                  
+
                   // Message
                   Text(
                     '✅ Đã gửi cảnh báo',
@@ -148,9 +154,9 @@ class _SOSSuccessScreenState extends State<SOSSuccessScreen> with SingleTickerPr
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  
+
                   SizedBox(height: 16),
-                  
+
                   // Parents notified
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 24),
@@ -164,44 +170,52 @@ class _SOSSuccessScreenState extends State<SOSSuccessScreen> with SingleTickerPr
                           textAlign: TextAlign.center,
                         ),
                         SizedBox(height: 12),
-                        ...widget.parentNames.map((name) => Padding(
-                          padding: EdgeInsets.symmetric(vertical: 4),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.person, size: 16, color: AppColors.success),
-                              SizedBox(width: 8),
-                              Text(
-                                name,
-                                style: AppTypography.label.copyWith(
-                                  fontWeight: FontWeight.w600,
+                        ...widget.parentNames
+                            .map(
+                              (name) => Padding(
+                                padding: EdgeInsets.symmetric(vertical: 4),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.person,
+                                      size: 16,
+                                      color: AppColors.success,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      name,
+                                      style: AppTypography.label.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
-                        )).toList(),
+                            )
+                            .toList(),
                       ],
                     ),
                   ),
-                  
+
                   SizedBox(height: 32),
-                  
+
                   // Cancel button (AC 4.4.2)
                   if (_canCancel())
                     Padding(
                       padding: EdgeInsets.only(bottom: 16),
                       child: ElevatedButton.icon(
                         onPressed: _cancelling ? null : _cancelSOS,
-                        icon: _cancelling 
-                          ? SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Icon(Icons.cancel),
+                        icon: _cancelling
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Icon(Icons.cancel),
                         label: Text(
                           _cancelling ? 'Đang hủy...' : 'HỦY CẢNH BÁO',
                           style: AppTypography.button.copyWith(
@@ -210,29 +224,33 @@ class _SOSSuccessScreenState extends State<SOSSuccessScreen> with SingleTickerPr
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange,
-                          padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 16,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                       ),
                     ),
-                  
+
                   // Close button
                   ElevatedButton(
                     onPressed: () => Navigator.pop(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.success,
-                      padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: Text(
                       'Đóng',
-                      style: AppTypography.button.copyWith(
-                        color: Colors.white,
-                      ),
+                      style: AppTypography.button.copyWith(color: Colors.white),
                     ),
                   ),
                 ],

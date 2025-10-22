@@ -17,63 +17,65 @@ class _UsageReportsScreenState extends State<UsageReportsScreen> {
   List<Map<String, dynamic>> _children = [];
   String? _selectedChildId;
   String _dateRange = '7days';
-  
+
   Map<String, dynamic>? _stats;
   List<Map<String, dynamic>> _history = [];
   bool _loading = true;
-  
+
   @override
   void initState() {
     super.initState();
     _loadChildren();
   }
-  
+
   Future<void> _loadChildren() async {
     setState(() => _loading = true);
-    
+
     try {
       final profile = await ApiService().getProfile();
       final linkedChildren = profile['linkedUsers'] as List?;
-      _children = linkedChildren != null 
-          ? List<Map<String, dynamic>>.from(linkedChildren.where((u) => u['role'] == 'child'))
+      _children = linkedChildren != null
+          ? List<Map<String, dynamic>>.from(
+              linkedChildren.where((u) => u['role'] == 'child'),
+            )
           : [];
-      
+
       if (_children.isNotEmpty) {
         _selectedChildId = _children[0]['_id'];
         await _loadUsageData();
       }
-      
+
       setState(() => _loading = false);
     } catch (e) {
       setState(() => _loading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi: ${e.toString()}')));
       }
     }
   }
-  
+
   Future<void> _loadUsageData() async {
     if (_selectedChildId == null) return;
-    
+
     setState(() => _loading = true);
-    
+
     try {
       final dateRange = _getDateRange();
-      
+
       final history = await ApiService().getUsageHistory(
         childId: _selectedChildId!,
         startDate: dateRange['start']!,
         endDate: dateRange['end']!,
       );
-      
+
       final stats = await ApiService().getUsageStats(
         childId: _selectedChildId!,
         startDate: dateRange['start']!,
         endDate: dateRange['end']!,
       );
-      
+
       setState(() {
         _history = history;
         _stats = stats;
@@ -82,17 +84,17 @@ class _UsageReportsScreenState extends State<UsageReportsScreen> {
     } catch (e) {
       setState(() => _loading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi: ${e.toString()}')));
       }
     }
   }
-  
+
   Map<String, String> _getDateRange() {
     final now = DateTime.now();
     String start, end;
-    
+
     switch (_dateRange) {
       case 'today':
         start = end = _formatDate(now);
@@ -109,14 +111,14 @@ class _UsageReportsScreenState extends State<UsageReportsScreen> {
         start = _formatDate(now.subtract(const Duration(days: 6)));
         end = _formatDate(now);
     }
-    
+
     return {'start': start, 'end': end};
   }
-  
+
   String _formatDate(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,64 +127,70 @@ class _UsageReportsScreenState extends State<UsageReportsScreen> {
         backgroundColor: AppColors.parentPrimary,
       ),
       body: _loading
-        ? const Center(child: CircularProgressIndicator())
-        : SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Child selector
-                if (_children.length > 1)
-                  DropdownButtonFormField<String>(
-                    value: _selectedChildId,
-                    decoration: const InputDecoration(labelText: 'Chọn trẻ em'),
-                    items: _children.map((child) => DropdownMenuItem<String>(
-                      value: child['_id'] as String,
-                      child: Text(child['fullName'] as String),
-                    )).toList(),
-                    onChanged: (value) {
-                      setState(() => _selectedChildId = value);
-                      _loadUsageData();
-                    },
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Child selector
+                  if (_children.length > 1)
+                    DropdownButtonFormField<String>(
+                      value: _selectedChildId,
+                      decoration: const InputDecoration(
+                        labelText: 'Chọn trẻ em',
+                      ),
+                      items: _children
+                          .map(
+                            (child) => DropdownMenuItem<String>(
+                              value: child['_id'] as String,
+                              child: Text(child['fullName'] as String),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() => _selectedChildId = value);
+                        _loadUsageData();
+                      },
+                    ),
+
+                  const SizedBox(height: AppSpacing.md),
+
+                  // Date range selector
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _dateRangeChip('Hôm Nay', 'today'),
+                        const SizedBox(width: 8),
+                        _dateRangeChip('7 Ngày', '7days'),
+                        const SizedBox(width: 8),
+                        _dateRangeChip('30 Ngày', '30days'),
+                      ],
+                    ),
                   ),
-                
-                const SizedBox(height: AppSpacing.md),
-                
-                // Date range selector
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _dateRangeChip('Hôm Nay', 'today'),
-                      const SizedBox(width: 8),
-                      _dateRangeChip('7 Ngày', '7days'),
-                      const SizedBox(width: 8),
-                      _dateRangeChip('30 Ngày', '30days'),
-                    ],
-                  ),
-                ),
-                
-                const SizedBox(height: AppSpacing.xl),
-                
-                // Summary stats
-                if (_stats != null) _buildSummaryStats(),
-                
-                const SizedBox(height: AppSpacing.xl),
-                
-                // Daily usage chart
-                if (_history.isNotEmpty) _buildDailyChart(),
-                
-                const SizedBox(height: AppSpacing.xl),
-                
-                // Day of week breakdown
-                if (_stats != null && _stats!['usageByDayOfWeek'] != null)
-                  _buildDayOfWeekChart(),
-              ],
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // Summary stats
+                  if (_stats != null) _buildSummaryStats(),
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // Daily usage chart
+                  if (_history.isNotEmpty) _buildDailyChart(),
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // Day of week breakdown
+                  if (_stats != null && _stats!['usageByDayOfWeek'] != null)
+                    _buildDayOfWeekChart(),
+                ],
+              ),
             ),
-          ),
     );
   }
-  
+
   Widget _dateRangeChip(String label, String value) {
     return FilterChip(
       label: Text(label),
@@ -193,18 +201,18 @@ class _UsageReportsScreenState extends State<UsageReportsScreen> {
       },
     );
   }
-  
+
   Widget _buildSummaryStats() {
     final totalMinutes = _stats!['totalMinutes'] ?? 0;
     final averageDaily = _stats!['averageDaily'] ?? 0;
     final daysOverLimit = _stats!['daysOverLimit'] ?? 0;
     final totalDays = _stats!['totalDays'] ?? 0;
-    
+
     final totalHours = totalMinutes ~/ 60;
     final totalMins = totalMinutes % 60;
     final avgHours = averageDaily ~/ 60;
     final avgMins = averageDaily % 60;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -212,23 +220,51 @@ class _UsageReportsScreenState extends State<UsageReportsScreen> {
         const SizedBox(height: AppSpacing.sm),
         Row(
           children: [
-            Expanded(child: _statCard('Tổng Sử Dụng', '${totalHours}h ${totalMins}p', Icons.access_time, Colors.blue)),
+            Expanded(
+              child: _statCard(
+                'Tổng Sử Dụng',
+                '${totalHours}h ${totalMins}p',
+                Icons.access_time,
+                Colors.blue,
+              ),
+            ),
             const SizedBox(width: AppSpacing.sm),
-            Expanded(child: _statCard('Trung Bình', '${avgHours}h ${avgMins}p/ngày', Icons.trending_up, Colors.green)),
+            Expanded(
+              child: _statCard(
+                'Trung Bình',
+                '${avgHours}h ${avgMins}p/ngày',
+                Icons.trending_up,
+                Colors.green,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: AppSpacing.sm),
         Row(
           children: [
-            Expanded(child: _statCard('Vượt Giới Hạn', '$daysOverLimit/$totalDays ngày', Icons.warning, Colors.orange)),
+            Expanded(
+              child: _statCard(
+                'Vượt Giới Hạn',
+                '$daysOverLimit/$totalDays ngày',
+                Icons.warning,
+                Colors.orange,
+              ),
+            ),
             const SizedBox(width: AppSpacing.sm),
-            Expanded(child: _statCard('Hoạt Động Nhất', _formatMostActiveDay(), Icons.star, Colors.purple)),
+            Expanded(
+              child: _statCard(
+                'Hoạt Động Nhất',
+                _formatMostActiveDay(),
+                Icons.star,
+                Colors.purple,
+              ),
+            ),
           ],
         ),
       ],
     );
   }
-  
+
   Widget _statCard(String label, String value, IconData icon, Color color) {
     return Card(
       child: Padding(
@@ -253,19 +289,19 @@ class _UsageReportsScreenState extends State<UsageReportsScreen> {
       ),
     );
   }
-  
+
   String _formatMostActiveDay() {
     final mostActive = _stats!['mostActiveDay'];
     if (mostActive == null) return 'N/A';
-    
+
     final date = DateTime.parse(mostActive['date']);
     final minutes = mostActive['minutes'];
     final hours = minutes ~/ 60;
     final mins = minutes % 60;
-    
+
     return '${date.day}/${date.month}\n${hours}h ${mins}p';
   }
-  
+
   Widget _buildDailyChart() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -282,15 +318,18 @@ class _UsageReportsScreenState extends State<UsageReportsScreen> {
               final date = DateTime.parse(record['date']);
               final minutes = record['totalMinutes'];
               final hours = minutes / 60;
-              
+
               final barHeight = (hours / 12) * 150;
-              
+
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text('${hours.toStringAsFixed(1)}h', style: const TextStyle(fontSize: 10)),
+                    Text(
+                      '${hours.toStringAsFixed(1)}h',
+                      style: const TextStyle(fontSize: 10),
+                    ),
                     const SizedBox(height: 4),
                     Container(
                       width: 30,
@@ -301,7 +340,10 @@ class _UsageReportsScreenState extends State<UsageReportsScreen> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text('${date.day}/${date.month}', style: const TextStyle(fontSize: 10)),
+                    Text(
+                      '${date.day}/${date.month}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
                   ],
                 ),
               );
@@ -311,11 +353,11 @@ class _UsageReportsScreenState extends State<UsageReportsScreen> {
       ],
     );
   }
-  
+
   Widget _buildDayOfWeekChart() {
     final usageByDay = _stats!['usageByDayOfWeek'];
     final dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -330,11 +372,14 @@ class _UsageReportsScreenState extends State<UsageReportsScreen> {
               final minutes = usageByDay[index.toString()] ?? 0;
               final hours = minutes / 60;
               final barHeight = (hours / 12) * 150;
-              
+
               return Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text('${hours.toStringAsFixed(1)}h', style: const TextStyle(fontSize: 10)),
+                  Text(
+                    '${hours.toStringAsFixed(1)}h',
+                    style: const TextStyle(fontSize: 10),
+                  ),
                   const SizedBox(height: 4),
                   Container(
                     width: 30,

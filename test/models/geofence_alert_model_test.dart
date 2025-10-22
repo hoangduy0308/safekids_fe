@@ -8,21 +8,10 @@ void main() {
         final json = {
           '_id': 'alert-123',
           'action': 'enter',
-          'geofenceId': {
-            '_id': 'geo-1',
-            'name': 'Trường học',
-            'type': 'safe'
-          },
-          'childId': {
-            '_id': 'child-1',
-            'fullName': 'Minh An',
-            'name': 'Minh'
-          },
-          'location': {
-            'latitude': 10.123456,
-            'longitude': 106.654321
-          },
-          'timestamp': '2025-10-15T14:30:00.000Z'
+          'geofenceId': {'_id': 'geo-1', 'name': 'Trường học', 'type': 'safe'},
+          'childId': {'_id': 'child-1', 'fullName': 'Minh An', 'name': 'Minh'},
+          'location': {'latitude': 10.123456, 'longitude': 106.654321},
+          'timestamp': '2025-10-15T14:30:00.000Z',
         };
 
         final alert = GeofenceAlertModel.fromJson(json);
@@ -46,7 +35,7 @@ void main() {
           'geofenceId': {'_id': 'geo-2', 'name': 'Nhà', 'type': 'safe'},
           'childId': {'_id': 'child-2', 'fullName': 'Hồng Nhung'},
           'location': {'latitude': 10.1, 'longitude': 106.1},
-          'timestamp': '2025-10-15T15:00:00.000Z'
+          'timestamp': '2025-10-15T15:00:00.000Z',
         };
 
         final alert = GeofenceAlertModel.fromJson(json);
@@ -62,7 +51,7 @@ void main() {
           'geofenceId': {'_id': 'geo-1', 'name': 'Trường', 'type': 'safe'},
           'childId': {'_id': 'child-1', 'name': 'An'},
           'location': {'latitude': 10, 'longitude': 106},
-          'timestamp': DateTime.now().toIso8601String()
+          'timestamp': DateTime.now().toIso8601String(),
         };
 
         final alert = GeofenceAlertModel.fromJson(json);
@@ -76,7 +65,7 @@ void main() {
           'action': 'enter',
           'geofenceId': {'_id': 'geo-1'},
           'childId': {'_id': 'child-1'},
-          'timestamp': DateTime.now().toIso8601String()
+          'timestamp': DateTime.now().toIso8601String(),
         };
 
         final alert = GeofenceAlertModel.fromJson(json);
@@ -94,7 +83,7 @@ void main() {
           'action': 'enter',
           'geofenceId': 'geo-1-string',
           'childId': 'child-1-string',
-          'timestamp': DateTime.now().toIso8601String()
+          'timestamp': DateTime.now().toIso8601String(),
         };
 
         final alert = GeofenceAlertModel.fromJson(json);
@@ -107,10 +96,14 @@ void main() {
         final json = {
           '_id': 'alert-6',
           'action': 'enter',
-          'geofenceId': {'_id': 'geo-danger', 'name': 'Khu nguy hiểm', 'type': 'danger'},
+          'geofenceId': {
+            '_id': 'geo-danger',
+            'name': 'Khu nguy hiểm',
+            'type': 'danger',
+          },
           'childId': {'_id': 'child-1', 'fullName': 'An'},
           'location': {'latitude': 10, 'longitude': 106},
-          'timestamp': DateTime.now().toIso8601String()
+          'timestamp': DateTime.now().toIso8601String(),
         };
 
         final alert = GeofenceAlertModel.fromJson(json);
@@ -126,7 +119,7 @@ void main() {
           'geofenceId': {'_id': 'geo-1', 'name': 'Loc', 'type': 'safe'},
           'childId': {'_id': 'child-1', 'fullName': 'An'},
           'location': {'latitude': 10, 'longitude': 106},
-          'timestamp': originalTime.toIso8601String()
+          'timestamp': originalTime.toIso8601String(),
         };
 
         final alert = GeofenceAlertModel.fromJson(json);
@@ -145,7 +138,7 @@ void main() {
           'geofenceId': {'_id': 'geo-1', 'name': 'Loc', 'type': 'safe'},
           'childId': {'_id': 'child-1', 'fullName': 'An'},
           'location': {'latitude': -90.0, 'longitude': -180.0},
-          'timestamp': DateTime.now().toIso8601String()
+          'timestamp': DateTime.now().toIso8601String(),
         };
 
         final alert = GeofenceAlertModel.fromJson(json);
@@ -161,7 +154,7 @@ void main() {
           'geofenceId': {'_id': 'geo-1', 'name': 'Loc', 'type': 'safe'},
           'childId': {'_id': 'child-1', 'fullName': 'An'},
           'location': null,
-          'timestamp': DateTime.now().toIso8601String()
+          'timestamp': DateTime.now().toIso8601String(),
         };
 
         final alert = GeofenceAlertModel.fromJson(json);

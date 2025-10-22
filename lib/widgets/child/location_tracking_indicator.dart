@@ -5,7 +5,7 @@ class LocationTrackingIndicator extends StatefulWidget {
   final bool isTracking;
   final bool isOffline;
   final int queuedLocations;
-  
+
   const LocationTrackingIndicator({
     Key? key,
     required this.isTracking,
@@ -14,7 +14,8 @@ class LocationTrackingIndicator extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<LocationTrackingIndicator> createState() => _LocationTrackingIndicatorState();
+  State<LocationTrackingIndicator> createState() =>
+      _LocationTrackingIndicatorState();
 }
 
 class _LocationTrackingIndicatorState extends State<LocationTrackingIndicator>
@@ -76,7 +77,8 @@ class _LocationTrackingIndicatorState extends State<LocationTrackingIndicator>
             style: AppTypography.caption.copyWith(
               fontWeight: FontWeight.w600,
               color: _getTextColor(),
-            ),          ),
+            ),
+          ),
           if (widget.isOffline && widget.queuedLocations > 0) ...[
             SizedBox(width: 6),
             Container(
@@ -87,7 +89,11 @@ class _LocationTrackingIndicatorState extends State<LocationTrackingIndicator>
               ),
               child: Text(
                 '${widget.queuedLocations}',
-                style: AppTypography.overline.copyWith(fontWeight: FontWeight.w700, color: AppColors.warning),              ),
+                style: AppTypography.overline.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.warning,
+                ),
+              ),
             ),
           ],
         ],

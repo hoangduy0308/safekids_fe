@@ -18,7 +18,8 @@ class SOSCountdownDialog extends StatefulWidget {
   State<SOSCountdownDialog> createState() => _SOSCountdownDialogState();
 }
 
-class _SOSCountdownDialogState extends State<SOSCountdownDialog> with TickerProviderStateMixin {
+class _SOSCountdownDialogState extends State<SOSCountdownDialog>
+    with TickerProviderStateMixin {
   late AnimationController _countdownController;
   late int _secondsRemaining;
   bool _cancelled = false;
@@ -27,7 +28,7 @@ class _SOSCountdownDialogState extends State<SOSCountdownDialog> with TickerProv
   void initState() {
     super.initState();
     _secondsRemaining = widget.duration.inSeconds;
-    
+
     _countdownController = AnimationController(
       duration: widget.duration,
       vsync: this,
@@ -39,9 +40,10 @@ class _SOSCountdownDialogState extends State<SOSCountdownDialog> with TickerProv
   }
 
   void _updateCountdown() {
-    final elapsed = (_countdownController.value * widget.duration.inMilliseconds).toInt();
+    final elapsed =
+        (_countdownController.value * widget.duration.inMilliseconds).toInt();
     final remaining = (widget.duration.inMilliseconds - elapsed) ~/ 1000;
-    
+
     if (mounted && remaining != _secondsRemaining) {
       setState(() => _secondsRemaining = remaining);
     }
@@ -84,7 +86,7 @@ class _SOSCountdownDialogState extends State<SOSCountdownDialog> with TickerProv
                 color: AppColors.danger.withOpacity(0.2),
                 blurRadius: 20,
                 spreadRadius: 5,
-              )
+              ),
             ],
           ),
           child: Column(
@@ -109,7 +111,7 @@ class _SOSCountdownDialogState extends State<SOSCountdownDialog> with TickerProv
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 32),
-              
+
               // Countdown Timer
               Container(
                 width: 120,
@@ -117,10 +119,7 @@ class _SOSCountdownDialogState extends State<SOSCountdownDialog> with TickerProv
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.danger.withOpacity(0.1),
-                  border: Border.all(
-                    color: AppColors.danger,
-                    width: 3,
-                  ),
+                  border: Border.all(color: AppColors.danger, width: 3),
                 ),
                 child: Center(
                   child: Text(
@@ -133,9 +132,9 @@ class _SOSCountdownDialogState extends State<SOSCountdownDialog> with TickerProv
                   ),
                 ),
               ),
-              
+
               SizedBox(height: 32),
-              
+
               // Cancel Button
               SizedBox(
                 width: double.infinity,

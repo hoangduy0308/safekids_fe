@@ -5,6 +5,7 @@ import '../../services/api_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import 'package:safekids_app/theme/app_typography.dart';
+
 class ChildLocationInfo extends StatefulWidget {
   final String childId;
   final String childName;
@@ -98,8 +99,11 @@ class _ChildLocationInfoState extends State<ChildLocationInfo> {
                 Expanded(
                   child: Text(
                     'Không thể tải vị trí',
-                    style: AppTypography.captionSmall.copyWith(color: AppColors.danger),
-                  ),                ),
+                    style: AppTypography.captionSmall.copyWith(
+                      color: AppColors.danger,
+                    ),
+                  ),
+                ),
               ],
             ),
             borderColor: AppColors.danger,
@@ -111,8 +115,11 @@ class _ChildLocationInfoState extends State<ChildLocationInfo> {
           return _buildCard(
             child: Text(
               'Chưa có dữ liệu',
-              style: AppTypography.captionSmall.copyWith(color: AppColors.textSecondary),
-            ),          );
+              style: AppTypography.captionSmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          );
         }
 
         final location = snapshot.data ?? {};
@@ -133,8 +140,8 @@ class _ChildLocationInfoState extends State<ChildLocationInfo> {
         final color = battery > 50
             ? AppColors.success
             : battery > 20
-                ? AppColors.warning
-                : AppColors.danger;
+            ? AppColors.warning
+            : AppColors.danger;
 
         return _buildCard(
           child: Row(
@@ -143,10 +150,10 @@ class _ChildLocationInfoState extends State<ChildLocationInfo> {
                 battery > 80
                     ? Icons.battery_full
                     : battery > 50
-                        ? Icons.battery_6_bar
-                        : battery > 20
-                            ? Icons.battery_3_bar
-                            : Icons.battery_alert,
+                    ? Icons.battery_6_bar
+                    : battery > 20
+                    ? Icons.battery_3_bar
+                    : Icons.battery_alert,
                 size: 24,
                 color: color,
               ),
@@ -155,7 +162,13 @@ class _ChildLocationInfoState extends State<ChildLocationInfo> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('$battery%', style: AppTypography.body.copyWith(fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                    Text(
+                      '$battery%',
+                      style: AppTypography.body.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
                     SizedBox(height: 4),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
@@ -199,9 +212,14 @@ class _ChildLocationInfoState extends State<ChildLocationInfo> {
               SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
-                  address ?? '${lat?.toStringAsFixed(4)}, ${lng?.toStringAsFixed(4)}',
-                  style: AppTypography.label.copyWith(fontWeight: FontWeight.w500, color: AppColors.textPrimary),
-                ),              ),
+                  address ??
+                      '${lat?.toStringAsFixed(4)}, ${lng?.toStringAsFixed(4)}',
+                  style: AppTypography.label.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
             ],
           ),
           if (lat != null && lng != null) ...[
@@ -213,8 +231,11 @@ class _ChildLocationInfoState extends State<ChildLocationInfo> {
                 Expanded(
                   child: Text(
                     '${lat.toStringAsFixed(6)}, ${lng.toStringAsFixed(6)}',
-                    style: AppTypography.overline.copyWith(color: AppColors.textSecondary),
-                  ),                ),
+                    style: AppTypography.overline.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
               ],
             ),
           ],
@@ -224,17 +245,23 @@ class _ChildLocationInfoState extends State<ChildLocationInfo> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.access_time, size: 14, color: AppColors.textSecondary),
+                  Icon(
+                    Icons.access_time,
+                    size: 14,
+                    color: AppColors.textSecondary,
+                  ),
                   SizedBox(width: 6),
                   Text(
                     'Updated: ${_formatTime(updatedAt)}',
-                    style: AppTypography.overline.copyWith(color: AppColors.textSecondary),
-                  ),                ],
+                    style: AppTypography.overline.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
               ),
               _buildSafeZoneBadge(inSafeZone),
             ],
           ),
-
         ],
       ),
       borderColor: color,
@@ -264,8 +291,8 @@ class _ChildLocationInfoState extends State<ChildLocationInfo> {
               fontSize: 10,
               fontWeight: FontWeight.w500,
               color: color,
-            )
             ),
+          ),
         ],
       ),
     );
@@ -302,6 +329,4 @@ class _ChildLocationInfoState extends State<ChildLocationInfo> {
       child: child,
     );
   }
-
-
 }

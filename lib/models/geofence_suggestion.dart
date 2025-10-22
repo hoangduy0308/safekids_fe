@@ -31,10 +31,7 @@ class GeofenceSuggestion {
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
-    'center': {
-      'latitude': center.latitude,
-      'longitude': center.longitude,
-    },
+    'center': {'latitude': center.latitude, 'longitude': center.longitude},
     'visitCount': visitCount,
     'suggestedType': suggestedType,
   };

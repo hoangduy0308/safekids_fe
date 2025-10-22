@@ -60,9 +60,11 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
   Future<void> _loadChildren() async {
     try {
       final authProvider = context.read<AuthProvider>();
-      final linkedChildren = authProvider.user?.linkedUsersData
-          .where((user) => user['role'] == 'child')
-          .toList() ?? [];
+      final linkedChildren =
+          authProvider.user?.linkedUsersData
+              .where((user) => user['role'] == 'child')
+              .toList() ??
+          [];
       if (mounted) {
         setState(() => _children = linkedChildren);
       }
@@ -92,7 +94,8 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
         skip: _skip,
       );
 
-      final sosList = (response['sosList'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      final sosList =
+          (response['sosList'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       final total = response['total'] as int? ?? 0;
       final hasMore = response['hasMore'] as bool? ?? false;
 
@@ -119,7 +122,7 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
         } else if (e.toString().contains('Connection refused')) {
           errorMsg = 'Không thể kết nối tới server. Kiểm tra kết nối mạng.';
         }
-        
+
         setState(() {
           _loading = false;
           _errorMessage = errorMsg;
@@ -145,7 +148,8 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
         skip: _skip,
       );
 
-      final sosList = (response['sosList'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      final sosList =
+          (response['sosList'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       final hasMore = response['hasMore'] as bool? ?? false;
 
       if (mounted) {
@@ -158,9 +162,9 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _loadingMore = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi tải thêm: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi tải thêm: $e')));
       }
     }
   }
@@ -180,7 +184,8 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       if (!_loadingMore && _hasMore) {
         _loadMoreSOS();
       }
@@ -239,10 +244,10 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
             child: _loading && _sosList.isEmpty
                 ? const Center(child: CircularProgressIndicator())
                 : _errorMessage != null
-                    ? _buildErrorView()
-                    : _sosList.isEmpty
-                        ? _buildEmptyView()
-                        : _buildSOSList(),
+                ? _buildErrorView()
+                : _sosList.isEmpty
+                ? _buildEmptyView()
+                : _buildSOSList(),
           ),
         ],
       ),
@@ -265,16 +270,28 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
-            child: _statCard('Đang hoạt động', active.toString(), AppColors.danger),
+            child: _statCard(
+              'Đang hoạt động',
+              active.toString(),
+              AppColors.danger,
+            ),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
-            child: _statCard('Đã xử lý', resolved.toString(), AppColors.success),
+            child: _statCard(
+              'Đã xử lý',
+              resolved.toString(),
+              AppColors.success,
+            ),
           ),
           if (avgResponseTime > 0) ...[
             const SizedBox(width: AppSpacing.sm),
             Expanded(
-              child: _statCard('TB phản hồi', '${avgResponseTime}m', Colors.orange),
+              child: _statCard(
+                'TB phản hồi',
+                '${avgResponseTime}m',
+                Colors.orange,
+              ),
             ),
           ],
         ],
@@ -348,9 +365,7 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
       children: [
         Text(
           'Trẻ em:',
-          style: AppTypography.label.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTypography.label.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
@@ -358,17 +373,11 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
             value: _selectedChildId,
             isExpanded: true,
             items: [
-              const DropdownMenuItem(
-                value: null,
-                child: Text('Tất cả trẻ em'),
-              ),
+              const DropdownMenuItem(value: null, child: Text('Tất cả trẻ em')),
               ..._children.map((child) {
                 final childId = child['_id'] ?? child['id'] ?? '';
                 final childName = child['name'] ?? child['fullName'] ?? 'Trẻ';
-                return DropdownMenuItem(
-                  value: childId,
-                  child: Text(childName),
-                );
+                return DropdownMenuItem(value: childId, child: Text(childName));
               }),
             ],
             onChanged: (value) {
@@ -389,9 +398,7 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
       children: [
         Text(
           'Trạng thái:',
-          style: AppTypography.label.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTypography.label.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: AppSpacing.sm),
         SingleChildScrollView(
@@ -424,16 +431,16 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
         setState(() => _selectedStatus = statusValue);
         _loadSOSHistory(refresh: true);
       },
-      backgroundColor: isSelected ? chipColor.withOpacity(0.1) : AppColors.surface,
+      backgroundColor: isSelected
+          ? chipColor.withOpacity(0.1)
+          : AppColors.surface,
       selectedColor: chipColor.withOpacity(0.2),
       checkmarkColor: chipColor,
       labelStyle: TextStyle(
         color: isSelected ? chipColor : AppColors.textSecondary,
         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
       ),
-      side: BorderSide(
-        color: isSelected ? chipColor : AppColors.divider,
-      ),
+      side: BorderSide(color: isSelected ? chipColor : AppColors.divider),
     );
   }
 
@@ -443,9 +450,7 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
       children: [
         Text(
           'Thời gian:',
-          style: AppTypography.label.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTypography.label.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: AppSpacing.sm),
         SingleChildScrollView(
@@ -476,7 +481,9 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
         HapticFeedback.selectionClick();
         _applyDateFilter(value);
       },
-      backgroundColor: isSelected ? AppColors.parentPrimary.withOpacity(0.1) : AppColors.surface,
+      backgroundColor: isSelected
+          ? AppColors.parentPrimary.withOpacity(0.1)
+          : AppColors.surface,
       selectedColor: AppColors.parentPrimary.withOpacity(0.2),
       checkmarkColor: AppColors.parentPrimary,
       labelStyle: TextStyle(
@@ -552,10 +559,7 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
       elevation: 1,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        side: BorderSide(
-          color: statusColor.withOpacity(0.2),
-          width: 1.5,
-        ),
+        side: BorderSide(color: statusColor.withOpacity(0.2), width: 1.5),
       ),
       child: InkWell(
         onTap: () {
@@ -563,9 +567,8 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => SOSAlertScreen(
-                sosId: sos['_id'] ?? sos['id'] ?? '',
-              ),
+              builder: (context) =>
+                  SOSAlertScreen(sosId: sos['_id'] ?? sos['id'] ?? ''),
             ),
           );
         },
@@ -631,11 +634,7 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(
-                            Icons.cancel,
-                            size: 12,
-                            color: Colors.orange,
-                          ),
+                          Icon(Icons.cancel, size: 12, color: Colors.orange),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
@@ -713,17 +712,11 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.history,
-            size: 64,
-            color: AppColors.textTertiary,
-          ),
+          Icon(Icons.history, size: 64, color: AppColors.textTertiary),
           const SizedBox(height: AppSpacing.lg),
           Text(
             'Chưa có SOS nào',
-            style: AppTypography.h3.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            style: AppTypography.h3.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
@@ -744,17 +737,11 @@ class _SOSHistoryScreenState extends State<SOSHistoryScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: AppColors.danger,
-            ),
+            Icon(Icons.error_outline, size: 64, color: AppColors.danger),
             const SizedBox(height: AppSpacing.lg),
             Text(
               'Không thể tải lịch sử',
-              style: AppTypography.h3.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.h3.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(

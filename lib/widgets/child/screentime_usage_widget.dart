@@ -65,7 +65,9 @@ class _ScreenTimeUsageWidgetState extends State<ScreenTimeUsageWidget> {
     final remainingHours = remaining ~/ 60;
     final remainingMinutes = remaining % 60;
 
-    final percent = _dailyLimit > 0 ? (_todayUsage / _dailyLimit).clamp(0.0, 1.0) : 0.0;
+    final percent = _dailyLimit > 0
+        ? (_todayUsage / _dailyLimit).clamp(0.0, 1.0)
+        : 0.0;
 
     Color progressColor;
     if (percent < 0.8) {
@@ -97,9 +99,7 @@ class _ScreenTimeUsageWidgetState extends State<ScreenTimeUsageWidget> {
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   'Thời Gian Màn Hình',
-                  style: AppTypography.h3.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTypography.h3.copyWith(fontWeight: FontWeight.w700),
                 ),
               ],
             ),

@@ -3,7 +3,6 @@ import 'package:safekids_app/services/battery_service.dart';
 
 void main() {
   group('BatteryService - AC 2.6.2: Battery Level Monitoring', () {
-    
     test('getBatteryStatus returns correct status strings', () {
       // Test battery status categorization
       expect('Bình thường', equals('Bình thường'));
@@ -15,16 +14,16 @@ void main() {
     test('estimatedDrainPerHour returns correct values per battery level', () {
       // Default 100% = 2.0% per hour
       expect(2.0, equals(2.0));
-      
+
       // >50% = 2.0% per hour
       expect(2.0, equals(2.0));
-      
+
       // 20-50% = 1.5% per hour
       expect(1.5, equals(1.5));
-      
+
       // 10-20% = 0.8% per hour
       expect(0.8, equals(0.8));
-      
+
       // <10% = 0.5% per hour
       expect(0.5, equals(0.5));
     });
@@ -33,7 +32,7 @@ void main() {
       final instance1 = BatteryService();
       final instance2 = BatteryService();
       final instance3 = BatteryService.instance;
-      
+
       expect(identical(instance1, instance2), true);
       expect(identical(instance2, instance3), true);
     });
@@ -55,11 +54,11 @@ void main() {
 
     test('onBatteryChanged callback can be set', () {
       final batteryService = BatteryService();
-      
+
       batteryService.onBatteryChanged = (level) {
         // Callback set successfully
       };
-      
+
       expect(batteryService.onBatteryChanged, isNotNull);
     });
   });

@@ -19,13 +19,12 @@ void main() {
       timestamp: DateTime.now().subtract(const Duration(hours: 2)),
     );
 
-    testWidgets('WIDGET-001: Renders enter action with correct icon and text',
-        (WidgetTester tester) async {
+    testWidgets('WIDGET-001: Renders enter action with correct icon and text', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AlertListItem(alert: testAlert),
-          ),
+          home: Scaffold(body: AlertListItem(alert: testAlert)),
         ),
       );
 
@@ -34,8 +33,9 @@ void main() {
       expect(find.text('An toàn'), findsOneWidget);
     });
 
-    testWidgets('WIDGET-002: Renders exit action with correct icon',
-        (WidgetTester tester) async {
+    testWidgets('WIDGET-002: Renders exit action with correct icon', (
+      WidgetTester tester,
+    ) async {
       final exitAlert = GeofenceAlertModel(
         id: 'alert-2',
         action: 'exit',
@@ -51,9 +51,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AlertListItem(alert: exitAlert),
-          ),
+          home: Scaffold(body: AlertListItem(alert: exitAlert)),
         ),
       );
 
@@ -61,8 +59,9 @@ void main() {
       expect(find.text('An đã rời khỏi Nhà'), findsOneWidget);
     });
 
-    testWidgets('WIDGET-003: Danger zone displays with warning label',
-        (WidgetTester tester) async {
+    testWidgets('WIDGET-003: Danger zone displays with warning label', (
+      WidgetTester tester,
+    ) async {
       final dangerAlert = GeofenceAlertModel(
         id: 'alert-3',
         action: 'enter',
@@ -78,17 +77,16 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AlertListItem(alert: dangerAlert),
-          ),
+          home: Scaffold(body: AlertListItem(alert: dangerAlert)),
         ),
       );
 
       expect(find.text('Nguy hiểm'), findsOneWidget);
     });
 
-    testWidgets('WIDGET-004: Timestamp formats recent alerts correctly',
-        (WidgetTester tester) async {
+    testWidgets('WIDGET-004: Timestamp formats recent alerts correctly', (
+      WidgetTester tester,
+    ) async {
       final recentAlert = GeofenceAlertModel(
         id: 'alert-4',
         action: 'enter',
@@ -104,17 +102,16 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AlertListItem(alert: recentAlert),
-          ),
+          home: Scaffold(body: AlertListItem(alert: recentAlert)),
         ),
       );
 
       expect(find.text('30 phút trước'), findsOneWidget);
     });
 
-    testWidgets('WIDGET-005: Timestamp formats older alerts with date',
-        (WidgetTester tester) async {
+    testWidgets('WIDGET-005: Timestamp formats older alerts with date', (
+      WidgetTester tester,
+    ) async {
       final oldAlert = GeofenceAlertModel(
         id: 'alert-5',
         action: 'enter',
@@ -130,9 +127,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AlertListItem(alert: oldAlert),
-          ),
+          home: Scaffold(body: AlertListItem(alert: oldAlert)),
         ),
       );
 
@@ -140,17 +135,15 @@ void main() {
       expect(finder, findsWidgets);
     });
 
-    testWidgets('WIDGET-006: OnTap callback triggers on list tile tap',
-        (WidgetTester tester) async {
+    testWidgets('WIDGET-006: OnTap callback triggers on list tile tap', (
+      WidgetTester tester,
+    ) async {
       bool tapped = false;
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: AlertListItem(
-              alert: testAlert,
-              onTap: () => tapped = true,
-            ),
+            body: AlertListItem(alert: testAlert, onTap: () => tapped = true),
           ),
         ),
       );
@@ -159,13 +152,12 @@ void main() {
       expect(tapped, true);
     });
 
-    testWidgets('WIDGET-007: Renders without crash when onTap is null',
-        (WidgetTester tester) async {
+    testWidgets('WIDGET-007: Renders without crash when onTap is null', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AlertListItem(alert: testAlert),
-          ),
+          home: Scaffold(body: AlertListItem(alert: testAlert)),
         ),
       );
 
@@ -174,26 +166,25 @@ void main() {
       expect(find.byType(ListTile), findsOneWidget);
     });
 
-    testWidgets('WIDGET-008: Avatar displays with correct color for enter/exit',
-        (WidgetTester tester) async {
+    testWidgets(
+      'WIDGET-008: Avatar displays with correct color for enter/exit',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(body: AlertListItem(alert: testAlert)),
+          ),
+        );
+
+        expect(find.byType(CircleAvatar), findsOneWidget);
+      },
+    );
+
+    testWidgets('WIDGET-009: Accessibility - Text content readable', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AlertListItem(alert: testAlert),
-          ),
-        ),
-      );
-
-      expect(find.byType(CircleAvatar), findsOneWidget);
-    });
-
-    testWidgets('WIDGET-009: Accessibility - Text content readable',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: AlertListItem(alert: testAlert),
-          ),
+          home: Scaffold(body: AlertListItem(alert: testAlert)),
         ),
       );
 
@@ -206,13 +197,15 @@ void main() {
       expect(geofence, findsOneWidget);
     });
 
-    testWidgets('WIDGET-010: Long names truncate gracefully',
-        (WidgetTester tester) async {
+    testWidgets('WIDGET-010: Long names truncate gracefully', (
+      WidgetTester tester,
+    ) async {
       final longNameAlert = GeofenceAlertModel(
         id: 'alert-10',
         action: 'enter',
         geofenceId: 'geo-1',
-        geofenceName: 'Trường Tiểu Học Thị Trấn Nước Ngòi Thạch Hương Phú Lý Hà Nam',
+        geofenceName:
+            'Trường Tiểu Học Thị Trấn Nước Ngòi Thạch Hương Phú Lý Hà Nam',
         geofenceType: 'safe',
         childId: 'child-1',
         childName: 'Minh Khánh Hải Yên Linh',
@@ -223,9 +216,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AlertListItem(alert: longNameAlert),
-          ),
+          home: Scaffold(body: AlertListItem(alert: longNameAlert)),
         ),
       );
 

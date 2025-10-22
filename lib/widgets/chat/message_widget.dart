@@ -33,7 +33,9 @@ class MessageWidget extends StatelessWidget {
             horizontal: AppSpacing.md,
             vertical: AppSpacing.xs,
           ),
-          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.7,
+          ),
           padding: EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
             color: isOwn ? AppColors.childPrimary : Colors.grey[200],
@@ -52,8 +54,9 @@ class MessageWidget extends StatelessWidget {
             ],
           ),
           child: Column(
-            crossAxisAlignment:
-                isOwn ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment: isOwn
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
             children: [
               if (isDeleted)
                 Text(
@@ -108,56 +111,53 @@ class MessageWidget extends StatelessWidget {
     return Wrap(
       spacing: 4,
       runSpacing: 4,
-      children: List.generate(
-        images.length,
-        (index) {
-          final image = images[index] as Map<String, dynamic>;
-          final imageUrl = image['url'] as String?;
-          final caption = image['caption'] as String? ?? '';
+      children: List.generate(images.length, (index) {
+        final image = images[index] as Map<String, dynamic>;
+        final imageUrl = image['url'] as String?;
+        final caption = image['caption'] as String? ?? '';
 
-          return GestureDetector(
-            onTap: () => _showImageFullscreen(imageUrl),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
+        return GestureDetector(
+          onTap: () => _showImageFullscreen(imageUrl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  image: DecorationImage(
+                    image: NetworkImage(imageUrl ?? ''),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                child: imageUrl == null
+                    ? Center(
+                        child: Icon(
+                          Icons.image_not_supported,
+                          color: Colors.grey,
+                        ),
+                      )
+                    : null,
+              ),
+              if (caption.isNotEmpty)
                 Container(
                   width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    image: DecorationImage(
-                      image: NetworkImage(imageUrl ?? ''),
-                      fit: BoxFit.cover,
+                  padding: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+                  child: Text(
+                    caption,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.overline.copyWith(
+                      fontSize: 9,
+                      color: isOwn ? Colors.white70 : Colors.grey[600],
                     ),
                   ),
-                  child: imageUrl == null
-                      ? Center(
-                          child: Icon(
-                            Icons.image_not_supported,
-                            color: Colors.grey,
-                          ),
-                        )
-                      : null,
                 ),
-                if (caption.isNotEmpty)
-                  Container(
-                    width: 100,
-                    padding: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
-                    child: Text(
-                      caption,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTypography.overline.copyWith(
-                        fontSize: 9,
-                        color: isOwn ? Colors.white70 : Colors.grey[600],
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          );
-        },
-      ),
+            ],
+          ),
+        );
+      }),
     );
   }
 

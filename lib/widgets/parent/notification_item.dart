@@ -91,10 +91,15 @@ class _NotificationItemWidgetState extends State<NotificationItemWidget>
     final isAlert = widget.item.category == NotificationCategory.alert;
 
     return SlideTransition(
-      position: Tween<Offset>(begin: Offset.zero, end: const Offset(1.5, 0))
-          .animate(_dismissController),
+      position: Tween<Offset>(
+        begin: Offset.zero,
+        end: const Offset(1.5, 0),
+      ).animate(_dismissController),
       child: FadeTransition(
-        opacity: Tween<double>(begin: 1.0, end: 0.0).animate(_dismissController),
+        opacity: Tween<double>(
+          begin: 1.0,
+          end: 0.0,
+        ).animate(_dismissController),
         child: Container(
           margin: EdgeInsets.only(bottom: AppSpacing.sm),
           padding: EdgeInsets.all(AppSpacing.md),
@@ -143,7 +148,11 @@ class _NotificationItemWidgetState extends State<NotificationItemWidget>
                             ]
                           : [],
                     ),
-                    child: Icon(_getCategoryIcon(), color: categoryColor, size: 22),
+                    child: Icon(
+                      _getCategoryIcon(),
+                      color: categoryColor,
+                      size: 22,
+                    ),
                   ),
                   SizedBox(width: AppSpacing.md),
                   // Main Content
@@ -154,7 +163,9 @@ class _NotificationItemWidgetState extends State<NotificationItemWidget>
                         Text(
                           '${widget.item.childName} ${widget.item.title}',
                           style: AppTypography.label.copyWith(
-                            fontWeight: isAlert ? FontWeight.w600 : FontWeight.w500,
+                            fontWeight: isAlert
+                                ? FontWeight.w600
+                                : FontWeight.w500,
                             color: isAlert
                                 ? AppColors.danger
                                 : AppColors.textPrimary,
@@ -218,8 +229,9 @@ class _NotificationItemWidgetState extends State<NotificationItemWidget>
                           foregroundColor: categoryColor,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusSm),
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.radiusSm,
+                            ),
                             side: BorderSide(
                               color: categoryColor.withOpacity(0.3),
                               width: 1.5,
@@ -251,8 +263,9 @@ class _NotificationItemWidgetState extends State<NotificationItemWidget>
                           width: 1,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusSm),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusSm,
+                          ),
                         ),
                         padding: EdgeInsets.symmetric(
                           horizontal: AppSpacing.md,

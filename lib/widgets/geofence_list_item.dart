@@ -9,7 +9,7 @@ class GeofenceListItem extends StatefulWidget {
   final VoidCallback onTap;
   final ValueChanged<bool> onToggle;
   final VoidCallback onDelete;
-  
+
   const GeofenceListItem({
     Key? key,
     required this.geofence,
@@ -39,7 +39,10 @@ class _GeofenceListItemState extends State<GeofenceListItem> {
       elevation: widget.isSelected ? 6 : 2,
       color: widget.isSelected ? Colors.teal.withOpacity(0.1) : Colors.white,
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
         leading: CircleAvatar(
           radius: 24,
           backgroundColor: _getGeofenceTypeColor(),
@@ -62,21 +65,22 @@ class _GeofenceListItemState extends State<GeofenceListItem> {
             const SizedBox(height: 4),
             Text(
               'Bán kính: ${widget.geofence.radius}m',
-              style: AppTypography.captionSmall.copyWith(color: Colors.grey.shade600),
+              style: AppTypography.captionSmall.copyWith(
+                color: Colors.grey.shade600,
+              ),
             ),
             const SizedBox(height: 2),
             Row(
               children: [
-                Icon(
-                  Icons.people,
-                  size: 14,
-                  color: Colors.blue.shade400,
-                ),
+                Icon(Icons.people, size: 14, color: Colors.blue.shade400),
                 const SizedBox(width: 4),
                 Text(
                   '${widget.geofence.linkedChildren?.length ?? 0} trẻ',
-                  style: AppTypography.captionSmall.copyWith(color: Colors.blue.shade600),
-                ),              ],
+                  style: AppTypography.captionSmall.copyWith(
+                    color: Colors.blue.shade600,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -94,14 +98,11 @@ class _GeofenceListItemState extends State<GeofenceListItem> {
               activeColor: Colors.teal,
               inactiveThumbColor: Colors.grey.shade400,
             ),
-            
+
             // Delete button
             if (widget.isSelected)
               IconButton(
-                icon: Icon(
-                  Icons.delete,
-                  color: Colors.red.shade400,
-                ),
+                icon: Icon(Icons.delete, color: Colors.red.shade400),
                 onPressed: () => _showDeleteConfirmDialog(context),
               ),
           ],
@@ -143,7 +144,7 @@ class _GeofenceListItemState extends State<GeofenceListItem> {
       setState(() {
         _isActive = active;
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(active ? 'Đã kích hoạt vùng' : 'Đã vô hiệu hóa vùng'),

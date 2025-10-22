@@ -31,38 +31,40 @@ class _GeofenceListScreenState extends State<GeofenceListScreen> {
     _loadGeofences();
     _loadLinkedChildren();
   }
-  
+
   Future<void> _loadLinkedChildren() async {
     try {
       final children = await _apiService.getMyChildren();
       print('[GeofenceListScreen] Loaded ${children.length} children');
-      
+
       for (var child in children) {
         print('[GeofenceListScreen] Raw child: $child');
         print('[GeofenceListScreen] Keys: ${child.keys}');
       }
-      
+
       setState(() {
-        _linkedChildren = children
-            .map((child) {
-              // API trả về childId và childName, không phải _id/name
-              final id = child['childId'] ?? child['_id'] ?? child['id'] ?? '';
-              final name = child['childName'] ?? child['name'] ?? child['fullName'] ?? 'Unknown';
-              print('[GeofenceListScreen] Creating User: id=$id, name=$name');
-              return User(
-                id: id,
-                name: name,
-                fullName: name,
-                email: child['email'] ?? '',
-                phone: child['phone'],
-                role: 'child',
-                age: child['age'],
-                createdAt: child['createdAt'] != null 
-                  ? DateTime.parse(child['createdAt'])
-                  : DateTime.now(),
-              );
-            })
-            .toList();
+        _linkedChildren = children.map((child) {
+          // API trả về childId và childName, không phải _id/name
+          final id = child['childId'] ?? child['_id'] ?? child['id'] ?? '';
+          final name =
+              child['childName'] ??
+              child['name'] ??
+              child['fullName'] ??
+              'Unknown';
+          print('[GeofenceListScreen] Creating User: id=$id, name=$name');
+          return User(
+            id: id,
+            name: name,
+            fullName: name,
+            email: child['email'] ?? '',
+            phone: child['phone'],
+            role: 'child',
+            age: child['age'],
+            createdAt: child['createdAt'] != null
+                ? DateTime.parse(child['createdAt'])
+                : DateTime.now(),
+          );
+        }).toList();
       });
     } catch (e) {
       print('[GeofenceListScreen] Error loading children: $e');
@@ -82,7 +84,7 @@ class _GeofenceListScreenState extends State<GeofenceListScreen> {
       final geofences = geofencesData
           .map((json) => Geofence.fromJson(json as Map<String, dynamic>))
           .toList();
-      
+
       setState(() {
         _geofences = geofences;
         _isLoading = false;
@@ -91,22 +93,26 @@ class _GeofenceListScreenState extends State<GeofenceListScreen> {
       print('[GeofenceListScreen] Error: $e');
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi tải vùng: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi tải vùng: $e')));
       }
     }
   }
 
   List<Geofence> get _filteredGeofences {
-    var filtered = _geofences.where((g) => _filterActive ? g.active : true).toList();
-    
+    var filtered = _geofences
+        .where((g) => _filterActive ? g.active : true)
+        .toList();
+
     if (_searchQuery.isNotEmpty) {
-      filtered = filtered.where((g) => 
-        g.name.toLowerCase().contains(_searchQuery.toLowerCase())
-      ).toList();
+      filtered = filtered
+          .where(
+            (g) => g.name.toLowerCase().contains(_searchQuery.toLowerCase()),
+          )
+          .toList();
     }
-    
+
     switch (_sortBy) {
       case 'name':
         filtered.sort((a, b) => a.name.compareTo(b.name));
@@ -115,7 +121,7 @@ class _GeofenceListScreenState extends State<GeofenceListScreen> {
         filtered.sort((a, b) => a.type.compareTo(b.type));
         break;
     }
-    
+
     return filtered;
   }
 
@@ -194,7 +200,9 @@ class _GeofenceListScreenState extends State<GeofenceListScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Xác nhận Xóa'),
-        content: Text('Bạn có chắc muốn xóa ${_selectedGeofences.length} vùng đã chọn?'),
+        content: Text(
+          'Bạn có chắc muốn xóa ${_selectedGeofences.length} vùng đã chọn?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -214,7 +222,7 @@ class _GeofenceListScreenState extends State<GeofenceListScreen> {
         for (final geofenceId in _selectedGeofences) {
           await _apiService.deleteGeofence(geofenceId);
         }
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -243,11 +251,13 @@ class _GeofenceListScreenState extends State<GeofenceListScreen> {
       for (final geofenceId in _selectedGeofences) {
         await _apiService.updateGeofenceStatus(geofenceId, active);
       }
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(active ? 'Đã kích hoạt các vùng' : 'Đã vô hiệu hóa các vùng'),
+            content: Text(
+              active ? 'Đã kích hoạt các vùng' : 'Đã vô hiệu hóa các vùng',
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -269,8 +279,6 @@ class _GeofenceListScreenState extends State<GeofenceListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
-
       body: Column(
         children: [
           // Search and filter bar
@@ -300,7 +308,9 @@ class _GeofenceListScreenState extends State<GeofenceListScreen> {
                         value: _sortBy,
                         decoration: InputDecoration(
                           labelText: 'Sắp xếp',
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -321,13 +331,18 @@ class _GeofenceListScreenState extends State<GeofenceListScreen> {
                         value: _filterActive,
                         decoration: InputDecoration(
                           labelText: 'Lọc',
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
                         items: const [
-                          DropdownMenuItem(value: true, child: Text('Đang hoạt động')),
+                          DropdownMenuItem(
+                            value: true,
+                            child: Text('Đang hoạt động'),
+                          ),
                           DropdownMenuItem(value: false, child: Text('Tất cả')),
                         ],
                         onChanged: (value) {
@@ -340,7 +355,7 @@ class _GeofenceListScreenState extends State<GeofenceListScreen> {
               ],
             ),
           ),
-          
+
           // Geofence list & create button
           Expanded(
             child: Stack(
@@ -349,49 +364,51 @@ class _GeofenceListScreenState extends State<GeofenceListScreen> {
                   child: _isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : _filteredGeofences.isEmpty
-                          ? const SizedBox.shrink()
-                          : ListView.builder(
-                              padding: const EdgeInsets.fromLTRB(0, 140, 0, 24),
-                              itemCount: _filteredGeofences.length,
-                              itemBuilder: (context, index) {
-                                final geofence = _filteredGeofences[index];
-                                return GeofenceListItem(
-                                  key: Key(geofence.id),
-                                  geofence: geofence,
-                                  isSelected: _selectedGeofences.contains(geofence.id),
-                                  onTap: () {
-                                    if (_isSelectMode) {
-                                      _toggleSelection(geofence.id);
-                                    } else {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => GeofenceMapView(
-                                            linkedChildren: _linkedChildren,
-                                            initialFocusedGeofenceId: geofence.id,
-                                            showDrawControls: false,
-                                          ),
-                                        ),
-                                      ).then((_) {
-                                        if (mounted) _loadGeofences();
-                                      });
-                                    }
-                                  },
-                                  onToggle: (isActive) {
-                                    // Toggle handled internally
-                                  },
-                                  onDelete: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Đã xóa vùng'),
-                                        backgroundColor: Colors.green,
+                      ? const SizedBox.shrink()
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(0, 140, 0, 24),
+                          itemCount: _filteredGeofences.length,
+                          itemBuilder: (context, index) {
+                            final geofence = _filteredGeofences[index];
+                            return GeofenceListItem(
+                              key: Key(geofence.id),
+                              geofence: geofence,
+                              isSelected: _selectedGeofences.contains(
+                                geofence.id,
+                              ),
+                              onTap: () {
+                                if (_isSelectMode) {
+                                  _toggleSelection(geofence.id);
+                                } else {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => GeofenceMapView(
+                                        linkedChildren: _linkedChildren,
+                                        initialFocusedGeofenceId: geofence.id,
+                                        showDrawControls: false,
                                       ),
-                                    );
-                                    _loadGeofences();
-                                  },
-                                );
+                                    ),
+                                  ).then((_) {
+                                    if (mounted) _loadGeofences();
+                                  });
+                                }
                               },
-                            ),
+                              onToggle: (isActive) {
+                                // Toggle handled internally
+                              },
+                              onDelete: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Đã xóa vùng'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                                _loadGeofences();
+                              },
+                            );
+                          },
+                        ),
                 ),
                 AnimatedAlign(
                   duration: const Duration(milliseconds: 400),

@@ -8,7 +8,8 @@ import '../screens/child/child_home_screen.dart';
 /// Screen Time Lock Service (AC 5.3.1, 5.3.7, 5.3.8) - Story 5.3
 /// Enforces screen time limits and bedtime mode with lock screen overlay
 class ScreenTimeLockService {
-  static final ScreenTimeLockService _instance = ScreenTimeLockService._internal();
+  static final ScreenTimeLockService _instance =
+      ScreenTimeLockService._internal();
   factory ScreenTimeLockService() => _instance;
   ScreenTimeLockService._internal();
 
@@ -40,8 +41,10 @@ class ScreenTimeLockService {
 
       // Get config
       final dailyLimit = prefs.getInt('screentime_daily_limit') ?? 120;
-      final bedtimeEnabled = prefs.getBool('screentime_bedtime_enabled') ?? false;
-      final bedtimeStart = prefs.getString('screentime_bedtime_start') ?? '21:00';
+      final bedtimeEnabled =
+          prefs.getBool('screentime_bedtime_enabled') ?? false;
+      final bedtimeStart =
+          prefs.getString('screentime_bedtime_start') ?? '21:00';
       final bedtimeEnd = prefs.getString('screentime_bedtime_end') ?? '07:00';
 
       // Get current usage
@@ -74,7 +77,8 @@ class ScreenTimeLockService {
     final nowMinutes = now.hour * 60 + now.minute;
 
     final startParts = startStr.split(':');
-    final startMinutes = int.parse(startParts[0]) * 60 + int.parse(startParts[1]);
+    final startMinutes =
+        int.parse(startParts[0]) * 60 + int.parse(startParts[1]);
 
     final endParts = endStr.split(':');
     final endMinutes = int.parse(endParts[0]) * 60 + int.parse(endParts[1]);

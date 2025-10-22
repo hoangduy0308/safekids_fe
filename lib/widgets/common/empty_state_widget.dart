@@ -22,7 +22,7 @@ class EmptyStateWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final emptyColor = color ?? AppColors.textSecondary;
-    
+
     return Center(
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 32, horizontal: 24),
@@ -35,10 +35,7 @@ class EmptyStateWidget extends StatelessWidget {
               duration: Duration(milliseconds: 600),
               curve: Curves.elasticOut,
               builder: (context, value, child) {
-                return Transform.scale(
-                  scale: value,
-                  child: child,
-                );
+                return Transform.scale(scale: value, child: child);
               },
               child: Container(
                 width: 100,
@@ -54,32 +51,35 @@ class EmptyStateWidget extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Icon(
-                  icon,
-                  size: 48,
-                  color: emptyColor.withOpacity(0.8),
-                ),
+                child: Icon(icon, size: 48, color: emptyColor.withOpacity(0.8)),
               ),
             ),
-            
+
             SizedBox(height: 24),
-            
+
             // Title
             Text(
               title,
-              style: AppTypography.h3.copyWith(fontWeight: FontWeight.w700, color: AppColors.textPrimary, letterSpacing: -0.3),
+              style: AppTypography.h3.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+                letterSpacing: -0.3,
+              ),
               textAlign: TextAlign.center,
             ),
-            
+
             SizedBox(height: 8),
-            
+
             // Message
             Text(
               message,
-              style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary, height: 1.5),
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
               textAlign: TextAlign.center,
             ),
-            
+
             // Action button (optional)
             if (actionText != null && onAction != null) ...[
               SizedBox(height: 24),
@@ -88,8 +88,11 @@ class EmptyStateWidget extends StatelessWidget {
                 icon: Icon(Icons.add, size: 20),
                 label: Text(
                   actionText!,
-                  style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600),
-                ),                style: TextButton.styleFrom(
+                  style: AppTypography.bodySmall.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: TextButton.styleFrom(
                   foregroundColor: emptyColor,
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: RoundedRectangleBorder(

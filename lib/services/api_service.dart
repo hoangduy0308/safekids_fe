@@ -20,9 +20,9 @@ class ApiService {
   /// Get authenticated headers
   Future<Map<String, String>> _getHeaders() async {
     final token = await _getToken();
-    final maskedToken = token != null && token.length > 8 
-      ? '${token.substring(0, 4)}...${token.substring(token.length - 4)}' 
-      : '***';
+    final maskedToken = token != null && token.length > 8
+        ? '${token.substring(0, 4)}...${token.substring(token.length - 4)}'
+        : '***';
     print('[ApiService] Auth token: $maskedToken'); // Masked for security
     return {
       'Content-Type': 'application/json',
@@ -34,7 +34,8 @@ class ApiService {
   void _handleError(http.Response response) {
     if (response.statusCode >= 400) {
       final body = jsonDecode(response.body);
-      final message = body['message'] ?? body['error'] ?? 'Unknown error occurred';
+      final message =
+          body['message'] ?? body['error'] ?? 'Unknown error occurred';
       throw Exception(message);
     }
   }
@@ -159,7 +160,9 @@ class ApiService {
     try {
       final headers = await _getHeaders();
       final response = await http.get(
-        Uri.parse('${ApiConfig.screentimeUsage}/$childId/history?startDate=$startDate&endDate=$endDate'),
+        Uri.parse(
+          '${ApiConfig.screentimeUsage}/$childId/history?startDate=$startDate&endDate=$endDate',
+        ),
         headers: headers,
       );
 
@@ -181,7 +184,9 @@ class ApiService {
     try {
       final headers = await _getHeaders();
       final response = await http.get(
-        Uri.parse('${ApiConfig.screentimeUsage}/$childId/stats?startDate=$startDate&endDate=$endDate'),
+        Uri.parse(
+          '${ApiConfig.screentimeUsage}/$childId/stats?startDate=$startDate&endDate=$endDate',
+        ),
         headers: headers,
       );
 
@@ -203,12 +208,12 @@ class ApiService {
     try {
       final headers = await _getHeaders();
       String url = '${ApiConfig.screentimeUsage}/$childId';
-      
+
       if (startDate != null || endDate != null) {
         final queryParams = <String, String>{};
         if (startDate != null) queryParams['startDate'] = startDate;
         if (endDate != null) queryParams['endDate'] = endDate;
-        
+
         if (queryParams.isNotEmpty) {
           final queryString = queryParams.entries
               .map((e) => '${e.key}=${e.value}')
@@ -217,10 +222,7 @@ class ApiService {
         }
       }
 
-      final response = await http.get(
-        Uri.parse(url),
-        headers: headers,
-      );
+      final response = await http.get(Uri.parse(url), headers: headers);
 
       _handleError(response);
       final data = jsonDecode(response.body);
@@ -236,10 +238,7 @@ class ApiService {
   Future<Map<String, dynamic>> get(String endpoint) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.get(
-        Uri.parse(endpoint),
-        headers: headers,
-      );
+      final response = await http.get(Uri.parse(endpoint), headers: headers);
 
       _handleError(response);
       return jsonDecode(response.body);
@@ -249,7 +248,10 @@ class ApiService {
   }
 
   /// Make a generic POST request
-  Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> body) async {
+  Future<Map<String, dynamic>> post(
+    String endpoint,
+    Map<String, dynamic> body,
+  ) async {
     try {
       final headers = await _getHeaders();
       final response = await http.post(
@@ -266,7 +268,10 @@ class ApiService {
   }
 
   /// Make a generic PUT request
-  Future<Map<String, dynamic>> put(String endpoint, Map<String, dynamic> body) async {
+  Future<Map<String, dynamic>> put(
+    String endpoint,
+    Map<String, dynamic> body,
+  ) async {
     try {
       final headers = await _getHeaders();
       final response = await http.put(
@@ -286,10 +291,7 @@ class ApiService {
   Future<Map<String, dynamic>> delete(String endpoint) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.delete(
-        Uri.parse(endpoint),
-        headers: headers,
-      );
+      final response = await http.delete(Uri.parse(endpoint), headers: headers);
 
       _handleError(response);
       return jsonDecode(response.body);
@@ -312,9 +314,7 @@ class ApiService {
     try {
       final response = await http.post(
         Uri.parse(ApiConfig.register),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'fullName': fullName,
           'email': email,
@@ -334,11 +334,13 @@ class ApiService {
         throw Exception(body['error'] ?? 'Email already registered');
       } else if (response.statusCode >= 400) {
         final body = jsonDecode(response.body);
-        throw Exception(body['error'] ?? body['message'] ?? 'Registration failed');
+        throw Exception(
+          body['error'] ?? body['message'] ?? 'Registration failed',
+        );
       }
 
       final data = jsonDecode(response.body);
-      
+
       // Auto-save token if registration successful
       if (data['token'] != null) {
         await _saveToken(data['token']);
@@ -359,9 +361,7 @@ class ApiService {
     try {
       final response = await http.post(
         Uri.parse(ApiConfig.login),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': email,
           'password': password,
@@ -379,7 +379,7 @@ class ApiService {
       }
 
       final data = jsonDecode(response.body);
-      
+
       // Auto-save token if login successful
       if (data['token'] != null) {
         await _saveToken(data['token']);
@@ -508,7 +508,7 @@ class ApiService {
         Uri.parse(ApiConfig.getProfile),
         headers: headers,
       );
-      
+
       _handleError(response);
       final data = jsonDecode(response.body);
       return data['user'];
@@ -534,7 +534,7 @@ class ApiService {
         headers: headers,
         body: jsonEncode(body),
       );
-      
+
       _handleError(response);
       final data = jsonDecode(response.body);
       return data['user'];
@@ -553,7 +553,7 @@ class ApiService {
         headers: headers,
         body: jsonEncode({'fcmToken': fcmToken}),
       );
-      
+
       _handleError(response);
     } catch (e) {
       print('Update FCM token error: $e');
@@ -605,7 +605,12 @@ class ApiService {
 
   /// Send location update (child only)
   /// Task 2.6.7: Include battery level in location payload
-  Future<void> sendLocation(double latitude, double longitude, double accuracy, {int? batteryLevel}) async {
+  Future<void> sendLocation(
+    double latitude,
+    double longitude,
+    double accuracy, {
+    int? batteryLevel,
+  }) async {
     try {
       final headers = await _getHeaders();
       final body = {
@@ -614,18 +619,18 @@ class ApiService {
         'accuracy': accuracy,
         'timestamp': DateTime.now().toIso8601String(),
       };
-      
+
       // Task 2.6.7: Add battery level if available
       if (batteryLevel != null) {
         body['batteryLevel'] = batteryLevel;
       }
-      
+
       final response = await http.post(
         Uri.parse(ApiConfig.sendLocation),
         headers: headers,
         body: jsonEncode(body),
       );
-      
+
       _handleError(response);
     } catch (e) {
       print('Send location error: $e');
@@ -641,7 +646,7 @@ class ApiService {
         Uri.parse('${ApiConfig.baseUrl}/location/child/$childId/latest'),
         headers: headers,
       );
-      
+
       _handleError(response);
       return jsonDecode(response.body);
     } catch (e) {
@@ -653,7 +658,10 @@ class ApiService {
   // Link Request Methods
 
   /// Send link request to another user
-  Future<Map<String, dynamic>> sendLinkRequest(String receiverEmail, {String? message}) async {
+  Future<Map<String, dynamic>> sendLinkRequest(
+    String receiverEmail, {
+    String? message,
+  }) async {
     try {
       final headers = await _getHeaders();
       final response = await http.post(
@@ -664,7 +672,7 @@ class ApiService {
           if (message != null) 'message': message,
         }),
       );
-      
+
       _handleError(response);
       final data = jsonDecode(response.body);
       return data['data'];
@@ -682,7 +690,7 @@ class ApiService {
         Uri.parse(ApiConfig.linkAccept(requestId)),
         headers: headers,
       );
-      
+
       _handleError(response);
       final data = jsonDecode(response.body);
       return data['data'];
@@ -700,7 +708,7 @@ class ApiService {
         Uri.parse(ApiConfig.linkReject(requestId)),
         headers: headers,
       );
-      
+
       _handleError(response);
       final data = jsonDecode(response.body);
       return data['data'];
@@ -714,12 +722,12 @@ class ApiService {
   Future<List<dynamic>> getLinkRequests({String? status}) async {
     try {
       final headers = await _getHeaders();
-      final uri = status != null 
+      final uri = status != null
           ? Uri.parse('${ApiConfig.linkRequests}?status=$status')
           : Uri.parse(ApiConfig.linkRequests);
-      
+
       final response = await http.get(uri, headers: headers);
-      
+
       _handleError(response);
       final data = jsonDecode(response.body);
       return data['data']['requests'] ?? [];
@@ -737,7 +745,7 @@ class ApiService {
         Uri.parse(ApiConfig.linkRemove(childId)),
         headers: headers,
       );
-      
+
       _handleError(response);
     } catch (e) {
       print('Remove child link error: $e');
@@ -756,12 +764,16 @@ class ApiService {
   }) async {
     try {
       final headers = await _getHeaders();
-      final uri = Uri.parse('${ApiConfig.baseUrl}/location/child/$childId/history')
-          .replace(queryParameters: {
-        'startDate': startDate,
-        'endDate': endDate,
-        'limit': limit.toString(),
-      });
+      final uri =
+          Uri.parse(
+            '${ApiConfig.baseUrl}/location/child/$childId/history',
+          ).replace(
+            queryParameters: {
+              'startDate': startDate,
+              'endDate': endDate,
+              'limit': limit.toString(),
+            },
+          );
 
       final response = await http.get(uri, headers: headers);
 
@@ -785,11 +797,9 @@ class ApiService {
   ) async {
     try {
       final headers = await _getHeaders();
-      final uri = Uri.parse('${ApiConfig.baseUrl}/location/child/$childId/stats')
-          .replace(queryParameters: {
-        'startDate': startDate,
-        'endDate': endDate,
-      });
+      final uri = Uri.parse(
+        '${ApiConfig.baseUrl}/location/child/$childId/stats',
+      ).replace(queryParameters: {'startDate': startDate, 'endDate': endDate});
 
       final response = await http.get(uri, headers: headers);
 
@@ -821,7 +831,9 @@ class ApiService {
   }
 
   /// Get geofence suggestions for a child (Story 3.5)
-  Future<List<Map<String, dynamic>>> getGeofenceSuggestions(String childId) async {
+  Future<List<Map<String, dynamic>>> getGeofenceSuggestions(
+    String childId,
+  ) async {
     try {
       final headers = await _getHeaders();
       final response = await http.get(
@@ -886,9 +898,11 @@ class ApiService {
     try {
       final headers = await _getHeaders();
       final uri = childId != null
-          ? Uri.parse('${ApiConfig.baseUrl}/geofence').replace(queryParameters: {'childId': childId})
+          ? Uri.parse(
+              '${ApiConfig.baseUrl}/geofence',
+            ).replace(queryParameters: {'childId': childId})
           : Uri.parse('${ApiConfig.baseUrl}/geofence');
-      
+
       final response = await http.get(uri, headers: headers);
 
       _handleError(response);
@@ -917,10 +931,7 @@ class ApiService {
         body: jsonEncode({
           'name': name,
           'type': type,
-          'center': {
-            'latitude': centerLat,
-            'longitude': centerLng,
-          },
+          'center': {'latitude': centerLat, 'longitude': centerLng},
           'radius': radius,
           'linkedChildren': linkedChildren,
         }),
@@ -977,7 +988,7 @@ class ApiService {
     try {
       final headers = await _getHeaders();
       final queryParams = <String, String>{};
-      
+
       if (startDate != null) queryParams['startDate'] = startDate;
       if (endDate != null) queryParams['endDate'] = endDate;
       if (childId != null) queryParams['childId'] = childId;
@@ -985,9 +996,10 @@ class ApiService {
       queryParams['limit'] = limit.toString();
       queryParams['skip'] = skip.toString();
 
-      final uri = Uri.parse('${ApiConfig.baseUrl}/geofence/alerts')
-          .replace(queryParameters: queryParams);
-      
+      final uri = Uri.parse(
+        '${ApiConfig.baseUrl}/geofence/alerts',
+      ).replace(queryParameters: queryParams);
+
       final response = await http.get(uri, headers: headers);
 
       _handleError(response);
@@ -1118,23 +1130,29 @@ class ApiService {
       if (startDate != null) queryParams['startDate'] = startDate;
       if (endDate != null) queryParams['endDate'] = endDate;
 
-      final uri = Uri.parse('${ApiConfig.baseUrl}/sos/history').replace(queryParameters: queryParams);
+      final uri = Uri.parse(
+        '${ApiConfig.baseUrl}/sos/history',
+      ).replace(queryParameters: queryParams);
       print('[SOS API] Request to: $uri');
-      
-      final response = await http.get(uri, headers: headers).timeout(
-        Duration(seconds: 30),
-        onTimeout: () {
-          throw TimeoutException('SOS history request timed out after 30 seconds');
-        },
-      );
+
+      final response = await http
+          .get(uri, headers: headers)
+          .timeout(
+            Duration(seconds: 30),
+            onTimeout: () {
+              throw TimeoutException(
+                'SOS history request timed out after 30 seconds',
+              );
+            },
+          );
 
       _handleError(response);
       final data = jsonDecode(response.body);
-      
+
       // Return data object with sosList, total, hasMore
       final resultData = data['data'] as Map<String, dynamic>? ?? {};
       print('[SOS API] Got ${resultData['sosList']?.length ?? 0} items');
-      
+
       return {
         'sosList': resultData['sosList'] ?? [],
         'total': resultData['total'] ?? 0,
@@ -1147,11 +1165,17 @@ class ApiService {
   }
 
   /// Get SOS history for specific child (legacy method)
-  Future<List<Map<String, dynamic>>> getSOSHistory(String childId, {int limit = 10, int skip = 0}) async {
+  Future<List<Map<String, dynamic>>> getSOSHistory(
+    String childId, {
+    int limit = 10,
+    int skip = 0,
+  }) async {
     try {
       final headers = await _getHeaders();
       final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/sos/history/$childId?limit=$limit&skip=$skip'),
+        Uri.parse(
+          '${ApiConfig.baseUrl}/sos/history/$childId?limit=$limit&skip=$skip',
+        ),
         headers: headers,
       );
 
@@ -1176,7 +1200,9 @@ class ApiService {
       if (startDate != null) queryParams['startDate'] = startDate;
       if (endDate != null) queryParams['endDate'] = endDate;
 
-      final uri = Uri.parse('${ApiConfig.baseUrl}/sos/stats').replace(queryParameters: queryParams);
+      final uri = Uri.parse(
+        '${ApiConfig.baseUrl}/sos/stats',
+      ).replace(queryParameters: queryParams);
       final response = await http.get(uri, headers: headers);
 
       _handleError(response);

@@ -31,7 +31,8 @@ class ChildHomeScreen extends StatefulWidget {
   State<ChildHomeScreen> createState() => _ChildHomeScreenState();
 }
 
-class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProviderStateMixin {
+class _ChildHomeScreenState extends State<ChildHomeScreen>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -52,21 +53,21 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
-    _slideAnimation = Tween<Offset>(
-      begin: Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
-    
+
+    _slideAnimation = Tween<Offset>(begin: Offset(0, 0.1), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+        );
+
     _animationController.forward();
     _initLocationTracking();
     _initSocketConnection();
@@ -140,7 +141,8 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
     try {
       final prefs = await SharedPreferences.getInstance();
       final sharingEnabled = prefs.getBool('sharingEnabled') ?? true;
-      final trackingInterval = prefs.getString('trackingInterval') ?? 'continuous';
+      final trackingInterval =
+          prefs.getString('trackingInterval') ?? 'continuous';
       final pausedStr = prefs.getString('pausedUntil');
       final pausedUntil = pausedStr != null ? DateTime.parse(pausedStr) : null;
 
@@ -158,13 +160,13 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
   void _initSocketConnection() {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final userId = authProvider.user?.id;
-    
+
     if (userId != null) {
       _socketService.connect(userId);
       _socketService.onLinkRequest = (data) {
         final requestId = data['requestId'] ?? '';
         if (_processedRequests.contains(requestId)) return;
-        
+
         if (mounted) {
           _processedRequests.add(requestId);
           _loadPendingRequestsCount();
@@ -190,7 +192,10 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
       _socketService.onLinkRemoved = (data) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${data['parentName']} đã xóa liên kết với bạn'), backgroundColor: Colors.orange),
+            SnackBar(
+              content: Text('${data['parentName']} đã xóa liên kết với bạn'),
+              backgroundColor: Colors.orange,
+            ),
           );
           authProvider.refreshUser();
         }
@@ -219,7 +224,7 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final userName = authProvider.user?.name ?? 'Bạn';
-    
+
     return Scaffold(
       backgroundColor: Color(0xFFF5F7FA),
       body: Stack(
@@ -229,7 +234,11 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [AppColors.childPrimary.withOpacity(0.05), Color(0xFFF5F7FA), Color(0xFFF5F7FA)],
+                colors: [
+                  AppColors.childPrimary.withOpacity(0.05),
+                  Color(0xFFF5F7FA),
+                  Color(0xFFF5F7FA),
+                ],
                 stops: [0.0, 0.2, 1.0],
               ),
             ),
@@ -240,7 +249,9 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
                 slivers: [
                   SliverToBoxAdapter(child: _buildMinimalHeader(authProvider)),
                   SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
-                  SliverToBoxAdapter(child: _buildPersonalizedGreeting(userName)),
+                  SliverToBoxAdapter(
+                    child: _buildPersonalizedGreeting(userName),
+                  ),
                   SliverToBoxAdapter(
                     child: ChangeNotifierProvider<LocationService>.value(
                       value: _locationService,
@@ -251,7 +262,10 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
                   SliverToBoxAdapter(
                     child: FadeTransition(
                       opacity: _fadeAnimation,
-                      child: SlideTransition(position: _slideAnimation, child: _buildSOSCard(context)),
+                      child: SlideTransition(
+                        position: _slideAnimation,
+                        child: _buildSOSCard(context),
+                      ),
                     ),
                   ),
                   SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
@@ -260,24 +274,29 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                      child: Text('Hoạt động của bạn', style: AppTypography.h3.copyWith(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                      child: Text(
+                        'Hoạt động của bạn',
+                        style: AppTypography.h3.copyWith(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
                     ),
                   ),
                   SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
                   SliverToBoxAdapter(
-                    child: FadeTransition(opacity: _fadeAnimation, child: _buildActivityGrid(context)),
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: _buildActivityGrid(context),
+                    ),
                   ),
                   SliverToBoxAdapter(child: SizedBox(height: 100)),
                 ],
               ),
             ),
           ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: _buildGlassNavBar(),
-          ),
+          Positioned(bottom: 0, left: 0, right: 0, child: _buildGlassNavBar()),
         ],
       ),
     );
@@ -286,10 +305,21 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
   Widget _buildGlassNavBar() {
     return Container(
       decoration: BoxDecoration(
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 30, spreadRadius: -5)],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 30,
+            spreadRadius: -5,
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          0,
+          AppSpacing.md,
+          AppSpacing.md,
+        ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(28.0),
           child: BackdropFilter(
@@ -316,7 +346,9 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
                         children: [
                           Icon(
                             item['icon'] as IconData,
-                            color: isSelected ? AppColors.childPrimary : AppColors.textSecondary,
+                            color: isSelected
+                                ? AppColors.childPrimary
+                                : AppColors.textSecondary,
                             size: 24,
                           ),
                           const SizedBox(height: 4),
@@ -324,8 +356,12 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
                             item['label'] as String,
                             style: TextStyle(
                               fontSize: 10,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              color: isSelected ? AppColors.childPrimary : AppColors.textSecondary,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: isSelected
+                                  ? AppColors.childPrimary
+                                  : AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -342,14 +378,28 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
   }
 
   Widget _buildMinimalHeader(AuthProvider authProvider) {
-    final linkedParents = authProvider.user?.linkedUsersData.where((u) => u['role'] == 'parent').toList() ?? [];
-    
+    final linkedParents =
+        authProvider.user?.linkedUsersData
+            .where((u) => u['role'] == 'parent')
+            .toList() ??
+        [];
+
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('SafeKids', style: AppTypography.h3.copyWith(fontSize: 24, fontWeight: FontWeight.w700, letterSpacing: -0.5)),
+          Text(
+            'SafeKids',
+            style: AppTypography.h3.copyWith(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.5,
+            ),
+          ),
           Row(
             children: [
               if (linkedParents.isNotEmpty)
@@ -358,30 +408,57 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
                   decoration: BoxDecoration(
                     color: AppColors.childPrimary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.childPrimary.withOpacity(0.2), width: 1),
+                    border: Border.all(
+                      color: AppColors.childPrimary.withOpacity(0.2),
+                      width: 1,
+                    ),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.family_restroom, color: AppColors.childPrimary, size: 14),
+                      Icon(
+                        Icons.family_restroom,
+                        color: AppColors.childPrimary,
+                        size: 14,
+                      ),
                       SizedBox(width: 4),
-                      Text('${linkedParents.length}', style: AppTypography.captionSmall.copyWith(color: AppColors.childPrimary, fontWeight: FontWeight.w600)),
+                      Text(
+                        '${linkedParents.length}',
+                        style: AppTypography.captionSmall.copyWith(
+                          color: AppColors.childPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               SizedBox(width: AppSpacing.sm),
               _buildNotificationButton(),
               SizedBox(width: AppSpacing.sm),
-              _buildSoftIconButton(icon: Icons.settings, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LocationSettingsScreen()))),
+              _buildSoftIconButton(
+                icon: Icons.settings,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const LocationSettingsScreen(),
+                  ),
+                ),
+              ),
               SizedBox(width: AppSpacing.sm),
-              _buildSoftIconButton(icon: Icons.logout_rounded, onTap: () => _showLogoutDialog(context, authProvider)),
+              _buildSoftIconButton(
+                icon: Icons.logout_rounded,
+                onTap: () => _showLogoutDialog(context, authProvider),
+              ),
             ],
           ),
         ],
       ),
     );
   }
-  
-  Widget _buildSoftIconButton({required IconData icon, required VoidCallback onTap}) {
+
+  Widget _buildSoftIconButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -390,7 +467,18 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
         decoration: BoxDecoration(
           color: Color(0xFFF5F7FA),
           shape: BoxShape.circle,
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), offset: Offset(4, 4), blurRadius: 8), BoxShadow(color: Colors.white.withOpacity(0.8), offset: Offset(-2, -2), blurRadius: 4)],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              offset: Offset(4, 4),
+              blurRadius: 8,
+            ),
+            BoxShadow(
+              color: Colors.white.withOpacity(0.8),
+              offset: Offset(-2, -2),
+              blurRadius: 4,
+            ),
+          ],
         ),
         child: Icon(icon, size: 22, color: AppColors.textPrimary),
       ),
@@ -430,9 +518,24 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
             decoration: BoxDecoration(
               color: Color(0xFFF5F7FA),
               shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), offset: Offset(4, 4), blurRadius: 8), BoxShadow(color: Colors.white.withOpacity(0.8), offset: Offset(-2, -2), blurRadius: 4)],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  offset: Offset(4, 4),
+                  blurRadius: 8,
+                ),
+                BoxShadow(
+                  color: Colors.white.withOpacity(0.8),
+                  offset: Offset(-2, -2),
+                  blurRadius: 4,
+                ),
+              ],
             ),
-            child: Icon(Icons.notifications_rounded, size: 22, color: AppColors.textPrimary),
+            child: Icon(
+              Icons.notifications_rounded,
+              size: 22,
+              color: AppColors.textPrimary,
+            ),
           ),
           if (_pendingRequestsCount > 0)
             Positioned(
@@ -443,7 +546,12 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
                 decoration: BoxDecoration(
                   color: AppColors.danger,
                   shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: AppColors.danger.withOpacity(0.4), blurRadius: 8)],
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.danger.withOpacity(0.4),
+                      blurRadius: 8,
+                    ),
+                  ],
                 ),
                 child: Text(
                   _pendingRequestsCount.toString(),
@@ -468,15 +576,35 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
       child: RichText(
         text: TextSpan(
           children: [
-            TextSpan(text: _getGreeting(), style: AppTypography.h1.copyWith(fontWeight: FontWeight.w300, color: AppColors.textSecondary, letterSpacing: -0.5)),
-            TextSpan(text: ', ', style: AppTypography.h1.copyWith(fontWeight: FontWeight.w300, color: AppColors.textSecondary)),
-            TextSpan(text: userName, style: AppTypography.h1.copyWith(fontWeight: FontWeight.w700, color: AppColors.textPrimary, letterSpacing: -0.5)),
+            TextSpan(
+              text: _getGreeting(),
+              style: AppTypography.h1.copyWith(
+                fontWeight: FontWeight.w300,
+                color: AppColors.textSecondary,
+                letterSpacing: -0.5,
+              ),
+            ),
+            TextSpan(
+              text: ', ',
+              style: AppTypography.h1.copyWith(
+                fontWeight: FontWeight.w300,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            TextSpan(
+              text: userName,
+              style: AppTypography.h1.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+                letterSpacing: -0.5,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
-  
+
   Widget _buildScreenTimeWidget() {
     return const Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -489,9 +617,25 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
       margin: EdgeInsets.symmetric(horizontal: AppSpacing.md),
       height: 140,
       decoration: BoxDecoration(
-        gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFFFF5252), Color(0xFFE91E63)]),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFF5252), Color(0xFFE91E63)],
+        ),
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: AppColors.danger.withOpacity(0.4), blurRadius: 24, offset: Offset(0, 8), spreadRadius: 2), BoxShadow(color: AppColors.danger.withOpacity(0.2), blurRadius: 40, offset: Offset(0, 16))],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.danger.withOpacity(0.4),
+            blurRadius: 24,
+            offset: Offset(0, 8),
+            spreadRadius: 2,
+          ),
+          BoxShadow(
+            color: AppColors.danger.withOpacity(0.2),
+            blurRadius: 40,
+            offset: Offset(0, 16),
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -499,14 +643,31 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
           onTap: () => _handleSOSPress(context),
           borderRadius: BorderRadius.circular(24),
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.md,
+            ),
             child: Row(
               children: [
                 Container(
                   width: 80,
                   height: 80,
-                  decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: Offset(0, 4))]),
-                  child: Icon(Icons.emergency, color: Color(0xFFFF5252), size: 44),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.emergency,
+                    color: Color(0xFFFF5252),
+                    size: 44,
+                  ),
                 ),
                 SizedBox(width: AppSpacing.lg),
                 Expanded(
@@ -516,19 +677,39 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
                     children: [
                       Text(
                         'KHẨN CẤP',
-                        style: AppTypography.overline.copyWith(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.5),
+                        style: AppTypography.overline.copyWith(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.5,
+                        ),
                       ),
                       SizedBox(height: 4),
-                      Text('Nút SOS', style: AppTypography.h2.copyWith(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 28, height: 1.1)),
+                      Text(
+                        'Nút SOS',
+                        style: AppTypography.h2.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 28,
+                          height: 1.1,
+                        ),
+                      ),
                       SizedBox(height: 4),
                       Text(
                         'Nhấn để gửi cảnh báo ngay',
-                        style: AppTypography.caption.copyWith(color: Colors.white.withOpacity(0.95), fontWeight: FontWeight.w500),
+                        style: AppTypography.caption.copyWith(
+                          color: Colors.white.withOpacity(0.95),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 20),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ],
             ),
           ),
@@ -542,13 +723,28 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: Column(
         children: [
-          _buildActivityCard(Icons.access_time_rounded, 'Thời gian sử dụng', 'Xem thời gian bạn đã dùng thiết bị', AppColors.childAccent),
+          _buildActivityCard(
+            Icons.access_time_rounded,
+            'Thời gian sử dụng',
+            'Xem thời gian bạn đã dùng thiết bị',
+            AppColors.childAccent,
+          ),
           SizedBox(height: AppSpacing.md),
           _buildChatCard(context),
           SizedBox(height: AppSpacing.md),
-          _buildActivityCard(Icons.assignment_rounded, 'Nhiệm vụ', 'Hoàn thành nhiệm vụ hàng ngày', AppColors.info),
+          _buildActivityCard(
+            Icons.assignment_rounded,
+            'Nhiệm vụ',
+            'Hoàn thành nhiệm vụ hàng ngày',
+            AppColors.info,
+          ),
           SizedBox(height: AppSpacing.md),
-          _buildActivityCard(Icons.stars_rounded, 'Phần thưởng', 'Nhận thưởng khi hoàn thành tốt', AppColors.warning),
+          _buildActivityCard(
+            Icons.stars_rounded,
+            'Phần thưởng',
+            'Nhận thưởng khi hoàn thành tốt',
+            AppColors.warning,
+          ),
         ],
       ),
     );
@@ -565,14 +761,32 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
         decoration: BoxDecoration(
           color: Color(0xFFF5F7FA),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), offset: Offset(4, 4), blurRadius: 12), BoxShadow(color: Colors.white.withOpacity(0.9), offset: Offset(-3, -3), blurRadius: 10)],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              offset: Offset(4, 4),
+              blurRadius: 12,
+            ),
+            BoxShadow(
+              color: Colors.white.withOpacity(0.9),
+              offset: Offset(-3, -3),
+              blurRadius: 10,
+            ),
+          ],
         ),
         child: Row(
           children: [
             Container(
               padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(color: AppColors.childPrimary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-              child: Icon(Icons.chat_bubble_rounded, color: AppColors.childPrimary, size: 28),
+              decoration: BoxDecoration(
+                color: AppColors.childPrimary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.chat_bubble_rounded,
+                color: AppColors.childPrimary,
+                size: 28,
+              ),
             ),
             SizedBox(width: AppSpacing.md),
             Expanded(
@@ -581,19 +795,33 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
                 children: [
                   Text(
                     'Tin nhắn',
-                    style: AppTypography.body.copyWith(fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                    style: AppTypography.body.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                   SizedBox(height: 4),
-                  Text('Chat với ba mẹ và gia đình', style: AppTypography.caption.copyWith(color: AppColors.textSecondary)),
+                  Text(
+                    'Chat với ba mẹ và gia đình',
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                 ],
               ),
             ),
             Container(
               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: AppColors.childPrimary.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(
+                color: AppColors.childPrimary.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
               child: Text(
                 'Mở',
-                style: AppTypography.overline.copyWith(fontWeight: FontWeight.w600, color: AppColors.childPrimary),
+                style: AppTypography.overline.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.childPrimary,
+                ),
               ),
             ),
           ],
@@ -602,19 +830,38 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
     );
   }
 
-  Widget _buildActivityCard(IconData icon, String title, String description, Color color) {
+  Widget _buildActivityCard(
+    IconData icon,
+    String title,
+    String description,
+    Color color,
+  ) {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: Color(0xFFF5F7FA),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), offset: Offset(4, 4), blurRadius: 12), BoxShadow(color: Colors.white.withOpacity(0.9), offset: Offset(-3, -3), blurRadius: 10)],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            offset: Offset(4, 4),
+            blurRadius: 12,
+          ),
+          BoxShadow(
+            color: Colors.white.withOpacity(0.9),
+            offset: Offset(-3, -3),
+            blurRadius: 10,
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(12),
-            decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Icon(icon, color: color, size: 28),
           ),
           SizedBox(width: AppSpacing.md),
@@ -624,19 +871,33 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
               children: [
                 Text(
                   title,
-                  style: AppTypography.body.copyWith(fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                  style: AppTypography.body.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 SizedBox(height: 4),
-                Text(description, style: AppTypography.caption.copyWith(color: AppColors.textSecondary)),
+                Text(
+                  description,
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ],
             ),
           ),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              color: AppColors.warning.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Text(
               'Sắp có',
-              style: AppTypography.overline.copyWith(fontWeight: FontWeight.w600, color: AppColors.warning),
+              style: AppTypography.overline.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.warning,
+              ),
             ),
           ),
         ],
@@ -646,7 +907,7 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
 
   void _handleSOSPress(BuildContext context) async {
     print('[SOS] Button pressed');
-    
+
     // Show countdown dialog
     showDialog(
       context: context,
@@ -673,7 +934,7 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
   Future<void> _triggerSOS(BuildContext context) async {
     try {
       print('[SOS] Collecting SOS data...');
-      
+
       // Get location
       final location = await _locationService.getCurrentLocation();
       if (location == null) {
@@ -736,12 +997,12 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
       }
     } catch (e) {
       print('[SOS] ERROR: $e');
-      
+
       // Try to queue for offline
       try {
         final offlineQueue = OfflineSOSQueue();
         await offlineQueue.initialize();
-        
+
         final location = await _locationService.getCurrentLocation();
         final batteryService = BatteryService();
         final batteryLevel = batteryService.batteryLevel;
@@ -782,19 +1043,31 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> with SingleTickerProv
     );
   }
 
-  void _showLogoutDialog(BuildContext context, AuthProvider authProvider) async {
+  void _showLogoutDialog(
+    BuildContext context,
+    AuthProvider authProvider,
+  ) async {
     final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Đăng xuất'),
         content: Text('Bạn có chắc chắn muốn đăng xuất?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Hủy')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: Text('Đăng xuất', style: AppTypography.button.copyWith(color: AppColors.danger))),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Đăng xuất',
+              style: AppTypography.button.copyWith(color: AppColors.danger),
+            ),
+          ),
         ],
       ),
     );
-    
+
     if (shouldLogout == true) {
       await authProvider.logout();
     }

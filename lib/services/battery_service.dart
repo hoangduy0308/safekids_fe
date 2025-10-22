@@ -17,7 +17,7 @@ class BatteryService extends ChangeNotifier {
   bool _isCharging = false;
   bool _isLowBatteryMode = false;
   Timer? _batteryCheckTimer;
-  Function(int)? onBatteryChanged;  // Callback for battery level changes
+  Function(int)? onBatteryChanged; // Callback for battery level changes
 
   int get batteryLevel => _batteryLevel;
   bool get isCharging => _isCharging;
@@ -66,8 +66,7 @@ class BatteryService extends ChangeNotifier {
     });
 
     // Check battery level every minute
-    _batteryCheckTimer =
-        Timer.periodic(const Duration(minutes: 1), (_) async {
+    _batteryCheckTimer = Timer.periodic(const Duration(minutes: 1), (_) async {
       await _updateBatteryLevel();
     });
 

@@ -19,7 +19,7 @@ class LocationTaskHandler extends TaskHandler {
   @override
   void onRepeatEvent(DateTime timestamp) async {
     debugPrint('[ForegroundTask] Getting location at $timestamp');
-    
+
     try {
       // Get current location
       final position = await Geolocator.getCurrentPosition(
@@ -28,12 +28,15 @@ class LocationTaskHandler extends TaskHandler {
           timeLimit: Duration(seconds: 10),
         ),
       );
-      
-      debugPrint('[ForegroundTask] Got position: ${position.latitude}, ${position.longitude}');
-      
+
+      debugPrint(
+        '[ForegroundTask] Got position: ${position.latitude}, ${position.longitude}',
+      );
+
       // Task 2.6.7: Get battery level and send with location
-      final batteryLevel = await BatteryService.instance.getCurrentBatteryLevel();
-      
+      final batteryLevel = await BatteryService.instance
+          .getCurrentBatteryLevel();
+
       // Send to backend
       await ApiService().sendLocation(
         position.latitude,
@@ -41,17 +44,17 @@ class LocationTaskHandler extends TaskHandler {
         position.accuracy,
         batteryLevel: batteryLevel,
       );
-      
+
       debugPrint('[ForegroundTask] Location sent successfully');
-      
+
       // Update notification
       FlutterForegroundTask.updateService(
-        notificationText: 'Vị trí: ${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}',
+        notificationText:
+            'Vị trí: ${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}',
       );
-      
     } catch (e) {
       debugPrint('[ForegroundTask] Error: $e');
-      
+
       // Update notification with error
       FlutterForegroundTask.updateService(
         notificationText: 'Đang thử lại... (Lỗi: GPS hoặc mạng)',
@@ -99,7 +102,7 @@ class LocationService extends ChangeNotifier {
   Future<void> initialize() async {
     _offlineBox = await Hive.openBox('offline_locations');
     _queuedLocations = _offlineBox?.length ?? 0;
-    
+
     // Initialize FlutterForegroundTask
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
@@ -114,14 +117,16 @@ class LocationService extends ChangeNotifier {
         playSound: false,
       ),
       foregroundTaskOptions: ForegroundTaskOptions(
-        eventAction: ForegroundTaskEventAction.repeat(300000), // AC 2.1.1: 5 minutes = 300,000ms (can be reduced to 1min for testing)
+        eventAction: ForegroundTaskEventAction.repeat(
+          300000,
+        ), // AC 2.1.1: 5 minutes = 300,000ms (can be reduced to 1min for testing)
         autoRunOnBoot: false, // Don't auto-start on boot
         autoRunOnMyPackageReplaced: true,
         allowWakeLock: true,
         allowWifiLock: false,
       ),
     );
-    
+
     notifyListeners();
   }
 
@@ -137,19 +142,23 @@ class LocationService extends ChangeNotifier {
     try {
       // Request foreground location permission (ACCESS_FINE_LOCATION)
       var status = await Permission.location.request();
-      
+
       if (status.isDenied) {
         debugPrint('[Location] Fine location permission denied');
         return false;
       } else if (status.isPermanentlyDenied) {
-        debugPrint('[Location] Fine location permission permanently denied - need to open app settings');
+        debugPrint(
+          '[Location] Fine location permission permanently denied - need to open app settings',
+        );
         return false;
       }
 
       // Request background location permission (ACCESS_BACKGROUND_LOCATION on Android 10+)
       var bgStatus = await Permission.locationAlways.request();
       if (bgStatus.isDenied) {
-        debugPrint('[Location] Background location permission denied - foreground tracking only');
+        debugPrint(
+          '[Location] Background location permission denied - foreground tracking only',
+        );
       }
 
       return true;
@@ -182,18 +191,21 @@ class LocationService extends ChangeNotifier {
       distanceFilter: 10, // Update every 10 meters
     );
 
-    _positionStream = Geolocator.getPositionStream(
-      locationSettings: locationSettings,
-    ).listen(
-      (Position position) {
-        // Task 2.6.1: Check for movement and stationary mode
-        _checkMovement(position);
-        _sendLocation(position.latitude, position.longitude, position.accuracy);
-      },
-      onError: (error) {
-        debugPrint('[Location] Stream error: $error');
-      },
-    );
+    _positionStream =
+        Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+          (Position position) {
+            // Task 2.6.1: Check for movement and stationary mode
+            _checkMovement(position);
+            _sendLocation(
+              position.latitude,
+              position.longitude,
+              position.accuracy,
+            );
+          },
+          onError: (error) {
+            debugPrint('[Location] Stream error: $error');
+          },
+        );
 
     // Start foreground service for background tracking
     await FlutterForegroundTask.startService(
@@ -203,7 +215,9 @@ class LocationService extends ChangeNotifier {
       callback: startLocationForegroundTask,
     );
 
-    debugPrint('[Location] Tracking started (foreground stream + background service)');
+    debugPrint(
+      '[Location] Tracking started (foreground stream + background service)',
+    );
 
     // Send initial location
     try {
@@ -228,11 +242,16 @@ class LocationService extends ChangeNotifier {
   Future<void> _sendLocation(double lat, double lng, double accuracy) async {
     // Task 2.6.7: Get battery level and send with location
     final batteryLevel = await BatteryService.instance.getCurrentBatteryLevel();
-    
+
     try {
-      await ApiService().sendLocation(lat, lng, accuracy, batteryLevel: batteryLevel);
+      await ApiService().sendLocation(
+        lat,
+        lng,
+        accuracy,
+        batteryLevel: batteryLevel,
+      );
       debugPrint('[Location] Sent location successfully: ($lat, $lng)');
-      
+
       if (_isOffline) {
         _isOffline = false;
         notifyListeners();
@@ -248,9 +267,14 @@ class LocationService extends ChangeNotifier {
     }
   }
 
-  void _queueOfflineLocation(double lat, double lng, double accuracy, {int? batteryLevel}) {
+  void _queueOfflineLocation(
+    double lat,
+    double lng,
+    double accuracy, {
+    int? batteryLevel,
+  }) {
     if (_offlineBox == null) return;
-    
+
     // Max 100 entries
     if (_offlineBox!.length >= 100) {
       _offlineBox!.deleteAt(0);
@@ -262,7 +286,7 @@ class LocationService extends ChangeNotifier {
       'accuracy': accuracy,
       'timestamp': DateTime.now().toIso8601String(),
     };
-    
+
     // Task 2.6.7: Store battery level if available
     if (batteryLevel != null) {
       locationData['batteryLevel'] = batteryLevel;
@@ -278,26 +302,32 @@ class LocationService extends ChangeNotifier {
   Future<void> _syncOfflineLocations() async {
     if (_offlineBox == null || _offlineBox!.isEmpty) return;
 
-    debugPrint('[Location] Syncing ${_offlineBox!.length} offline locations...');
+    debugPrint(
+      '[Location] Syncing ${_offlineBox!.length} offline locations...',
+    );
     final locations = _offlineBox!.values.toList();
     final now = DateTime.now();
 
     for (var i = 0; i < locations.length; i++) {
       final loc = locations[i];
       final timestamp = DateTime.parse(loc['timestamp']);
-      
+
       // Discard if older than 24 hours
       if (now.difference(timestamp).inHours > 24) {
         await _offlineBox!.deleteAt(i);
-        debugPrint('[Location] Discarded old location (${now.difference(timestamp).inHours}h old)');
+        debugPrint(
+          '[Location] Discarded old location (${now.difference(timestamp).inHours}h old)',
+        );
         continue;
       }
 
       try {
         // Task 2.6.7: Get battery level (use stored if available, otherwise current)
         final storedBattery = loc['batteryLevel'] as int?;
-        final batteryLevel = storedBattery ?? await BatteryService.instance.getCurrentBatteryLevel();
-        
+        final batteryLevel =
+            storedBattery ??
+            await BatteryService.instance.getCurrentBatteryLevel();
+
         await ApiService().sendLocation(
           loc['latitude'],
           loc['longitude'],
@@ -346,9 +376,9 @@ class LocationService extends ChangeNotifier {
       default:
         intervalMs = 30000;
     }
-    
+
     debugPrint('[Location] Updating interval to $interval ($intervalMs ms)');
-    
+
     // Restart tracking with new interval if currently tracking
     if (_isTracking) {
       stopTracking();
@@ -373,7 +403,9 @@ class LocationService extends ChangeNotifier {
       currentPosition.longitude,
     );
 
-    debugPrint('[Location] Distance from last: ${distance.toStringAsFixed(1)}m');
+    debugPrint(
+      '[Location] Distance from last: ${distance.toStringAsFixed(1)}m',
+    );
 
     if (distance > 50) {
       // Movement detected
@@ -390,7 +422,9 @@ class LocationService extends ChangeNotifier {
       // Still stationary
       final stationaryDuration = DateTime.now().difference(_lastMovementTime!);
       if (stationaryDuration.inMinutes > 5 && !_isStationary) {
-        debugPrint('[Location] Stationary for >5 min - reducing tracking frequency');
+        debugPrint(
+          '[Location] Stationary for >5 min - reducing tracking frequency',
+        );
         _isStationary = true;
         notifyListeners();
       }
@@ -400,11 +434,17 @@ class LocationService extends ChangeNotifier {
 
   /// Calculate distance between two points (Haversine formula)
   /// Returns distance in meters
-  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+  double _calculateDistance(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
     const double R = 6371000; // Earth radius in meters
     final double dLat = (lat2 - lat1) * 3.141592653589793 / 180;
     final double dLon = (lon2 - lon1) * 3.141592653589793 / 180;
-    final double a = (sin(dLat / 2) * sin(dLat / 2)) +
+    final double a =
+        (sin(dLat / 2) * sin(dLat / 2)) +
         (cos(lat1 * 3.141592653589793 / 180) *
             cos(lat2 * 3.141592653589793 / 180) *
             sin(dLon / 2) *
@@ -420,7 +460,9 @@ class LocationService extends ChangeNotifier {
     _lowBatteryMode = enabled;
 
     if (_isTracking) {
-      debugPrint('[Location] ${enabled ? 'Enabling' : 'Disabling'} low battery mode');
+      debugPrint(
+        '[Location] ${enabled ? 'Enabling' : 'Disabling'} low battery mode',
+      );
       // Restart with new accuracy setting
       stopTracking();
       await Future.delayed(const Duration(milliseconds: 500));

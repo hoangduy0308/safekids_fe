@@ -20,10 +20,26 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
   int _currentTabIndex = 0;
 
   final _navItems = [
-    {'icon': Icons.home_outlined, 'activeIcon': Icons.home, 'label': 'Trang chủ'},
-    {'icon': Icons.chat_bubble_outline, 'activeIcon': Icons.chat_bubble, 'label': 'Tin nhắn'},
-    {'icon': Icons.settings_outlined, 'activeIcon': Icons.settings, 'label': 'Quản lí'},
-    {'icon': Icons.person_outline, 'activeIcon': Icons.person, 'label': 'Cá nhân'},
+    {
+      'icon': Icons.home_outlined,
+      'activeIcon': Icons.home,
+      'label': 'Trang chủ',
+    },
+    {
+      'icon': Icons.chat_bubble_outline,
+      'activeIcon': Icons.chat_bubble,
+      'label': 'Tin nhắn',
+    },
+    {
+      'icon': Icons.settings_outlined,
+      'activeIcon': Icons.settings,
+      'label': 'Quản lí',
+    },
+    {
+      'icon': Icons.person_outline,
+      'activeIcon': Icons.person,
+      'label': 'Cá nhân',
+    },
   ];
 
   @override
@@ -32,12 +48,7 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
       body: Stack(
         children: [
           _getScreenByTabIndex(_currentTabIndex),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: _buildGlassNavBar(),
-          ),
+          Positioned(bottom: 0, left: 0, right: 0, child: _buildGlassNavBar()),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -61,7 +72,12 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          0,
+          AppSpacing.md,
+          AppSpacing.md,
+        ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(28.0),
           child: BackdropFilter(
@@ -87,16 +103,24 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            isSelected ? item['activeIcon'] as IconData : item['icon'] as IconData,
-                            color: isSelected ? AppColors.parentPrimary : AppColors.textSecondary,
+                            isSelected
+                                ? item['activeIcon'] as IconData
+                                : item['icon'] as IconData,
+                            color: isSelected
+                                ? AppColors.parentPrimary
+                                : AppColors.textSecondary,
                             size: 24,
                           ),
                           const SizedBox(height: 4),
                           Text(
                             item['label'] as String,
                             style: AppTypography.captionSmall.copyWith(
-                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                              color: isSelected ? AppColors.parentPrimary : AppColors.textPrimary,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: isSelected
+                                  ? AppColors.parentPrimary
+                                  : AppColors.textPrimary,
                             ),
                           ),
                         ],
@@ -127,8 +151,6 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
     }
   }
 
-
-
   Widget _buildManagementScreen() {
     return DefaultTabController(
       length: 3,
@@ -143,18 +165,9 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
             unselectedLabelColor: AppColors.textSecondary,
             indicatorColor: AppColors.parentPrimary,
             tabs: const [
-              Tab(
-                icon: Icon(Icons.location_on, size: 20),
-                text: 'Vùng',
-              ),
-              Tab(
-                icon: Icon(Icons.schedule, size: 20),
-                text: 'Thời gian',
-              ),
-              Tab(
-                icon: Icon(Icons.emergency, size: 20),
-                text: 'SOS',
-              ),
+              Tab(icon: Icon(Icons.location_on, size: 20), text: 'Vùng'),
+              Tab(icon: Icon(Icons.schedule, size: 20), text: 'Thời gian'),
+              Tab(icon: Icon(Icons.emergency, size: 20), text: 'SOS'),
             ],
           ),
         ),

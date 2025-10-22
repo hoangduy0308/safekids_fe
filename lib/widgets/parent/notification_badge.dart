@@ -5,10 +5,7 @@ import '../../theme/app_typography.dart';
 class NotificationBadge extends StatefulWidget {
   final int count;
 
-  const NotificationBadge({
-    Key? key,
-    required this.count,
-  }) : super(key: key);
+  const NotificationBadge({Key? key, required this.count}) : super(key: key);
 
   @override
   State<NotificationBadge> createState() => _NotificationBadgeState();
@@ -25,7 +22,7 @@ class _NotificationBadgeState extends State<NotificationBadge>
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-    
+
     if (widget.count > 0) {
       _pulseController.repeat(reverse: true);
     }

@@ -5,8 +5,9 @@ import 'package:safekids_app/widgets/common/offline_indicator.dart';
 void main() {
   group('Offline Indicator Widget Tests', () {
     group('2.1.5-I-002: UI Indicator Shows Queue', () {
-      testWidgets('should display OfflineIndicator when offline',
-          (WidgetTester tester) async {
+      testWidgets('should display OfflineIndicator when offline', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -22,8 +23,9 @@ void main() {
         expect(find.byType(OfflineIndicator), findsOneWidget);
       });
 
-      testWidgets('should display queue count text',
-          (WidgetTester tester) async {
+      testWidgets('should display queue count text', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -55,8 +57,9 @@ void main() {
         expect(find.byIcon(Icons.cloud_off), findsOneWidget);
       });
 
-      testWidgets('should display sync status when syncing',
-          (WidgetTester tester) async {
+      testWidgets('should display sync status when syncing', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -74,8 +77,9 @@ void main() {
     });
 
     group('2.1.5-I-003: UI Syncs When Online', () {
-      testWidgets('should hide indicator when online and queue empty',
-          (WidgetTester tester) async {
+      testWidgets('should hide indicator when online and queue empty', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -92,8 +96,9 @@ void main() {
         expect(find.byType(Visibility), findsWidgets);
       });
 
-      testWidgets('should show indicator when queue has items',
-          (WidgetTester tester) async {
+      testWidgets('should show indicator when queue has items', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -109,8 +114,9 @@ void main() {
         expect(find.text('2 vị trí chưa gửi'), findsOneWidget);
       });
 
-      testWidgets('should update queue count dynamically',
-          (WidgetTester tester) async {
+      testWidgets('should update queue count dynamically', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: StatefulBuilder(

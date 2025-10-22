@@ -60,10 +60,10 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
         startDate.toIso8601String(),
         endDate.toIso8601String(),
       );
-      
+
       // Try to fetch backend stats
       await _loadStats(widget.childId, startDate, endDate);
-      
+
       setState(() {
         _locations = locations;
         _loading = false;
@@ -71,14 +71,18 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
     } catch (e) {
       setState(() => _loading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi: ${e.toString()}')));
       }
     }
   }
 
-  Future<void> _loadStats(String childId, DateTime startDate, DateTime endDate) async {
+  Future<void> _loadStats(
+    String childId,
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
     try {
       final stats = await ApiService().getLocationStats(
         childId,
@@ -118,7 +122,9 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
       // Use backend stats
       totalDistance = (_backendStats!['totalDistance'] as num).toDouble();
       totalTime = (_backendStats!['totalTime'] as num).toDouble();
-      mostVisited = _parseBackendMostVisited(_backendStats!['mostVisited'] ?? []);
+      mostVisited = _parseBackendMostVisited(
+        _backendStats!['mostVisited'] ?? [],
+      );
     } else {
       // Fallback to frontend calculation
       totalDistance = _calculateTotalDistance();
@@ -135,8 +141,16 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _statItem(Icons.directions_walk, '${totalDistance.toStringAsFixed(1)} km', 'Di chuyển'),
-                _statItem(Icons.access_time, '${totalTime.toStringAsFixed(1)} h', 'Theo dõi'),
+                _statItem(
+                  Icons.directions_walk,
+                  '${totalDistance.toStringAsFixed(1)} km',
+                  'Di chuyển',
+                ),
+                _statItem(
+                  Icons.access_time,
+                  '${totalTime.toStringAsFixed(1)} h',
+                  'Theo dõi',
+                ),
                 _statItem(Icons.location_on, '${_locations.length}', 'Điểm'),
               ],
             ),
@@ -156,34 +170,48 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
       children: [
         Text(
           'Địa điểm thường xuyên',
-          style: AppTypography.captionSmall.copyWith(color: Colors.grey, fontWeight: FontWeight.w500),
+          style: AppTypography.captionSmall.copyWith(
+            color: Colors.grey,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         const SizedBox(height: 8),
         Row(
           children: clusters
               .asMap()
               .entries
-              .map((e) => Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade100,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('${e.key + 1}. ${e.value.count}x',
-                                style: AppTypography.overline.copyWith(fontWeight: FontWeight.bold)),
-                            Text('${e.value.latitude.toStringAsFixed(4)}, ${e.value.longitude.toStringAsFixed(4)}',
-                                style: AppTypography.overline.copyWith(fontSize: 9, color: Colors.grey)),
-                          ],
-                        ),
+              .map(
+                (e) => Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade100,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${e.key + 1}. ${e.value.count}x',
+                            style: AppTypography.overline.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '${e.value.latitude.toStringAsFixed(4)}, ${e.value.longitude.toStringAsFixed(4)}',
+                            style: AppTypography.overline.copyWith(
+                              fontSize: 9,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ))
+                  ),
+                ),
+              )
               .toList(),
         ),
       ],
@@ -195,8 +223,14 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
       children: [
         Icon(icon, size: 32, color: Colors.blue),
         const SizedBox(height: 8),
-        Text(value, style: AppTypography.h4.copyWith(fontWeight: FontWeight.bold)),
-        Text(label, style: AppTypography.captionSmall.copyWith(color: Colors.grey)),
+        Text(
+          value,
+          style: AppTypography.h4.copyWith(fontWeight: FontWeight.bold),
+        ),
+        Text(
+          label,
+          style: AppTypography.captionSmall.copyWith(color: Colors.grey),
+        ),
       ],
     );
   }
@@ -253,7 +287,7 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
 
   Future<void> _loadCustomRange() async {
     if (_customStartDate == null || _customEndDate == null) return;
-    
+
     setState(() => _loading = true);
     try {
       final locations = await ApiService().getLocationHistory(
@@ -261,10 +295,10 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
         _customStartDate!.toIso8601String(),
         _customEndDate!.toIso8601String(),
       );
-      
+
       // Try to fetch backend stats for custom range
       await _loadStats(widget.childId, _customStartDate!, _customEndDate!);
-      
+
       setState(() {
         _locations = locations;
         _loading = false;
@@ -272,39 +306,46 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
     } catch (e) {
       setState(() => _loading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi: ${e.toString()}')));
       }
     }
   }
 
   List<LocationCluster> _parseBackendMostVisited(dynamic data) {
     if (data is! List) return [];
-    
+
     return data
         .take(3)
-        .map((item) => LocationCluster(
-          latitude: (item['latitude'] as num).toDouble(),
-          longitude: (item['longitude'] as num).toDouble(),
-          count: item['count'] as int,
-        ))
+        .map(
+          (item) => LocationCluster(
+            latitude: (item['latitude'] as num).toDouble(),
+            longitude: (item['longitude'] as num).toDouble(),
+            count: item['count'] as int,
+          ),
+        )
         .toList();
   }
 
   Widget _buildTimeline() {
     if (_loading) return const Center(child: CircularProgressIndicator());
-    if (_locations.isEmpty) return const Center(child: Text('Chưa có lịch sử vị trí'));
+    if (_locations.isEmpty)
+      return const Center(child: Text('Chưa có lịch sử vị trí'));
 
     return ListView.builder(
       itemCount: _locations.length,
       itemBuilder: (context, index) {
         final loc = _locations[index];
-        final prevLoc = index < _locations.length - 1 ? _locations[index + 1] : null;
+        final prevLoc = index < _locations.length - 1
+            ? _locations[index + 1]
+            : null;
         final nextLoc = index > 0 ? _locations[index - 1] : null;
-        final distance = prevLoc != null ? calculateHaversineDistance(loc, prevLoc) : 0.0;
-        final durationAtLocation = nextLoc != null 
-            ? loc.timestamp.difference(nextLoc.timestamp).inMinutes 
+        final distance = prevLoc != null
+            ? calculateHaversineDistance(loc, prevLoc)
+            : 0.0;
+        final durationAtLocation = nextLoc != null
+            ? loc.timestamp.difference(nextLoc.timestamp).inMinutes
             : 0;
 
         return Card(
@@ -318,16 +359,20 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
                 const SizedBox(height: 4),
                 Text(
                   '${loc.latitude.toStringAsFixed(6)}, ${loc.longitude.toStringAsFixed(6)}',
-                  style: AppTypography.captionSmall.copyWith(color: Colors.grey),
+                  style: AppTypography.captionSmall.copyWith(
+                    color: Colors.grey,
+                  ),
                 ),
                 if (durationAtLocation > 0)
                   Text(
                     'Đã ở: ${durationAtLocation}m',
-                    style: AppTypography.overline.copyWith(color: Colors.orange),
+                    style: AppTypography.overline.copyWith(
+                      color: Colors.orange,
+                    ),
                   ),
               ],
             ),
-            trailing: distance > 0.01 
+            trailing: distance > 0.01
                 ? Chip(
                     label: Text('${distance.toStringAsFixed(2)} km'),
                     avatar: Icon(Icons.arrow_upward, size: 14),
@@ -344,13 +389,14 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
   String _formatTimestamp(DateTime timestamp) {
     final now = DateTime.now();
     final diff = now.difference(timestamp);
-    final timeStr = '${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
+    final timeStr =
+        '${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
     final dateStr = '${timestamp.day}/${timestamp.month}/${timestamp.year}';
 
     if (diff.inMinutes < 1) return 'Vừa xong';
     if (diff.inMinutes < 60) return '${diff.inMinutes} phút trước';
     if (diff.inHours < 24) return '${diff.inHours} giờ trước';
-    
+
     return '$timeStr - $dateStr';
   }
 
@@ -381,25 +427,28 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
 
   List<LocationCluster> _calculateMostVisited() {
     if (_locations.isEmpty) return [];
-    
+
     const clusterRadius = 0.1; // km
     final clusters = <LocationCluster>[];
     final visited = <int>{};
-    
+
     for (int i = 0; i < _locations.length; i++) {
       if (visited.contains(i)) continue;
-      
+
       final cluster = LocationCluster(
         latitude: _locations[i].latitude,
         longitude: _locations[i].longitude,
         count: 1,
       );
       visited.add(i);
-      
+
       for (int j = i + 1; j < _locations.length; j++) {
         if (visited.contains(j)) continue;
-        
-        final distance = calculateHaversineDistance(_locations[i], _locations[j]);
+
+        final distance = calculateHaversineDistance(
+          _locations[i],
+          _locations[j],
+        );
         if (distance <= clusterRadius) {
           cluster.count++;
           visited.add(j);
@@ -407,7 +456,7 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
       }
       clusters.add(cluster);
     }
-    
+
     clusters.sort((a, b) => b.count.compareTo(a.count));
     return clusters.take(3).toList();
   }
@@ -434,7 +483,7 @@ class LocationCluster {
   double latitude;
   double longitude;
   int count;
-  
+
   LocationCluster({
     required this.latitude,
     required this.longitude,

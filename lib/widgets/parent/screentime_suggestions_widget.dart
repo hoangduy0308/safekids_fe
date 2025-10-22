@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/api_service.dart';
 import 'package:safekids_app/theme/app_typography.dart';
+
 class ScreenTimeSuggestionsWidget extends StatelessWidget {
   final String childId;
   final Map<String, dynamic> suggestions;
   final Function() onApplySuggestion;
-  
+
   ScreenTimeSuggestionsWidget({
     required this.childId,
     required this.suggestions,
     required this.onApplySuggestion,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -23,7 +24,7 @@ class ScreenTimeSuggestionsWidget extends StatelessWidget {
           style: AppTypography.h3.copyWith(fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 16),
-        
+
         // Suggested limit card
         if (suggestions['suggestedLimit'] != null)
           _buildSuggestionCard(
@@ -34,31 +35,38 @@ class ScreenTimeSuggestionsWidget extends StatelessWidget {
             message: _formatLimit(suggestions['suggestedLimit']),
             reasoning: suggestions['reasoning'],
             actionLabel: 'Áp Dụng',
-            onAction: () => _applySuggestedLimit(context, suggestions['suggestedLimit']),
+            onAction: () =>
+                _applySuggestedLimit(context, suggestions['suggestedLimit']),
           ),
-        
+
         SizedBox(height: 12),
-        
+
         // Adjustment recommendation
         if (suggestions['adjustmentRecommendation'] != null)
-          _buildAdjustmentCard(context, suggestions['adjustmentRecommendation']),
-        
+          _buildAdjustmentCard(
+            context,
+            suggestions['adjustmentRecommendation'],
+          ),
+
         SizedBox(height: 12),
-        
+
         // Age guideline
         if (suggestions['ageGuideline'] != null)
           _buildAgeGuidelineCard(context, suggestions['ageGuideline']),
-        
+
         SizedBox(height: 12),
-        
+
         // Bedtime suggestion
-        if (suggestions['bedtimeSuggestion'] != null && 
+        if (suggestions['bedtimeSuggestion'] != null &&
             suggestions['bedtimeSuggestion']['enabled'] == false)
-          _buildBedtimeSuggestionCard(context, suggestions['bedtimeSuggestion']),
+          _buildBedtimeSuggestionCard(
+            context,
+            suggestions['bedtimeSuggestion'],
+          ),
       ],
     );
   }
-  
+
   Widget _buildSuggestionCard(
     BuildContext context, {
     required IconData icon,
@@ -83,15 +91,22 @@ class ScreenTimeSuggestionsWidget extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: AppTypography.body.copyWith(fontWeight: FontWeight.bold),
-                  ),                ),
+                    style: AppTypography.body.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ],
             ),
             SizedBox(height: 12),
             Text(
               message,
-              style: AppTypography.h4.copyWith(fontWeight: FontWeight.bold, color: color),
-            ),            SizedBox(height: 8),
+              style: AppTypography.h4.copyWith(
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            SizedBox(height: 8),
             Text(
               reasoning,
               style: AppTypography.label.copyWith(color: Colors.grey[600]),
@@ -110,15 +125,20 @@ class ScreenTimeSuggestionsWidget extends StatelessWidget {
       ),
     );
   }
-  
-  Widget _buildAdjustmentCard(BuildContext context, Map<String, dynamic> adjustment) {
+
+  Widget _buildAdjustmentCard(
+    BuildContext context,
+    Map<String, dynamic> adjustment,
+  ) {
     final type = adjustment['type'];
     final message = adjustment['message'];
     final newLimit = adjustment['newLimit'];
-    
+
     Color color = type == 'increase' ? Colors.orange : Colors.green;
-    IconData icon = type == 'increase' ? Icons.trending_up : Icons.trending_down;
-    
+    IconData icon = type == 'increase'
+        ? Icons.trending_up
+        : Icons.trending_down;
+
     return _buildSuggestionCard(
       context,
       icon: icon,
@@ -130,10 +150,13 @@ class ScreenTimeSuggestionsWidget extends StatelessWidget {
       onAction: () => _applySuggestedLimit(context, newLimit),
     );
   }
-  
-  Widget _buildAgeGuidelineCard(BuildContext context, Map<String, dynamic> guideline) {
+
+  Widget _buildAgeGuidelineCard(
+    BuildContext context,
+    Map<String, dynamic> guideline,
+  ) {
     final message = guideline['message'];
-    
+
     return Card(
       elevation: 2,
       color: Colors.purple[50],
@@ -149,12 +172,18 @@ class ScreenTimeSuggestionsWidget extends StatelessWidget {
                 children: [
                   Text(
                     'Hướng Dẫn Theo Độ Tuổi',
-                    style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
-                  ),                  SizedBox(height: 4),
+                    style: AppTypography.body.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: 4),
                   Text(
                     message,
-                    style: AppTypography.label.copyWith(color: Colors.grey[700]),
-                  ),                ],
+                    style: AppTypography.label.copyWith(
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -162,12 +191,15 @@ class ScreenTimeSuggestionsWidget extends StatelessWidget {
       ),
     );
   }
-  
-  Widget _buildBedtimeSuggestionCard(BuildContext context, Map<String, dynamic> bedtime) {
+
+  Widget _buildBedtimeSuggestionCard(
+    BuildContext context,
+    Map<String, dynamic> bedtime,
+  ) {
     final suggestedStart = bedtime['suggestedStart'];
     final suggestedEnd = bedtime['suggestedEnd'];
     final reasoning = bedtime['reasoning'];
-    
+
     return Card(
       elevation: 2,
       child: Padding(
@@ -182,23 +214,35 @@ class ScreenTimeSuggestionsWidget extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'Chế Độ Giờ Ngủ',
-                    style: AppTypography.body.copyWith(fontWeight: FontWeight.bold),
-                  ),                ),
+                    style: AppTypography.body.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ],
             ),
             SizedBox(height: 12),
             Text(
               reasoning,
               style: AppTypography.label.copyWith(color: Colors.grey[600]),
-            ),            SizedBox(height: 8),
+            ),
+            SizedBox(height: 8),
             Text(
               'Đề xuất: $suggestedStart - $suggestedEnd',
-              style: AppTypography.body.copyWith(fontWeight: FontWeight.bold, color: Colors.indigo),
-            ),            SizedBox(height: 12),
+              style: AppTypography.body.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.indigo,
+              ),
+            ),
+            SizedBox(height: 12),
             Align(
               alignment: Alignment.centerRight,
               child: ElevatedButton(
-                onPressed: () => _applyBedtimeSuggestion(context, suggestedStart, suggestedEnd),
+                onPressed: () => _applyBedtimeSuggestion(
+                  context,
+                  suggestedStart,
+                  suggestedEnd,
+                ),
                 child: Text('Bật Giờ Ngủ'),
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
               ),
@@ -208,13 +252,13 @@ class ScreenTimeSuggestionsWidget extends StatelessWidget {
       ),
     );
   }
-  
+
   String _formatLimit(int minutes) {
     final hours = minutes ~/ 60;
     final mins = minutes % 60;
     return '${hours}h ${mins}p/ngày';
   }
-  
+
   Future<void> _applySuggestedLimit(BuildContext context, int newLimit) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -233,14 +277,17 @@ class ScreenTimeSuggestionsWidget extends StatelessWidget {
         ],
       ),
     );
-    
+
     if (confirm == true) {
       try {
         final prefs = await SharedPreferences.getInstance();
-        final currentBedtimeEnabled = prefs.getBool('screentime_bedtime_enabled') ?? false;
-        final currentBedtimeStart = prefs.getString('screentime_bedtime_start') ?? '21:00';
-        final currentBedtimeEnd = prefs.getString('screentime_bedtime_end') ?? '07:00';
-        
+        final currentBedtimeEnabled =
+            prefs.getBool('screentime_bedtime_enabled') ?? false;
+        final currentBedtimeStart =
+            prefs.getString('screentime_bedtime_start') ?? '21:00';
+        final currentBedtimeEnd =
+            prefs.getString('screentime_bedtime_end') ?? '07:00';
+
         await ApiService().saveScreenTimeConfig(
           childId: childId,
           dailyLimit: newLimit,
@@ -248,22 +295,25 @@ class ScreenTimeSuggestionsWidget extends StatelessWidget {
           bedtimeStart: currentBedtimeStart,
           bedtimeEnd: currentBedtimeEnd,
         );
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('✅ Đã áp dụng giới hạn mới')),
-        );
-        
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('✅ Đã áp dụng giới hạn mới')));
+
         onApplySuggestion();
-        
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('⚠️ Lỗi: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('⚠️ Lỗi: ${e.toString()}')));
       }
     }
   }
-  
-  Future<void> _applyBedtimeSuggestion(BuildContext context, String start, String end) async {
+
+  Future<void> _applyBedtimeSuggestion(
+    BuildContext context,
+    String start,
+    String end,
+  ) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -281,12 +331,12 @@ class ScreenTimeSuggestionsWidget extends StatelessWidget {
         ],
       ),
     );
-    
+
     if (confirm == true) {
       try {
         final prefs = await SharedPreferences.getInstance();
         final currentLimit = prefs.getInt('screentime_daily_limit') ?? 120;
-        
+
         await ApiService().saveScreenTimeConfig(
           childId: childId,
           dailyLimit: currentLimit,
@@ -294,17 +344,16 @@ class ScreenTimeSuggestionsWidget extends StatelessWidget {
           bedtimeStart: start,
           bedtimeEnd: end,
         );
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('✅ Đã bật chế độ giờ ngủ')),
-        );
-        
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('✅ Đã bật chế độ giờ ngủ')));
+
         onApplySuggestion();
-        
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('⚠️ Lỗi: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('⚠️ Lỗi: ${e.toString()}')));
       }
     }
   }

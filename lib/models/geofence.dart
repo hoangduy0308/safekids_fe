@@ -52,7 +52,9 @@ class Geofence {
       type: json['type'] as String,
       center: GeofenceCenter.fromJson(json['center']),
       radius: (json['radius'] as num).toDouble(),
-      activeHours: json['activeHours'] != null ? ActiveHours.fromJson(json['activeHours']) : null,
+      activeHours: json['activeHours'] != null
+          ? ActiveHours.fromJson(json['activeHours'])
+          : null,
       linkedChildren: linkedChildrenIds,
       active: json['active'] as bool? ?? true,
     );
@@ -91,8 +93,5 @@ class ActiveHours {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    'start': start,
-    'end': end,
-  };
+  Map<String, dynamic> toJson() => {'start': start, 'end': end};
 }

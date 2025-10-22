@@ -39,7 +39,7 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
     _agoraService = AgoraAudioService();
     _callStartTime = DateTime.now();
     _startCallTimer();
-    
+
     // Initialize Agora and join call
     _initializeAgoraAndJoinCall();
   }
@@ -49,7 +49,7 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
       // Request microphone permission
       final micStatus = await Permission.microphone.request();
       debugPrint('[AudioCallScreen] Microphone permission: $micStatus');
-      
+
       if (!micStatus.isGranted) {
         throw Exception('Microphone permission denied');
       }
@@ -62,9 +62,13 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
       final userId = context.read<AuthProvider>().user?.id ?? 'unknown';
       await _agoraService.joinCall(
         channelName: widget.conversationId,
-        uid: userId.hashCode.abs() % 2147483647, // Convert string ID to positive int
+        uid:
+            userId.hashCode.abs() %
+            2147483647, // Convert string ID to positive int
       );
-      debugPrint('[AudioCallScreen] Joined Agora channel: ${widget.conversationId}');
+      debugPrint(
+        '[AudioCallScreen] Joined Agora channel: ${widget.conversationId}',
+      );
     } catch (e) {
       debugPrint('[AudioCallScreen] Agora initialization error: $e');
       if (mounted) {
@@ -103,7 +107,7 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
         'conversationId': widget.conversationId,
       });
     }
-    
+
     if (mounted) Navigator.pop(context);
   }
 

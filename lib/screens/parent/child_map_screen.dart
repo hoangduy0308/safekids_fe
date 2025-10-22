@@ -4,7 +4,7 @@ import '../../models/user.dart';
 import '../../services/api_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
-import '../../widgets/parent/child_location_map_maptiler.dart';
+import '../../widgets/parent/child_location_map.dart';
 import '../../models/child_detail_data.dart';
 import '../../widgets/parent/geofence_suggestions_section.dart';
 import '../../widgets/geofence_map_view.dart';

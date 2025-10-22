@@ -7,7 +7,9 @@ import 'package:safekids_app/services/api_service.dart';
 
 // Mocks
 class MockGeolocator extends Mock implements Geolocator {}
+
 class MockApiService extends Mock implements ApiService {}
+
 class MockHiveBox extends Mock implements Box<Map> {}
 
 void main() {
@@ -54,9 +56,9 @@ void main() {
           isMocked: false,
         );
 
-        when(mockGeolocator.getPositionStream()).thenAnswer(
-          (_) => Stream.fromIterable([pos1, pos2]),
-        );
+        when(
+          mockGeolocator.getPositionStream(),
+        ).thenAnswer((_) => Stream.fromIterable([pos1, pos2]));
 
         int callCount = 0;
         locationService.onLocationUpdate = (lat, lng, acc) {
@@ -66,27 +68,34 @@ void main() {
         await locationService.startForegroundTracking();
         await Future.delayed(Duration(milliseconds: 100));
 
-        expect(callCount, greaterThan(0), reason: 'Stream callback should trigger');
+        expect(
+          callCount,
+          greaterThan(0),
+          reason: 'Stream callback should trigger',
+        );
         verify(mockGeolocator.getPositionStream()).called(1);
       });
     });
 
     group('2.1.1-U-002: Background Task Triggers Every 5 Minutes', () {
-      test('should configure flutter_foreground_task with 300000ms interval', () {
-        // Verify ForegroundTaskOptions configured
-        expect(
-          locationService.taskOptions.eventAction,
-          isNotNull,
-          reason: 'Task options should have eventAction',
-        );
+      test(
+        'should configure flutter_foreground_task with 300000ms interval',
+        () {
+          // Verify ForegroundTaskOptions configured
+          expect(
+            locationService.taskOptions.eventAction,
+            isNotNull,
+            reason: 'Task options should have eventAction',
+          );
 
-        // Verify interval is 5 minutes (300000ms)
-        expect(
-          locationService.taskOptions.eventAction.repeat(300000),
-          isNotNull,
-          reason: '5-minute interval should be configured',
-        );
-      });
+          // Verify interval is 5 minutes (300000ms)
+          expect(
+            locationService.taskOptions.eventAction.repeat(300000),
+            isNotNull,
+            reason: '5-minute interval should be configured',
+          );
+        },
+      );
     });
 
     group('2.1.1-U-003: Distance Filter 10m Applied', () {
@@ -116,9 +125,9 @@ void main() {
 
     group('2.1.4-U-001: Permission Request on App Launch', () {
       test('should request location permission and return granted', () async {
-        when(mockGeolocator.requestPermission()).thenAnswer(
-          (_) => Future.value(LocationPermission.granted),
-        );
+        when(
+          mockGeolocator.requestPermission(),
+        ).thenAnswer((_) => Future.value(LocationPermission.granted));
 
         final result = await locationService.requestLocationPermission();
 
@@ -127,9 +136,9 @@ void main() {
       });
 
       test('should return false when permission denied', () async {
-        when(mockGeolocator.requestPermission()).thenAnswer(
-          (_) => Future.value(LocationPermission.denied),
-        );
+        when(
+          mockGeolocator.requestPermission(),
+        ).thenAnswer((_) => Future.value(LocationPermission.denied));
 
         final result = await locationService.requestLocationPermission();
 
@@ -139,9 +148,9 @@ void main() {
 
     group('2.1.5-U-001: Network Error Queues Location Locally', () {
       test('should queue location to Hive on network error', () async {
-        when(mockApiService.sendLocation(any, any, any)).thenThrow(
-          SocketException('Network error'),
-        );
+        when(
+          mockApiService.sendLocation(any, any, any),
+        ).thenThrow(SocketException('Network error'));
         when(mockHiveBox.add(any)).thenAnswer((_) => Future.value(1));
 
         await locationService.sendLocation(10.0, 20.0, 5.0);
@@ -152,9 +161,9 @@ void main() {
       test('should store correct location data in Hive', () async {
         final capturedLocation = <dynamic>[];
 
-        when(mockApiService.sendLocation(any, any, any)).thenThrow(
-          SocketException('Network error'),
-        );
+        when(
+          mockApiService.sendLocation(any, any, any),
+        ).thenThrow(SocketException('Network error'));
         when(mockHiveBox.add(any)).thenAnswer((invocation) {
           capturedLocation.add(invocation.positionalArguments[0]);
           return Future.value(1);
@@ -174,9 +183,9 @@ void main() {
         when(mockHiveBox.length).thenReturn(100);
         when(mockHiveBox.isEmpty).thenReturn(false);
 
-        when(mockApiService.sendLocation(any, any, any)).thenThrow(
-          SocketException('Network error'),
-        );
+        when(
+          mockApiService.sendLocation(any, any, any),
+        ).thenThrow(SocketException('Network error'));
         when(mockHiveBox.add(any)).thenAnswer((invocation) {
           // Simulate FIFO: remove oldest when at max
           if (mockHiveBox.length >= 100) {

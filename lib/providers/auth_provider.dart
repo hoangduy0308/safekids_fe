@@ -32,8 +32,10 @@ class AuthProvider extends ChangeNotifier {
     if (_authService.isAuthenticated) {
       debugPrint('[AuthProvider] 📍 Token found, verifying with backend...');
       final result = await _authService.getMe(); // API call to verify user
-      debugPrint('[AuthProvider] 🔍 getMe() result: ${result['message']}'); // DEBUG
-      
+      debugPrint(
+        '[AuthProvider] 🔍 getMe() result: ${result['message']}',
+      ); // DEBUG
+
       if (result['success']) {
         debugPrint('[AuthProvider] ✅ User verified successfully');
         _user = _authService.currentUser;
@@ -42,22 +44,28 @@ class AuthProvider extends ChangeNotifier {
         }
       } else {
         final errorMsg = result['message'] ?? '';
-        debugPrint('[AuthProvider] ❓ Error message: "$errorMsg"'); // DEBUG: Show full message
-        
+        debugPrint(
+          '[AuthProvider] ❓ Error message: "$errorMsg"',
+        ); // DEBUG: Show full message
+
         // Check if error is network-related (offline) or auth-related (invalid token)
-        final isNetworkError = errorMsg.contains('Network error') || 
-                               errorMsg.contains('timeout') ||
-                               errorMsg.contains('TimeoutException') ||
-                               errorMsg.contains('ClientException') ||
-                               errorMsg.contains('SocketException') ||
-                               errorMsg.contains('Connection refused') ||
-                               errorMsg.contains('Failed host lookup');
-        final isConnectionError = errorMsg.contains('Không thể kết nối') ||
-                                   errorMsg.contains('connection') ||
-                                   errorMsg.contains('offline');
-        
-        debugPrint('[AuthProvider] isNetworkError=$isNetworkError, isConnectionError=$isConnectionError'); // DEBUG
-        
+        final isNetworkError =
+            errorMsg.contains('Network error') ||
+            errorMsg.contains('timeout') ||
+            errorMsg.contains('TimeoutException') ||
+            errorMsg.contains('ClientException') ||
+            errorMsg.contains('SocketException') ||
+            errorMsg.contains('Connection refused') ||
+            errorMsg.contains('Failed host lookup');
+        final isConnectionError =
+            errorMsg.contains('Không thể kết nối') ||
+            errorMsg.contains('connection') ||
+            errorMsg.contains('offline');
+
+        debugPrint(
+          '[AuthProvider] isNetworkError=$isNetworkError, isConnectionError=$isConnectionError',
+        ); // DEBUG
+
         if (isNetworkError || isConnectionError) {
           // ✅ FIX: Offline - trust cached token and user data
           debugPrint('[AuthProvider] ⚠️ Offline mode: Using cached auth data');
@@ -65,7 +73,9 @@ class AuthProvider extends ChangeNotifier {
           // Don't connect socket offline - will reconnect when online
         } else {
           // ❌ Real auth error (token expired/invalid, user deleted from DB)
-          debugPrint('[AuthProvider] ❌ Auth verification failed: $errorMsg - LOGGING OUT');
+          debugPrint(
+            '[AuthProvider] ❌ Auth verification failed: $errorMsg - LOGGING OUT',
+          );
           await _authService.logout();
           _user = null;
         }
@@ -117,18 +127,12 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Login user
-  Future<bool> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<bool> login({required String email, required String password}) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
-    final result = await _authService.login(
-      email: email,
-      password: password,
-    );
+    final result = await _authService.login(email: email, password: password);
 
     _isLoading = false;
 
@@ -157,9 +161,11 @@ class AuthProvider extends ChangeNotifier {
       debugPrint('[AuthProvider] Getting FCM token...');
       final fcmToken = await FirebaseMessaging.instance.getToken();
       debugPrint('[AuthProvider] FCM token from Firebase: $fcmToken');
-      
+
       if (fcmToken != null) {
-        debugPrint('[AuthProvider] ✅ FCM token obtained: ${fcmToken.substring(0, 20)}...');
+        debugPrint(
+          '[AuthProvider] ✅ FCM token obtained: ${fcmToken.substring(0, 20)}...',
+        );
         await ApiService().updateFCMToken(fcmToken);
         debugPrint('[AuthProvider] ✅ FCM token sent to backend successfully');
       } else {
@@ -223,7 +229,10 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Forgot password - request OTP via email or SMS
-  Future<Map<String, dynamic>> forgotPassword(String contactInfo, String method) async {
+  Future<Map<String, dynamic>> forgotPassword(
+    String contactInfo,
+    String method,
+  ) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -245,7 +254,12 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Reset password with OTP
-  Future<Map<String, dynamic>> resetPassword(String contactInfo, String otp, String newPassword, String method) async {
+  Future<Map<String, dynamic>> resetPassword(
+    String contactInfo,
+    String otp,
+    String newPassword,
+    String method,
+  ) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();

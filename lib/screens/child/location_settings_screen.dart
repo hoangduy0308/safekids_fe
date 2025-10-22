@@ -22,7 +22,7 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
   Timer? _countdownTimer;
   bool _isLoading = true;
   String? _error;
-  int _currentBatteryLevel = 100;  // Task 2.6.5: Battery stats
+  int _currentBatteryLevel = 100; // Task 2.6.5: Battery stats
 
   @override
   void initState() {
@@ -194,7 +194,10 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
                 color: Colors.red[100],
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(_error!, style: AppTypography.bodySmall.copyWith(color: Colors.red)),
+              child: Text(
+                _error!,
+                style: AppTypography.bodySmall.copyWith(color: Colors.red),
+              ),
             ),
 
           const SizedBox(height: 16),
@@ -202,9 +205,11 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
           // Sharing toggle
           SwitchListTile(
             title: const Text('Chia sẻ vị trí'),
-            subtitle: Text(_sharingEnabled
-                ? 'Phụ huynh có thể xem vị trí của bạn'
-                : 'Vị trí không được chia sẻ'),
+            subtitle: Text(
+              _sharingEnabled
+                  ? 'Phụ huynh có thể xem vị trí của bạn'
+                  : 'Vị trí không được chia sẻ',
+            ),
             value: _sharingEnabled,
             onChanged: _updateSharing,
             secondary: Icon(
@@ -229,7 +234,9 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
                   Expanded(
                     child: Text(
                       'Tắt chia sẻ có thể ảnh hưởng đến an toàn của bạn',
-                      style: AppTypography.bodySmall.copyWith(color: Colors.orange[900]),
+                      style: AppTypography.bodySmall.copyWith(
+                        color: Colors.orange[900],
+                      ),
                     ),
                   ),
                 ],
@@ -295,11 +302,15 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
                     const SizedBox(height: 4),
                     Text(
                       _formatTime(_pausedUntil!),
-                      style: AppTypography.h3.copyWith(fontWeight: FontWeight.bold),
+                      style: AppTypography.h3.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Text(
                       _getRemainingTime(),
-                      style: AppTypography.captionSmall.copyWith(color: Colors.grey),
+                      style: AppTypography.captionSmall.copyWith(
+                        color: Colors.grey,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
@@ -351,11 +362,15 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
                   children: [
                     Text(
                       'Mức Pin Hiện Tại',
-                      style: AppTypography.captionSmall.copyWith(color: Colors.grey),
+                      style: AppTypography.captionSmall.copyWith(
+                        color: Colors.grey,
+                      ),
                     ),
                     Text(
                       '$_currentBatteryLevel%',
-                      style: AppTypography.h2.copyWith(fontWeight: FontWeight.bold),
+                      style: AppTypography.h2.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -366,7 +381,9 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
             const SizedBox(height: 16),
             Text(
               'Ước Tính Tiêu Thụ',
-              style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold),
+              style: AppTypography.caption.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -380,7 +397,9 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
             const SizedBox(height: 16),
             Text(
               '💡 Mẹo Tiết Kiệm Pin:',
-              style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold),
+              style: AppTypography.caption.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             _buildTip('Giảm tần suất cập nhật xuống "Bình thường"'),
@@ -398,13 +417,11 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('• ', style: AppTypography.label.copyWith(fontWeight: FontWeight.bold)),
-          Expanded(
-            child: Text(
-              text,
-              style: AppTypography.captionSmall,
-            ),
+          Text(
+            '• ',
+            style: AppTypography.label.copyWith(fontWeight: FontWeight.bold),
           ),
+          Expanded(child: Text(text, style: AppTypography.captionSmall)),
         ],
       ),
     );

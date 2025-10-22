@@ -44,7 +44,7 @@ void main() async {
 
   // Initialize Hive for offline storage
   await Hive.initFlutter();
-  
+
   // Initialize Screen Time Tracker (AC 5.2.1) - Story 5.2
   debugPrint('⏰ Initializing Screen Time Tracker...');
   try {
@@ -53,10 +53,10 @@ void main() async {
   } catch (e) {
     debugPrint('❌ Screen Time Tracker init error: $e');
   }
-  
+
   // Initialize FlutterForegroundTask for background location tracking
   FlutterForegroundTask.initCommunicationPort();
-  
+
   runApp(const SafeKidsApp());
 }
 
@@ -72,10 +72,10 @@ class _SafeKidsAppState extends State<SafeKidsApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
+
     // Start session on app launch (AC 5.2.1)
     ScreenTimeTrackerService().startSession();
-    
+
     // Initialize lock service (AC 5.3.1, 5.3.8) - Story 5.3
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -115,7 +115,7 @@ class _SafeKidsAppState extends State<SafeKidsApp> with WidgetsBindingObserver {
           // Determine theme based on user role
           // Parent: Purple theme, Child: Teal theme
           final themeData = AppTheme.getTheme(isParent: authProvider.isParent);
-          
+
           return MaterialApp(
             title: 'SafeKids',
             debugShowCheckedModeBanner: false,
@@ -157,9 +157,7 @@ class AuthGate extends StatelessWidget {
         // Show loading while initializing
         if (authProvider.user == null && authProvider.isLoading) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
 

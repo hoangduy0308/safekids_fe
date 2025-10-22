@@ -9,22 +9,27 @@ class NotificationService {
   NotificationService._internal();
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  
+
   // Stream controllers for handling notification events
-  final StreamController<RemoteMessage> _onMessageStream = StreamController<RemoteMessage>.broadcast();
-  final StreamController<RemoteMessage> _onMessageOpenedAppStream = StreamController<RemoteMessage>.broadcast();
-  final StreamController<RemoteMessage> _onBackgroundMessageStream = StreamController<RemoteMessage>.broadcast();
+  final StreamController<RemoteMessage> _onMessageStream =
+      StreamController<RemoteMessage>.broadcast();
+  final StreamController<RemoteMessage> _onMessageOpenedAppStream =
+      StreamController<RemoteMessage>.broadcast();
+  final StreamController<RemoteMessage> _onBackgroundMessageStream =
+      StreamController<RemoteMessage>.broadcast();
 
   // Global navigator key for navigation from notifications
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-  
+
   // Error handling flag
   bool _firebaseAvailable = true;
 
   // Getters for subscribing to notification events
   Stream<RemoteMessage> get onMessage => _onMessageStream.stream;
-  Stream<RemoteMessage> get onMessageOpenedApp => _onMessageOpenedAppStream.stream;
-  Stream<RemoteMessage> get onBackgroundMessage => _onBackgroundMessageStream.stream;
+  Stream<RemoteMessage> get onMessageOpenedApp =>
+      _onMessageOpenedAppStream.stream;
+  Stream<RemoteMessage> get onBackgroundMessage =>
+      _onBackgroundMessageStream.stream;
 
   Future<void> initialize() async {
     try {
@@ -58,7 +63,9 @@ class NotificationService {
       try {
         FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
         FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
-        FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+        FirebaseMessaging.onBackgroundMessage(
+          _firebaseMessagingBackgroundHandler,
+        );
       } catch (e) {
         debugPrint('⚠️ [Notification] Message handlers setup failed: $e');
         _firebaseAvailable = false;
@@ -72,7 +79,9 @@ class NotificationService {
   }
 
   void _handleForegroundMessage(RemoteMessage message) {
-    debugPrint('🔔 [Notification] Foreground message: ${message.notification?.title}');
+    debugPrint(
+      '🔔 [Notification] Foreground message: ${message.notification?.title}',
+    );
     debugPrint('🔔 [Notification] Data: ${message.data}');
 
     // Add to stream for listeners
@@ -83,7 +92,9 @@ class NotificationService {
   }
 
   void _handleMessageOpenedApp(RemoteMessage message) {
-    debugPrint('🔔 [Notification] Message opened from background: ${message.data}');
+    debugPrint(
+      '🔔 [Notification] Message opened from background: ${message.data}',
+    );
 
     // Add to stream for listeners
     _onMessageOpenedAppStream.add(message);
@@ -94,7 +105,7 @@ class NotificationService {
 
   void _handleNotificationData(RemoteMessage message) async {
     final data = message.data;
-    
+
     if (data['type'] == 'geofence') {
       debugPrint('🔔 [Notification] Geofence alert received');
       _showGeofenceAlertSnackBar(message);
@@ -123,7 +134,9 @@ class NotificationService {
       await prefs.setString('screentime_bedtime_start', bedtimeStart);
       await prefs.setString('screentime_bedtime_end', bedtimeEnd);
 
-      debugPrint('✅ [Notification] Screen time config saved: $dailyLimit minutes/day, bedtime: $bedtimeEnabled');
+      debugPrint(
+        '✅ [Notification] Screen time config saved: $dailyLimit minutes/day, bedtime: $bedtimeEnabled',
+      );
 
       // Show silent notification to user (optional)
       final context = navigatorKey.currentContext;
@@ -135,7 +148,9 @@ class NotificationService {
                 const Icon(Icons.access_time, color: Colors.blue, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('Cài đặt thời gian màn hình đã được cập nhật: ${dailyLimit ~/ 60}h ${dailyLimit % 60}p/ngày'),
+                  child: Text(
+                    'Cài đặt thời gian màn hình đã được cập nhật: ${dailyLimit ~/ 60}h ${dailyLimit % 60}p/ngày',
+                  ),
                 ),
               ],
             ),
@@ -145,7 +160,9 @@ class NotificationService {
         );
       }
     } catch (e) {
-      debugPrint('❌ [Notification] Failed to handle screen time config update: $e');
+      debugPrint(
+        '❌ [Notification] Failed to handle screen time config update: $e',
+      );
     }
   }
 
@@ -159,7 +176,9 @@ class NotificationService {
             children: [
               Icon(Icons.warning, color: Colors.orange, size: 20),
               SizedBox(width: 8),
-              Expanded(child: Text(message.notification?.body ?? 'Geofence alert')),
+              Expanded(
+                child: Text(message.notification?.body ?? 'Geofence alert'),
+              ),
             ],
           ),
           backgroundColor: Colors.orange.shade100,
@@ -194,11 +213,7 @@ class NotificationService {
     if (sosId != null) {
       final context = navigatorKey.currentContext;
       if (context != null) {
-        Navigator.pushNamed(
-          context,
-          '/sos-alert',
-          arguments: {'sosId': sosId},
-        );
+        Navigator.pushNamed(context, '/sos-alert', arguments: {'sosId': sosId});
       }
     }
   }
@@ -240,11 +255,13 @@ class NotificationService {
 // Background message handler (top-level function)
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  debugPrint('🔔 [Notification] Background message: ${message.notification?.title}');
-  
+  debugPrint(
+    '🔔 [Notification] Background message: ${message.notification?.title}',
+  );
+
   // Initialize Firebase if needed
   // await Firebase.initializeApp();
-  
+
   // Handle background message
   final notificationService = NotificationService();
   notificationService._onBackgroundMessageStream.add(message);

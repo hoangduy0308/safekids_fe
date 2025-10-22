@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:safekids_app/theme/app_typography.dart';
+
 class GeofenceLayerToggle extends StatefulWidget {
   final bool showSafeZones;
   final bool showDangerZones;
@@ -70,10 +71,7 @@ class _GeofenceLayerToggleState extends State<GeofenceLayerToggle> {
               children: [
                 const Icon(Icons.layers_outlined, size: 20),
                 const SizedBox(width: 8),
-                Text(
-                  'Hiển Thị Vùng',
-                  style: AppTypography.label,
-                ),
+                Text('Hiển Thị Vùng', style: AppTypography.label),
               ],
             ),
           ),

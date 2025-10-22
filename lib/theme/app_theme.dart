@@ -12,33 +12,41 @@ import 'app_spacing.dart';
 
 /// SafeKids Unified Theme System
 /// "Misty Morning" / "Smart Guardian" Design
-/// 
+///
 /// Usage:
 /// ```dart
 /// // Get theme for parent mode
 /// ThemeData theme = AppTheme.getTheme(isParent: true);
-/// 
+///
 /// // Get theme for child mode
 /// ThemeData theme = AppTheme.getTheme(isParent: false);
 /// ```
-/// 
+///
 /// Updated: Oct 12, 2025 - Consolidated from 3 theme files into one
 
 class AppTheme {
   /// Get the appropriate theme based on user role
-  /// 
+  ///
   /// [isParent] - true for parent mode (purple), false for child mode (teal)
   static ThemeData getTheme({required bool isParent}) {
-    final primaryColor = isParent ? AppColors.parentPrimary : AppColors.childPrimary;
-    final primaryDark = isParent ? AppColors.parentPrimaryDark : AppColors.childPrimaryDark;
-    final primaryLight = isParent ? AppColors.parentPrimaryLight : AppColors.childPrimaryLight;
-    final bgColor = isParent ? AppColors.backgroundLight : AppColors.backgroundChildLight;
-    
+    final primaryColor = isParent
+        ? AppColors.parentPrimary
+        : AppColors.childPrimary;
+    final primaryDark = isParent
+        ? AppColors.parentPrimaryDark
+        : AppColors.childPrimaryDark;
+    final primaryLight = isParent
+        ? AppColors.parentPrimaryLight
+        : AppColors.childPrimaryLight;
+    final bgColor = isParent
+        ? AppColors.backgroundLight
+        : AppColors.backgroundChildLight;
+
     // Child mode has more rounded corners for friendlier feel
     final cardRadius = isParent ? AppSpacing.radiusMd : AppSpacing.radiusLg;
     final buttonRadius = isParent ? AppSpacing.radiusMd : AppSpacing.radiusLg;
     final inputRadius = isParent ? AppSpacing.radiusMd : AppSpacing.radiusLg;
-    
+
     return ThemeData(
       // ============================================================
       // COLOR SCHEME
@@ -49,7 +57,9 @@ class AppTheme {
         primary: primaryColor,
         primaryContainer: primaryDark,
         secondary: isParent ? AppColors.parentAccent : AppColors.childAccent,
-        secondaryContainer: isParent ? AppColors.parentSecondary : AppColors.childAccent,
+        secondaryContainer: isParent
+            ? AppColors.parentSecondary
+            : AppColors.childAccent,
         surface: AppColors.surface,
         background: bgColor,
         error: AppColors.danger,
@@ -59,12 +69,12 @@ class AppTheme {
         onBackground: AppColors.textPrimary,
         onError: AppColors.textWhite,
       ),
-      
+
       // ============================================================
       // SCAFFOLD
       // ============================================================
       scaffoldBackgroundColor: bgColor,
-      
+
       // ============================================================
       // APP BAR - Glassmorphism support
       // ============================================================
@@ -83,7 +93,7 @@ class AppTheme {
           size: AppSpacing.iconMd,
         ),
       ),
-      
+
       // ============================================================
       // CARD - Clean modern cards
       // ============================================================
@@ -98,11 +108,11 @@ class AppTheme {
           vertical: AppSpacing.cardMargin,
         ),
       ),
-      
+
       // ============================================================
       // BUTTONS
       // ============================================================
-      
+
       // Elevated Button (Primary CTAs)
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -120,15 +130,12 @@ class AppTheme {
           textStyle: AppTypography.button,
         ),
       ),
-      
+
       // Outlined Button (Secondary actions)
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: primaryColor,
-          side: BorderSide(
-            color: primaryColor,
-            width: 2,
-          ),
+          side: BorderSide(color: primaryColor, width: 2),
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.buttonPaddingH,
             vertical: AppSpacing.buttonPaddingV,
@@ -140,7 +147,7 @@ class AppTheme {
           textStyle: AppTypography.button.copyWith(color: primaryColor),
         ),
       ),
-      
+
       // Text Button (Tertiary actions)
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
@@ -153,14 +160,14 @@ class AppTheme {
           textStyle: AppTypography.button.copyWith(color: primaryColor),
         ),
       ),
-      
+
       // Floating Action Button
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: isParent ? AppColors.parentAccent : AppColors.sosRed,
         foregroundColor: AppColors.textWhite,
         elevation: AppSpacing.elevationMedium,
       ),
-      
+
       // ============================================================
       // INPUT DECORATION
       // ============================================================
@@ -168,7 +175,7 @@ class AppTheme {
         filled: true,
         fillColor: AppColors.surface,
         contentPadding: const EdgeInsets.all(AppSpacing.inputPadding),
-        
+
         // Border styles
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(inputRadius),
@@ -191,22 +198,23 @@ class AppTheme {
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(inputRadius),
-          borderSide: const BorderSide(
-            color: AppColors.borderError,
-            width: 2,
-          ),
+          borderSide: const BorderSide(color: AppColors.borderError, width: 2),
         ),
-        
+
         // Text styles
         labelStyle: AppTypography.label,
-        hintStyle: AppTypography.caption.copyWith(color: AppColors.textDisabled),
-        errorStyle: AppTypography.captionSmall.copyWith(color: AppColors.danger),
-        
+        hintStyle: AppTypography.caption.copyWith(
+          color: AppColors.textDisabled,
+        ),
+        errorStyle: AppTypography.captionSmall.copyWith(
+          color: AppColors.danger,
+        ),
+
         // Icons
         prefixIconColor: AppColors.textSecondary,
         suffixIconColor: AppColors.textSecondary,
       ),
-      
+
       // ============================================================
       // BOTTOM NAVIGATION BAR
       // ============================================================
@@ -232,7 +240,7 @@ class AppTheme {
         showSelectedLabels: true,
         showUnselectedLabels: true,
       ),
-      
+
       // ============================================================
       // DIALOG
       // ============================================================
@@ -247,7 +255,7 @@ class AppTheme {
         titleTextStyle: AppTypography.h3,
         contentTextStyle: AppTypography.body,
       ),
-      
+
       // ============================================================
       // BOTTOM SHEET
       // ============================================================
@@ -262,7 +270,7 @@ class AppTheme {
           ),
         ),
       ),
-      
+
       // ============================================================
       // DIVIDER
       // ============================================================
@@ -271,7 +279,7 @@ class AppTheme {
         thickness: 1,
         space: 1,
       ),
-      
+
       // ============================================================
       // ICON THEME
       // ============================================================
@@ -279,7 +287,7 @@ class AppTheme {
         color: AppColors.textSecondary,
         size: AppSpacing.iconMd,
       ),
-      
+
       // ============================================================
       // TEXT THEME - Using new Poppins Typography
       // ============================================================
@@ -297,19 +305,17 @@ class AppTheme {
         labelMedium: AppTypography.label,
         labelSmall: AppTypography.caption,
       ),
-      
+
       // ============================================================
       // FONT FAMILY - Poppins from Google Fonts
       // ============================================================
       fontFamily: AppTypography.fontFamily,
-      
+
       // ============================================================
       // PROGRESS INDICATOR
       // ============================================================
-      progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: primaryColor,
-      ),
-      
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: primaryColor),
+
       // ============================================================
       // CHIP
       // ============================================================
@@ -324,7 +330,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(cardRadius),
         ),
       ),
-      
+
       // ============================================================
       // LIST TILE
       // ============================================================
@@ -337,7 +343,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(cardRadius),
         ),
       ),
-      
+
       // ============================================================
       // CHECKBOX & SWITCH
       // ============================================================
@@ -349,7 +355,7 @@ class AppTheme {
           return AppColors.border;
         }),
       ),
-      
+
       switchTheme: SwitchThemeData(
         thumbColor: MaterialStateProperty.resolveWith((states) {
           if (states.contains(MaterialState.selected)) {
@@ -364,13 +370,15 @@ class AppTheme {
           return AppColors.divider;
         }),
       ),
-      
+
       // ============================================================
       // SNACKBAR
       // ============================================================
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.textPrimary,
-        contentTextStyle: AppTypography.body.copyWith(color: AppColors.textWhite),
+        contentTextStyle: AppTypography.body.copyWith(
+          color: AppColors.textWhite,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(cardRadius),
         ),
@@ -378,10 +386,10 @@ class AppTheme {
       ),
     );
   }
-  
+
   /// Light theme for parent mode (purple primary)
   static ThemeData get parentTheme => getTheme(isParent: true);
-  
+
   /// Light theme for child mode (teal primary)
   static ThemeData get childTheme => getTheme(isParent: false);
 }

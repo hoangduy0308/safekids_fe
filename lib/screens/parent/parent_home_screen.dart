@@ -402,7 +402,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
     return _recentStatuses.map((status) {
       final timestamp = _statusTimestamp(status);
       final formattedTime = _formatTime(timestamp);
-      
+
       return {
         'title': '${status['name'] ?? 'Con em'} ${status['action'] ?? ''}',
         'description': status['action'] ?? '',
@@ -741,7 +741,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                         context: context,
                         isScrollControlled: true,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(24),
+                          ),
                         ),
                         builder: (_) => NotificationCenter(
                           pendingRequestsCount: 0,
@@ -811,7 +813,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
   Widget _buildMembersSection(List<Map<String, dynamic>> children) {
     print('[MEMBERS] Total children: ${children.length}');
     for (var i = 0; i < children.length; i++) {
-      print('[CHILD_$i] ID: ${children[i]['_id'] ?? children[i]['id']}, Name: ${children[i]['name']}');
+      print(
+        '[CHILD_$i] ID: ${children[i]['_id'] ?? children[i]['id']}, Name: ${children[i]['name']}',
+      );
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -827,7 +831,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                 final childId = child['_id'] ?? child['id'] ?? '';
                 final childName = child['name'] ?? 'Trẻ';
                 final isSafe = true; // TODO: lấy trạng thái an toàn thực tế
-                print('[BUILD_CARD] Building card for: $childName, ID: $childId');
+                print(
+                  '[BUILD_CARD] Building card for: $childName, ID: $childId',
+                );
                 return Padding(
                   padding: const EdgeInsets.only(right: AppSpacing.lg),
                   child: _buildMemberCard(
@@ -940,7 +946,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
       try {
         print('[API_CALL] Calling getChildLatestLocation for: $childId');
         locationData = await apiService.getChildLatestLocation(childId);
-        print('[API_RESPONSE] Got location data: childId=${locationData['data']?['childId']}, lat=${locationData['data']?['location']?['latitude']}, lon=${locationData['data']?['location']?['longitude']}');
+        print(
+          '[API_RESPONSE] Got location data: childId=${locationData['data']?['childId']}, lat=${locationData['data']?['location']?['latitude']}, lon=${locationData['data']?['location']?['longitude']}',
+        );
         if (locationData.isEmpty) {
           locationData = {'data': null};
         }
@@ -971,7 +979,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
 
       final location =
           locationData['data']?['location'] as Map<String, dynamic>?;
-      print('[LOCATION_DATA] Extracted location for $childName: lat=${location?['latitude']}, lon=${location?['longitude']}');
+      print(
+        '[LOCATION_DATA] Extracted location for $childName: lat=${location?['latitude']}, lon=${location?['longitude']}',
+      );
       final batteryLevel =
           (location?['batteryLevel'] ?? location?['battery'] ?? 75) as int;
       final latitude = (location?['latitude'] as num?)?.toDouble();
@@ -1026,7 +1036,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
       );
 
       if (!mounted) return;
-      print('[NAVIGATE] Opening map for $childName (ID: $childId) with location: ${childDetail.selectedLocation?.latitude}, ${childDetail.selectedLocation?.longitude}');
+      print(
+        '[NAVIGATE] Opening map for $childName (ID: $childId) with location: ${childDetail.selectedLocation?.latitude}, ${childDetail.selectedLocation?.longitude}',
+      );
       Navigator.push(
         context,
         MaterialPageRoute(

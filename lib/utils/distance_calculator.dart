@@ -9,9 +9,9 @@ double calculateHaversineDistance(Location loc1, Location loc2) {
   final lat1Rad = loc1.latitude * pi / 180;
   final lat2Rad = loc2.latitude * pi / 180;
 
-  final a = sin(dLat / 2) * sin(dLat / 2) +
-            cos(lat1Rad) * cos(lat2Rad) *
-            sin(dLon / 2) * sin(dLon / 2);
+  final a =
+      sin(dLat / 2) * sin(dLat / 2) +
+      cos(lat1Rad) * cos(lat2Rad) * sin(dLon / 2) * sin(dLon / 2);
   final c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
   return R * c; // Distance in km
@@ -20,7 +20,7 @@ double calculateHaversineDistance(Location loc1, Location loc2) {
 /// Distance calculator utility class (Task 7 - for path details)
 class DistanceCalculator {
   /// Calculate distance between two lat/lng coordinates in kilometers
-  /// 
+  ///
   /// Uses Haversine formula
   static double haversine(double lat1, double lng1, double lat2, double lng2) {
     const R = 6371; // Earth's radius in kilometers
@@ -29,9 +29,9 @@ class DistanceCalculator {
     final lat1Rad = lat1 * pi / 180;
     final lat2Rad = lat2 * pi / 180;
 
-    final a = sin(dLat / 2) * sin(dLat / 2) +
-              cos(lat1Rad) * cos(lat2Rad) *
-              sin(dLon / 2) * sin(dLon / 2);
+    final a =
+        sin(dLat / 2) * sin(dLat / 2) +
+        cos(lat1Rad) * cos(lat2Rad) * sin(dLon / 2) * sin(dLon / 2);
     final c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
     return R * c; // Distance in km

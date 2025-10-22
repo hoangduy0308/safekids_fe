@@ -39,7 +39,9 @@ void main() {
     });
 
     group('AC 2.5.1: Location Sharing Toggle [P0-CRITICAL]', () {
-      testWidgets('2.5.1-UNIT-001: Settings screen renders with toggle', (WidgetTester tester) async {
+      testWidgets('2.5.1-UNIT-001: Settings screen renders with toggle', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -62,7 +64,9 @@ void main() {
         expect(find.byType(SwitchListTile), findsOneWidget);
       });
 
-      testWidgets('2.5.1-INT-001: Toggle OFF → calls API', (WidgetTester tester) async {
+      testWidgets('2.5.1-INT-001: Toggle OFF → calls API', (
+        WidgetTester tester,
+      ) async {
         bool shareEnabled = true;
 
         await tester.pumpWidget(
@@ -89,7 +93,9 @@ void main() {
         expect(shareEnabled, false);
       });
 
-      testWidgets('2.5.1-INT-002: Warning message when disabled', (WidgetTester tester) async {
+      testWidgets('2.5.1-INT-002: Warning message when disabled', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -107,10 +113,15 @@ void main() {
           ),
         );
 
-        expect(find.text('Tắt chia sẻ có thể ảnh hưởng đến an toàn của bạn'), findsOneWidget);
+        expect(
+          find.text('Tắt chia sẻ có thể ảnh hưởng đến an toàn của bạn'),
+          findsOneWidget,
+        );
       });
 
-      testWidgets('2.5.1-INT-003: Toggle ON calls startTracking', (WidgetTester tester) async {
+      testWidgets('2.5.1-INT-003: Toggle ON calls startTracking', (
+        WidgetTester tester,
+      ) async {
         bool shareEnabled = false;
 
         await tester.pumpWidget(
@@ -138,7 +149,9 @@ void main() {
     });
 
     group('AC 2.5.2: Tracking Interval Settings [P1-HIGH]', () {
-      testWidgets('2.5.2-UNIT-001: Radio buttons for intervals', (WidgetTester tester) async {
+      testWidgets('2.5.2-UNIT-001: Radio buttons for intervals', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -174,7 +187,9 @@ void main() {
         expect(find.byType(RadioListTile<String>), findsWidgets);
       });
 
-      testWidgets('2.5.2-INT-001: Change interval calls API', (WidgetTester tester) async {
+      testWidgets('2.5.2-INT-001: Change interval calls API', (
+        WidgetTester tester,
+      ) async {
         String selectedInterval = 'continuous';
 
         await tester.pumpWidget(
@@ -201,7 +216,9 @@ void main() {
         expect(selectedInterval, 'normal');
       });
 
-      testWidgets('2.5.2-INT-002: Selected interval persisted', (WidgetTester tester) async {
+      testWidgets('2.5.2-INT-002: Selected interval persisted', (
+        WidgetTester tester,
+      ) async {
         await prefs.setString('trackingInterval', 'battery-saver');
         final saved = prefs.getString('trackingInterval');
         expect(saved, 'battery-saver');
@@ -209,7 +226,9 @@ void main() {
     });
 
     group('AC 2.5.3: Pause Location Temporarily [P0-CRITICAL]', () {
-      testWidgets('2.5.3-UNIT-001: Pause button exists', (WidgetTester tester) async {
+      testWidgets('2.5.3-UNIT-001: Pause button exists', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -230,7 +249,9 @@ void main() {
         expect(find.byType(ElevatedButton), findsOneWidget);
       });
 
-      testWidgets('2.5.3-INT-001: Tap pause shows countdown', (WidgetTester tester) async {
+      testWidgets('2.5.3-INT-001: Tap pause shows countdown', (
+        WidgetTester tester,
+      ) async {
         bool isPaused = false;
 
         await tester.pumpWidget(
@@ -240,8 +261,7 @@ void main() {
                 builder: (context, setState) {
                   return Column(
                     children: [
-                      if (isPaused)
-                        Text('Tạm dừng đến 15:30 (còn 29 phút)'),
+                      if (isPaused) Text('Tạm dừng đến 15:30 (còn 29 phút)'),
                       ElevatedButton(
                         onPressed: () {
                           setState(() => isPaused = true);
@@ -261,7 +281,9 @@ void main() {
         expect(isPaused, true);
       });
 
-      testWidgets('2.5.3-INT-002: Resume button when paused', (WidgetTester tester) async {
+      testWidgets('2.5.3-INT-002: Resume button when paused', (
+        WidgetTester tester,
+      ) async {
         bool isPaused = true;
 
         await tester.pumpWidget(
@@ -292,7 +314,9 @@ void main() {
         expect(isPaused, false);
       });
 
-      testWidgets('2.5.3-INT-003: Countdown timer updates', (WidgetTester tester) async {
+      testWidgets('2.5.3-INT-003: Countdown timer updates', (
+        WidgetTester tester,
+      ) async {
         int secondsRemaining = 1800;
 
         await tester.pumpWidget(
@@ -313,7 +337,9 @@ void main() {
     });
 
     group('AC 2.5.4: Notify Parent of Changes [P1-HIGH]', () {
-      testWidgets('2.5.4-INT-001: Disabling sharing triggers notification', (WidgetTester tester) async {
+      testWidgets('2.5.4-INT-001: Disabling sharing triggers notification', (
+        WidgetTester tester,
+      ) async {
         bool shareEnabled = true;
         bool notificationSent = false;
 
@@ -346,7 +372,9 @@ void main() {
     });
 
     group('AC 2.5.6: Settings Persistence [P1-HIGH]', () {
-      testWidgets('2.5.6-UNIT-001: Settings saved to SharedPreferences', (WidgetTester tester) async {
+      testWidgets('2.5.6-UNIT-001: Settings saved to SharedPreferences', (
+        WidgetTester tester,
+      ) async {
         await prefs.setBool('sharingEnabled', false);
         await prefs.setString('trackingInterval', 'battery-saver');
 
@@ -354,18 +382,23 @@ void main() {
         expect(prefs.getString('trackingInterval'), 'battery-saver');
       });
 
-      testWidgets('2.5.6-INT-001: Settings restored after restart', (WidgetTester tester) async {
+      testWidgets('2.5.6-INT-001: Settings restored after restart', (
+        WidgetTester tester,
+      ) async {
         await prefs.setBool('sharingEnabled', false);
         await prefs.setString('trackingInterval', 'normal');
 
         final restoredSharing = prefs.getBool('sharingEnabled') ?? true;
-        final restoredInterval = prefs.getString('trackingInterval') ?? 'continuous';
+        final restoredInterval =
+            prefs.getString('trackingInterval') ?? 'continuous';
 
         expect(restoredSharing, false);
         expect(restoredInterval, 'normal');
       });
 
-      testWidgets('2.5.6-INT-002: Default settings on first install', (WidgetTester tester) async {
+      testWidgets('2.5.6-INT-002: Default settings on first install', (
+        WidgetTester tester,
+      ) async {
         final hasSharing = prefs.getBool('sharingEnabled') ?? true;
         final hasInterval = prefs.getString('trackingInterval') ?? 'continuous';
 
@@ -373,7 +406,9 @@ void main() {
         expect(hasInterval, 'continuous');
       });
 
-      testWidgets('2.5.6-INT-003: Sync with backend on startup', (WidgetTester tester) async {
+      testWidgets('2.5.6-INT-003: Sync with backend on startup', (
+        WidgetTester tester,
+      ) async {
         // Verify that settings can be retrieved from backend mock
         final settings = await mockApiService.getLocationSettings();
         expect(settings, isA<Map<String, dynamic>>());
@@ -383,7 +418,9 @@ void main() {
     });
 
     group('Performance & Edge Cases [P2-MEDIUM]', () {
-      testWidgets('2.5-PERF-001: UI renders quickly', (WidgetTester tester) async {
+      testWidgets('2.5-PERF-001: UI renders quickly', (
+        WidgetTester tester,
+      ) async {
         final stopwatch = Stopwatch()..start();
 
         await tester.pumpWidget(
@@ -391,14 +428,21 @@ void main() {
             home: Scaffold(
               body: Column(
                 children: [
-                  SwitchListTile(title: Text('Chia sẻ vị trí'), value: true, onChanged: (_) {}),
+                  SwitchListTile(
+                    title: Text('Chia sẻ vị trí'),
+                    value: true,
+                    onChanged: (_) {},
+                  ),
                   RadioListTile<String>(
                     title: Text('Liên tục'),
                     value: 'continuous',
                     groupValue: 'continuous',
                     onChanged: (_) {},
                   ),
-                  ElevatedButton(onPressed: () {}, child: Text('Tạm dừng 30 phút')),
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: Text('Tạm dừng 30 phút'),
+                  ),
                 ],
               ),
             ),
@@ -409,7 +453,9 @@ void main() {
         expect(stopwatch.elapsedMilliseconds, lessThan(1500));
       });
 
-      testWidgets('2.5-EDGE-001: Handle permission denied gracefully', (WidgetTester tester) async {
+      testWidgets('2.5-EDGE-001: Handle permission denied gracefully', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -427,10 +473,15 @@ void main() {
           ),
         );
 
-        expect(find.text('Yêu cầu cấp quyền vị trí để bật chia sẻ'), findsOneWidget);
+        expect(
+          find.text('Yêu cầu cấp quyền vị trí để bật chia sẻ'),
+          findsOneWidget,
+        );
       });
 
-      testWidgets('2.5-EDGE-002: Handle offline with cached settings', (WidgetTester tester) async {
+      testWidgets('2.5-EDGE-002: Handle offline with cached settings', (
+        WidgetTester tester,
+      ) async {
         await prefs.setBool('sharingEnabled', true);
         final cached = prefs.getBool('sharingEnabled') ?? true;
         expect(cached, true);

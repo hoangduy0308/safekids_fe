@@ -1,8 +1,8 @@
 enum NotificationCategory {
-  alert,    // Cảnh báo (đỏ)
-  update,   // Cập nhật (xanh dương)
-  warning,  // Chú ý (cam)
-  general,  // Thông thường (xám)
+  alert, // Cảnh báo (đỏ)
+  update, // Cập nhật (xanh dương)
+  warning, // Chú ý (cam)
+  general, // Thông thường (xám)
 }
 
 class NotificationItem {
@@ -40,7 +40,9 @@ class NotificationItem {
       category: _parseCategory(json['category'] ?? 'general'),
       title: json['title'] ?? '',
       description: json['description'],
-      timestamp: DateTime.parse(json['timestamp'] ?? DateTime.now().toIso8601String()),
+      timestamp: DateTime.parse(
+        json['timestamp'] ?? DateTime.now().toIso8601String(),
+      ),
       isRead: json['isRead'] ?? false,
       actionLabel: json['actionLabel'],
       metadata: json['metadata'],

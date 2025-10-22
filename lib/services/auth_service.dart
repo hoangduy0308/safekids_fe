@@ -23,7 +23,7 @@ class AuthService {
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     _token = prefs.getString(AppConstants.keyToken);
-    
+
     if (_token != null) {
       final userJson = prefs.getString(AppConstants.keyUserData);
       if (userJson != null) {
@@ -46,7 +46,7 @@ class AuthService {
         Uri.parse(ApiConfig.register),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'fullName': name,  // Send as fullName to backend
+          'fullName': name, // Send as fullName to backend
           'email': email,
           'password': password,
           'role': role,
@@ -63,7 +63,10 @@ class AuthService {
         return {'success': true, 'data': data};
       } else {
         // Backend returns 'message' field for errors
-        return {'success': false, 'message': data['message'] ?? data['error'] ?? 'Registration failed'};
+        return {
+          'success': false,
+          'message': data['message'] ?? data['error'] ?? 'Registration failed',
+        };
       }
     } catch (e) {
       return {'success': false, 'message': 'Network error: $e'};
@@ -76,14 +79,13 @@ class AuthService {
     required String password,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse(ApiConfig.login),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
-      ).timeout(Duration(seconds: 10));
+      final response = await http
+          .post(
+            Uri.parse(ApiConfig.login),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'email': email, 'password': password}),
+          )
+          .timeout(Duration(seconds: 10));
 
       final data = jsonDecode(response.body);
 
@@ -92,10 +94,16 @@ class AuthService {
         return {'success': true, 'data': data};
       } else {
         // Backend returns 'message' field for errors
-        return {'success': false, 'message': data['message'] ?? data['error'] ?? 'Login failed'};
+        return {
+          'success': false,
+          'message': data['message'] ?? data['error'] ?? 'Login failed',
+        };
       }
     } catch (e) {
-      return {'success': false, 'message': 'Không thể kết nối. Vui lòng kiểm tra mạng.'};
+      return {
+        'success': false,
+        'message': 'Không thể kết nối. Vui lòng kiểm tra mạng.',
+      };
     }
   }
 
@@ -106,13 +114,15 @@ class AuthService {
     }
 
     try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getMe),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_token',
-        },
-      ).timeout(Duration(seconds: 10)); // Add timeout
+      final response = await http
+          .get(
+            Uri.parse(ApiConfig.getMe),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $_token',
+            },
+          )
+          .timeout(Duration(seconds: 10)); // Add timeout
 
       final data = jsonDecode(response.body);
 
@@ -121,7 +131,11 @@ class AuthService {
         await _saveUserData(data['user']);
         return {'success': true, 'data': data};
       } else {
-        return {'success': false, 'message': data['message'] ?? data['error'] ?? 'Failed to fetch profile'};
+        return {
+          'success': false,
+          'message':
+              data['message'] ?? data['error'] ?? 'Failed to fetch profile',
+        };
       }
     } on TimeoutException catch (e) {
       // Timeout = network issue, not auth error
@@ -144,9 +158,7 @@ class AuthService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $_token',
         },
-        body: jsonEncode({
-          'childEmail': childEmail,
-        }),
+        body: jsonEncode({'childEmail': childEmail}),
       );
 
       final data = jsonDecode(response.body);
@@ -156,7 +168,10 @@ class AuthService {
         await getMe();
         return {'success': true, 'data': data};
       } else {
-        return {'success': false, 'message': data['message'] ?? 'Linking failed'};
+        return {
+          'success': false,
+          'message': data['message'] ?? 'Linking failed',
+        };
       }
     } catch (e) {
       return {'success': false, 'message': 'Network error: $e'};
@@ -167,7 +182,7 @@ class AuthService {
   Future<void> logout() async {
     _token = null;
     _currentUser = null;
-    
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(AppConstants.keyToken);
     await prefs.remove(AppConstants.keyUserData);
@@ -176,10 +191,13 @@ class AuthService {
   }
 
   /// Save auth data to storage
-  Future<void> _saveAuthData(String token, Map<String, dynamic> userData) async {
+  Future<void> _saveAuthData(
+    String token,
+    Map<String, dynamic> userData,
+  ) async {
     _token = token;
     _currentUser = User.fromJson(userData);
-    
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(AppConstants.keyToken, token);
     await prefs.setString(AppConstants.keyUserData, jsonEncode(userData));

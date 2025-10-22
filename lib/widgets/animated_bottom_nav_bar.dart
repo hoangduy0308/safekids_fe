@@ -3,8 +3,9 @@ import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import '../theme/app_spacing.dart';
 import 'package:safekids_app/theme/app_typography.dart';
+
 /// Modern Material 3 Animated Bottom Navigation Bar
-/// 
+///
 /// Features:
 /// - Flat design (no gradient)
 /// - Bounce icon animation on selection
@@ -53,7 +54,7 @@ class _AnimatedBottomNavBarState extends State<AnimatedBottomNavBar>
     super.initState();
     _bounceControllers = {};
     _fadeControllers = {};
-    
+
     for (int i = 0; i < widget.items.length; i++) {
       _bounceControllers[i] = AnimationController(
         duration: const Duration(milliseconds: 500),
@@ -107,10 +108,11 @@ class _AnimatedBottomNavBarState extends State<AnimatedBottomNavBar>
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = widget.backgroundColor ??
+    final backgroundColor =
+        widget.backgroundColor ??
         (isDarkMode ? const Color(0xFF1E1E1E) : Colors.white);
-    final accentColor = widget.accentColor ??
-        Theme.of(context).colorScheme.primary;
+    final accentColor =
+        widget.accentColor ?? Theme.of(context).colorScheme.primary;
     final surfaceColor = isDarkMode
         ? const Color(0xFF2A2A2A)
         : Colors.grey.shade50;
@@ -163,8 +165,10 @@ class _AnimatedBottomNavBarState extends State<AnimatedBottomNavBar>
       decoration: BoxDecoration(
         color: widget.isLiquidGlass
             ? (isDarkMode
-                ? Colors.grey.shade900.withOpacity(0.8) // Adjusted for consistency
-                : Colors.white.withOpacity(0.8)) // Adjusted for consistency
+                  ? Colors.grey.shade900.withOpacity(
+                      0.8,
+                    ) // Adjusted for consistency
+                  : Colors.white.withOpacity(0.8)) // Adjusted for consistency
             : backgroundColor,
         border: Border.all(
           color: isDarkMode
@@ -173,10 +177,7 @@ class _AnimatedBottomNavBarState extends State<AnimatedBottomNavBar>
           width: 1,
         ),
       ),
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.xs,
-        vertical: 4,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(
@@ -267,7 +268,8 @@ class _AnimatedBottomNavBarState extends State<AnimatedBottomNavBar>
                       color: isActive ? accentColor : inactiveColor,
                       letterSpacing: 0,
                       height: 1.1,
-                    ),                  ),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -283,8 +285,5 @@ class NavBarItem {
   final IconData icon;
   final String label;
 
-  NavBarItem({
-    required this.icon,
-    required this.label,
-  });
+  NavBarItem({required this.icon, required this.label});
 }

@@ -23,10 +23,15 @@ class AlertListItem extends StatelessWidget {
         '${alert.childName} ${isEnter ? 'đã vào' : 'đã rời khỏi'} ${alert.geofenceName}',
         style: AppTypography.body,
       ),
-      subtitle: Text(_formatTime(alert.timestamp), style: AppTypography.caption),
+      subtitle: Text(
+        _formatTime(alert.timestamp),
+        style: AppTypography.caption,
+      ),
       trailing: Chip(
         label: Text(alert.geofenceType == 'safe' ? 'An toàn' : 'Nguy hiểm'),
-        backgroundColor: alert.geofenceType == 'safe' ? AppColors.successLight : AppColors.borderError.withOpacity(0.1),
+        backgroundColor: alert.geofenceType == 'safe'
+            ? AppColors.successLight
+            : AppColors.borderError.withOpacity(0.1),
         labelStyle: AppTypography.caption,
       ),
       onTap: onTap,
