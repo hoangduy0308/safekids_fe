@@ -318,34 +318,93 @@ class _ChildMapScreenState extends State<ChildMapScreen> {
     );
   }
 
+  void _lockDevicePrompt() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Khóa thiết bị'),
+        content: Text('Bạn có chắc chắn muốn khóa thiết bị của ${widget.childName}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _lockDevice();
+            },
+            child: Text(
+              'Khóa ngay',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _lockDevice() async {
+    try {
+      await _apiService.lockDevice(widget.childDetail.childId);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đã gửi lệnh khóa thiết bị ${widget.childName}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Widget _buildActionButtons(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        _buildActionButton(
-          icon: Icons.call_rounded,
-          label: 'Gọi',
-          color: Colors.green,
-        ),
-        _buildActionButton(
-          icon: Icons.message_rounded,
-          label: 'Nhắn tin',
-          color: Colors.blue,
-          onTap: _openChatScreen,
-        ),
-        _buildActionButton(
-          icon: Icons.navigation_rounded,
-          label: 'Chỉ đường',
-          color: Colors.purple,
-          onTap: _openNavigation,
-        ),
-        _buildActionButton(
-          icon: Icons.history_rounded,
-          label: 'Lịch sử',
-          color: Colors.orange,
-          onTap: _openLocationHistory,
-        ),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildActionButton(
+            icon: Icons.call_rounded,
+            label: 'Gọi',
+            color: Colors.green,
+          ),
+          _buildActionButton(
+            icon: Icons.message_rounded,
+            label: 'Nhắn tin',
+            color: Colors.blue,
+            onTap: _openChatScreen,
+          ),
+          _buildActionButton(
+            icon: Icons.navigation_rounded,
+            label: 'Chỉ đường',
+            color: Colors.purple,
+            onTap: _openNavigation,
+          ),
+          _buildActionButton(
+            icon: Icons.history_rounded,
+            label: 'Lịch sử',
+            color: Colors.orange,
+            onTap: _openLocationHistory,
+          ),
+          _buildActionButton(
+            icon: Icons.lock_rounded,
+            label: 'Khóa',
+            color: Colors.red,
+            onTap: _lockDevicePrompt,
+          ),
+        ],
+      ),
     );
   }
 

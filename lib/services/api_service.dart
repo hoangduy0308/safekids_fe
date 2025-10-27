@@ -1259,4 +1259,25 @@ class ApiService {
       rethrow;
     }
   }
+
+  /// Lock child device remotely
+  Future<Map<String, dynamic>> lockDevice(String childId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/device/lock'),
+        headers: headers,
+        body: jsonEncode({
+          'childId': childId,
+        }),
+      );
+
+      _handleError(response);
+      final data = jsonDecode(response.body);
+      return Map<String, dynamic>.from(data['data'] ?? {});
+    } catch (e) {
+      print('Lock device error: $e');
+      rethrow;
+    }
+  }
 }
